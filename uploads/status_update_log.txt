@@ -1,0 +1,5 @@
+2025-07-16 07:12:12 - Admin: Unknown - Status pendaftar Dedi Kurniawan (NIK: 3471013112000005) diubah menjadi 'Terverifikasi'
+2025-07-16 07:12:21 - Admin: Unknown - Status pendaftar Budi Santoso (NIK: 3374031510980003) diubah menjadi 'Terverifikasi'
+2025-07-16 07:12:29 - Admin: Unknown - Status pendaftar Ahmad Rizki Pratama (NIK: 3171012101950001) diubah menjadi 'Terverifikasi'
+2025-07-16 07:54:37 - Admin: Unknown - Status pendaftar Ahmad Rizki Pratama (NIK: 3171012101950001) diubah menjadi 'Ditolak'
+2025-07-16 08:03:53 - Admin: Unknown - Status pendaftar Ahmad Rizki Pratama (NIK: 3171012101950001) diubah menjadi 'Terverifikasi'

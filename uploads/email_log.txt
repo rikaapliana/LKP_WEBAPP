@@ -1,0 +1,95 @@
+
+=== EMAIL LOG ===
+Waktu: 2025-06-28 18:48:43
+Status: ERROR
+Kepada: rikaapliana0@gmail.com
+Username: admin
+Jenis: Reset Password
+Error: SMTP Error: Could not authenticate.
+IP: ::1
+==================
+
+=== EMAIL LOG ===
+Waktu: 2025-06-28 18:52:17
+Status: ERROR
+Kepada: rikaapliana0@gmail.com
+Username: admin
+Jenis: Reset Password
+Error: SMTP Error: Could not authenticate.
+IP: ::1
+==================
+
+=== EMAIL LOG ===
+Waktu: 2025-06-28 18:52:45
+Status: ERROR
+Kepada: rikaapliana0@gmail.com
+Username: admin
+Jenis: Reset Password
+Error: SMTP Error: Could not authenticate.
+IP: ::1
+==================
+
+=== EMAIL LOG ===
+Waktu: 2025-06-28 18:55:10
+Status: ERROR
+Kepada: rikaapliana0@gmail.com
+Username: admin
+Jenis: Reset Password
+Error: SMTP Error: Could not authenticate.
+IP: ::1
+==================
+
+=== EMAIL LOG ===
+Waktu: 2025-06-28 18:56:38
+Status: ERROR
+Kepada: rikaapliana02@gmail.com
+Username: admin
+Jenis: Reset Password
+Error: SMTP Error: Could not authenticate.
+IP: ::1
+==================
+
+=== EMAIL LOG ===
+Waktu: 2025-06-28 18:57:21
+Status: ERROR
+Kepada: rikaapliana02@gmail.com
+Username: admin
+Jenis: Reset Password
+Error: SMTP Error: Could not authenticate.
+IP: ::1
+==================
+
+=== EMAIL LOG ===
+Waktu: 2025-06-28 18:57:27
+Status: ERROR
+Kepada: rikaapliana02@gmail.com
+Username: admin
+Jenis: Reset Password
+Error: SMTP Error: Could not authenticate.
+IP: ::1
+==================
+
+=== EMAIL LOG ===
+Waktu: 2025-06-28 18:58:46
+Status: ERROR
+Kepada: rikaapliana02@gmail.com
+Username: admin
+Jenis: Reset Password
+Error: SMTP Error: Could not authenticate.
+IP: ::1
+==================
+
+=== EMAIL LOG ===
+Waktu: 2025-06-28 18:58:59
+Status: ERROR
+Kepada: rikaapliana02@gmail.com
+Username: admin
+Jenis: Reset Password
+Error: SMTP Error: Could not authenticate.
+IP: ::1
+==================
+2025-07-16 07:12:14 - Email verifikasi dikirim ke: dedi.kurniawan@email.com - Status: Gagal
+2025-07-16 07:12:23 - Email verifikasi dikirim ke: budi.santoso@email.com - Status: Gagal
+2025-07-16 07:12:31 - Email verifikasi dikirim ke: ahmad.rizki@email.com - Status: Gagal
+2025-07-16 07:54:39 - Email penolakan dikirim ke: ahmad.rizki@email.com - Status: Gagal
+2025-07-16 08:03:55 - Email verifikasi dikirim ke: ahmad.rizki@email.com - Status: Gagal
