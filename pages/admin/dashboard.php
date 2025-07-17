@@ -34,33 +34,52 @@ if (!$AdminData) {
     ];
 }
 
-$jumlahPengguna     = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM user"))[0];
+// Statistik utama - 4 baris pertama (tetap seperti sebelumnya)
 $jumlahSiswa        = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM siswa"))[0];
-$jumlahInstruktur   = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM instruktur"))[0];
+$jumlahPendaftar    = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM pendaftar"))[0];
 $jumlahKelas        = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM kelas"))[0];
+$jumlahInstruktur   = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM instruktur"))[0];
 
+// Statistik tambahan yang diperlukan
+$siswaAktif = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM siswa WHERE status_aktif = 'aktif'"))[0];
+$pendaftarBelumVerifikasi = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM pendaftar WHERE status_pendaftaran = 'Belum di Verifikasi'"))[0];
+$jadwalHariIni = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM jadwal WHERE tanggal = CURDATE()"))[0];
+
+// Statistik baris kedua (5-8)
+// 5. Analisis hasil evaluasi (tetap)
+$avgQuery = "SELECT AVG((nilai_word + nilai_excel + nilai_ppt + nilai_internet + nilai_pengembangan) / 5) as rata_rata FROM nilai WHERE rata_rata IS NOT NULL";
+$avgResult = mysqli_query($conn, $avgQuery);
+$avgNilai = mysqli_fetch_assoc($avgResult)['rata_rata'];
+$avgNilai = $avgNilai ? round($avgNilai, 1) : 0;
+
+// 6. Gelombang
+$gelombangAktif = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM gelombang WHERE status = 'aktif'"))[0];
+$gelombangDibuka = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM gelombang WHERE status = 'dibuka'"))[0];
+
+// 7. Status formulir pendaftaran
+$formulirAktif = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM pengaturan_pendaftaran WHERE status_pendaftaran = 'dibuka'"))[0];
+
+// 8. Evaluasi yang sedang berlangsung
+$evaluasiAktif = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM periode_evaluasi WHERE status = 'aktif'"))[0];
+
+// Query untuk tabel
 $queryKelas = "SELECT k.nama_kelas, k.kapasitas, i.nama AS instruktur, g.nama_gelombang, g.status as status_gelombang,
                COUNT(s.id_siswa) as jumlah_siswa
                FROM kelas k
                LEFT JOIN instruktur i ON k.id_instruktur = i.id_instruktur
                LEFT JOIN gelombang g ON k.id_gelombang = g.id_gelombang
-               LEFT JOIN siswa s ON k.id_kelas = s.id_kelas
+               LEFT JOIN siswa s ON k.id_kelas = s.id_kelas AND s.status_aktif = 'aktif'
                GROUP BY k.id_kelas
                ORDER BY k.id_kelas DESC
                LIMIT 5";
 $resultKelas = mysqli_query($conn, $queryKelas);
 
-$queryPendaftaranTerbaru = "SELECT nama_pendaftar, status_pendaftaran, id_pendaftar
-                           FROM pendaftar
-                           ORDER BY id_pendaftar DESC
+$queryPendaftaranTerbaru = "SELECT p.nama_pendaftar, p.status_pendaftaran, p.id_pendaftar, g.nama_gelombang
+                           FROM pendaftar p
+                           LEFT JOIN gelombang g ON p.id_gelombang = g.id_gelombang
+                           ORDER BY p.id_pendaftar DESC
                            LIMIT 5";
 $resultPendaftaran = mysqli_query($conn, $queryPendaftaranTerbaru);
-
-// Ambil statistik tambahan
-$jumlahPendaftar = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM pendaftar"))[0];
-$pendaftarBelumVerifikasi = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM pendaftar WHERE status_pendaftaran = 'Belum di Verifikasi'"))[0];
-$siswaAktif = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM siswa WHERE status_aktif = 'aktif'"))[0];
-$jadwalHariIni = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM jadwal WHERE tanggal = CURDATE()"))[0];
 
 // Format tanggal dan waktu Indonesia
 $hariIni = date('l, d F Y');
@@ -297,10 +316,8 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
           </div>
         </div>
 
-        
-
         <!-- Statistik Cards - Row 1: Data Akademik Utama -->
-        <div class="row g-3 g-md-4 mb-3">
+        <div class="row g-3 g-md-4 mb-4">
           <div class="col-6 col-lg-3">
             <a href="siswa/" class="text-decoration-none">
               <div class="card stats-card stats-card-clickable">
@@ -362,7 +379,7 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
           </div>
         </div>
 
-        <!-- Statistik Cards - Row 2: Analisis & Manajemen -->
+        <!-- Statistik Cards - Row 2: Manajemen & Sistem -->
         <div class="row g-3 g-md-4 mb-4">
           <div class="col-6 col-lg-3">
             <a href="analisis-evaluasi/" class="text-decoration-none">
@@ -371,69 +388,60 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
                   <div class="stats-icon bg-info text-white mb-2">
                     <i class="bi bi-graph-up"></i>
                   </div>
-                  <?php
-                  // Hitung rata-rata nilai keseluruhan
-                  $avgQuery = "SELECT AVG((nilai_word + nilai_excel + nilai_ppt + nilai_internet + nilai_pengembangan) / 5) as rata_rata FROM nilai WHERE rata_rata IS NOT NULL";
-                  $avgResult = mysqli_query($conn, $avgQuery);
-                  $avgNilai = mysqli_fetch_assoc($avgResult)['rata_rata'];
-                  $avgNilai = $avgNilai ? round($avgNilai, 1) : 0;
-                  ?>
                   <h4 class="fw-bold mb-1"><?= $avgNilai ?></h4>
-                  <p class="text-muted mb-0 small">Analisis Hasil Evaluasi</p>
-                  <small class="text-primary"><i class="bi bi-bar-chart"></i> Rata-rata nilai</small>
+                  <p class="text-muted mb-0 small">Rata-rata Nilai</p>
+                  <small class="text-primary"><i class="bi bi-bar-chart"></i> Hasil evaluasi</small>
                 </div>
               </div>
             </a>
           </div>
           
           <div class="col-6 col-lg-3">
-            <a href="hasil-evaluasi/" class="text-decoration-none">
+            <a href="pengaturan/gelombang/" class="text-decoration-none">
               <div class="card stats-card stats-card-clickable">
                 <div class="card-body text-center p-3">
                   <div class="stats-icon bg-purple text-white mb-2">
-                    <i class="bi bi-pie-chart-fill"></i>
+                    <i class="bi bi-layers-fill"></i>
                   </div>
-                  <?php
-                  // Hitung persentase konversi pendaftar ke siswa
-                  $konversiRate = $jumlahPendaftar > 0 ? round(($jumlahSiswa / $jumlahPendaftar) * 100, 1) : 0;
-                  ?>
-                  <h4 class="fw-bold mb-1"><?= $konversiRate ?>%</h4>
-                  <p class="text-muted mb-0 small">Statistik Pendaftaran</p>
-                  <small class="text-success"><i class="bi bi-arrow-up-right"></i> Conversion rate</small>
+                  <h4 class="fw-bold mb-1"><?= ($gelombangAktif + $gelombangDibuka) ?></h4>
+                  <p class="text-muted mb-0 small">Gelombang Aktif</p>
+                  <small class="text-success"><i class="bi bi-play-circle"></i> <?= $gelombangAktif ?> aktif, <?= $gelombangDibuka ?> dibuka</small>
                 </div>
               </div>
             </a>
           </div>
           
           <div class="col-6 col-lg-3">
-            <a href="jadwal/" class="text-decoration-none">
+            <a href="pengaturan/formulir/" class="text-decoration-none">
               <div class="card stats-card stats-card-clickable">
                 <div class="card-body text-center p-3">
                   <div class="stats-icon bg-teal text-white mb-2">
-                    <i class="bi bi-calendar-event"></i>
+                    <i class="bi bi-clipboard-data-fill"></i>
                   </div>
-                  <?php
-                  // Hitung jadwal minggu ini
-                  $jadwalMingguIni = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM jadwal WHERE WEEK(tanggal) = WEEK(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())"))[0];
-                  ?>
-                  <h4 class="fw-bold mb-1"><?= number_format($jadwalMingguIni) ?></h4>
-                  <p class="text-muted mb-0 small">Jadwal Minggu Ini</p>
-                  <small class="text-warning"><i class="bi bi-calendar-check"></i> <?= $jadwalHariIni ?> hari ini</small>
+                  <h4 class="fw-bold mb-1"><?= $formulirAktif ?></h4>
+                  <p class="text-muted mb-0 small">Formulir Aktif</p>
+                  <small class="text-<?= $formulirAktif > 0 ? 'success' : 'warning' ?>">
+                    <i class="bi bi-<?= $formulirAktif > 0 ? 'toggle-on' : 'toggle-off' ?>"></i> 
+                    <?= $formulirAktif > 0 ? 'Pendaftaran dibuka' : 'Pendaftaran ditutup' ?>
+                  </small>
                 </div>
               </div>
             </a>
           </div>
           
           <div class="col-6 col-lg-3">
-            <a href="pengaturan/" class="text-decoration-none">
+            <a href="evaluasi/" class="text-decoration-none">
               <div class="card stats-card stats-card-clickable">
                 <div class="card-body text-center p-3">
                   <div class="stats-icon bg-secondary text-white mb-2">
-                    <i class="bi bi-gear-fill"></i>
+                    <i class="bi bi-list-check"></i>
                   </div>
-                  <h4 class="fw-bold mb-1"><i class="bi bi-toggle-on text-success fs-4"></i></h4>
-                  <p class="text-muted mb-0 small">Kelola Pendaftaran</p>
-                  <small class="text-success"><i class="bi bi-check-circle"></i> Aktif</small>
+                  <h4 class="fw-bold mb-1"><?= $evaluasiAktif ?></h4>
+                  <p class="text-muted mb-0 small">Evaluasi Aktif</p>
+                  <small class="text-<?= $evaluasiAktif > 0 ? 'primary' : 'muted' ?>">
+                    <i class="bi bi-clipboard-check"></i> 
+                    <?= $evaluasiAktif > 0 ? 'Sedang berlangsung' : 'Tidak ada evaluasi' ?>
+                  </small>
                 </div>
               </div>
             </a>
@@ -547,6 +555,10 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
                       $statusClass = 'success';
                       $statusIcon = 'check-circle';
                       $statusText = 'Terverifikasi';
+                    } elseif ($pendaftaran['status_pendaftaran'] == 'Diterima') {
+                      $statusClass = 'primary';
+                      $statusIcon = 'person-check';
+                      $statusText = 'Diterima';
                     }
                   ?>
                   <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
@@ -557,16 +569,16 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
                     </div>
                     <div class="flex-grow-1">
                       <div class="fw-semibold"><?= htmlspecialchars($pendaftaran['nama_pendaftar']) ?></div>
-                      <span class="badge bg-<?= $statusClass ?> badge-status">
+                      <span class="badge bg-<?= $statusClass ?> badge-status small">
                         <?= $statusText ?>
                       </span>
-                      <small class="text-muted d-block">
-                        ID: <?= str_pad($pendaftaran['id_pendaftar'], 4, '0', STR_PAD_LEFT) ?>
-                      </small>
+                      <div class="text-muted small mt-1">
+                        <div>ID: <?= str_pad($pendaftaran['id_pendaftar'], 4, '0', STR_PAD_LEFT) ?></div>
+                        <div><?= htmlspecialchars($pendaftaran['nama_gelombang'] ?? 'Gelombang dihapus') ?></div>
+                      </div>
                     </div>
                   </div>
                   <?php endwhile; ?>
-                  
                   
                 <?php else: ?>
                   <div class="text-center py-4">

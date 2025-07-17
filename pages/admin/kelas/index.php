@@ -156,28 +156,8 @@ $statusOptions = ['aktif', 'selesai', 'dibuka'];
               <div class="col-md-6 text-md-end">
                 <a href="tambah.php" class="btn btn-primary-formal">
                   <i class="bi bi-plus-circle"></i>
-                  Tambah Kelas
+                  Tambah Data
                 </a>
-                <div class="btn-group ms-2">
-                  <button type="button" class="btn btn-secondary-formal dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-download me-1"></i>
-                    Export Data
-                  </button>
-                  <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                    <li>
-                      <a class="dropdown-item" href="export-pdf.php">
-                        <i class="bi bi-file-pdf text-danger me-2"></i>
-                        Export ke PDF
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="export-excel.php">
-                        <i class="bi bi-file-excel text-success me-2"></i>
-                        Export ke Excel
-                      </a>
-                    </li>
-                  </ul>
-                </div>
               </div>
             </div>
           </div>

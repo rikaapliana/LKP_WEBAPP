@@ -177,7 +177,7 @@ $currentYear = date('Y');
 
         <!-- Warning jika sedang digunakan -->
         <?php if ($isBeingUsed): ?>
-          <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          <div class="alert alert-info alert-dismissible fade show" role="alert">
             <i class="bi bi-exclamation-triangle me-2"></i>
             <strong>Perhatian:</strong> Gelombang ini sedang digunakan oleh <?= $jumlahKelas ?> kelas dan <?= $jumlahPengaturan ?> pengaturan pendaftaran. 
             Beberapa field tidak dapat diubah untuk menjaga konsistensi data.
@@ -286,60 +286,7 @@ $currentYear = date('Y');
 
           <!-- Info Panel -->
           <div class="col-lg-4">
-            <!-- Current Info -->
-            <div class="card content-card mb-3">
-              <div class="section-header">
-                <h6 class="mb-0 text-dark">
-                  <i class="bi bi-info-circle me-2"></i>Info Gelombang Saat Ini
-                </h6>
-              </div>
-              <div class="card-body">
-                <div class="row g-3">
-                  <div class="col-12">
-                    <strong>Nama:</strong><br>
-                    <span class="text-muted"><?= htmlspecialchars($gelombang['nama_gelombang']) ?></span>
-                  </div>
-                  <div class="col-6">
-                    <strong>Tahun:</strong><br>
-                    <span class="badge bg-light text-dark"><?= $gelombang['tahun'] ?></span>
-                  </div>
-                  <div class="col-6">
-                    <strong>Gelombang:</strong><br>
-                    <span class="badge bg-info">Ke-<?= $gelombang['gelombang_ke'] ?></span>
-                  </div>
-                  <div class="col-12">
-                    <strong>Status:</strong><br>
-                    <?php 
-                    $statusClass = 'secondary';
-                    $statusText = 'Draft';
-                    $statusIcon = 'pause-circle';
-                    
-                    switch($gelombang['status']) {
-                      case 'aktif':
-                        $statusClass = 'success';
-                        $statusText = 'Aktif';
-                        $statusIcon = 'play-circle';
-                        break;
-                      case 'dibuka':
-                        $statusClass = 'primary';
-                        $statusText = 'Dibuka';
-                        $statusIcon = 'door-open';
-                        break;
-                      case 'selesai':
-                        $statusClass = 'secondary';
-                        $statusText = 'Selesai';
-                        $statusIcon = 'check-circle';
-                        break;
-                    }
-                    ?>
-                    <span class="badge bg-<?= $statusClass ?>">
-                      <i class="bi bi-<?= $statusIcon ?> me-1"></i><?= $statusText ?>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
+            
             <!-- Usage Info -->
             <?php if ($isBeingUsed): ?>
             <div class="card content-card mb-3">

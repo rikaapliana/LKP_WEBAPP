@@ -6738,6 +6738,203 @@ textarea.form-control-lg {
   transform: translateY(-1px);
 }
 
+/* Button Cetak Basic */
+.btn-print {
+    background-color: #007bff;
+    border: 1px solid #007bff;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-print:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+    color: white;
+    transform: translateY(-1px);
+}
+
+.btn-print:active {
+    transform: translateY(0);
+}
+
+.btn-print:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Button Cetak Success */
+.btn-print-success {
+    background-color: #28a745;
+    border: 1px solid #28a745;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-print-success:hover {
+    background-color: #218838;
+    border-color: #218838;
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Button Cetak Outline */
+.btn-print-outline {
+    background-color: transparent;
+    border: 2px solid #007bff;
+    color: #007bff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-print-outline:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+/* Button Cetak Dark */
+.btn-print-dark {
+    background-color: #343a40;
+    border: 1px solid #343a40;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-print-dark:hover {
+    background-color: #23272b;
+    border-color: #23272b;
+    color: white;
+}
+
+/* Button Cetak Small */
+.btn-print-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 3px;
+}
+
+/* Button Cetak Large */
+.btn-print-lg {
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 6px;
+}
+
+/* Button dengan Icon */
+.btn-print i {
+    font-size: 14px;
+}
+
+.btn-print-sm i {
+    font-size: 12px;
+}
+
+.btn-print-lg i {
+    font-size: 16px;
+}
+
+/* Button Disabled */
+.btn-print:disabled {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-print:disabled:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    transform: none;
+}
+
+/* Loading State */
+.btn-print.loading {
+    position: relative;
+    color: transparent;
+    pointer-events: none;
+}
+
+.btn-print.loading::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    top: 50%;
+    left: 50%;
+    margin-left: -7px;
+    margin-top: -7px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Button Group */
+.btn-print-group {
+    display: inline-flex;
+}
+
+.btn-print-group .btn-print {
+    border-radius: 0;
+    border-right: none;
+}
+
+.btn-print-group .btn-print:first-child {
+    border-radius: 4px 0 0 4px;
+}
+
+.btn-print-group .btn-print:last-child {
+    border-radius: 0 4px 4px 0;
+    border-right: 1px solid #007bff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .btn-print {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    .btn-print i {
+        font-size: 12px;
+    }
+}
+
 /* Button Keluar - Warning Orange */
 .btn-keluar {
   background-color: #ea580c;

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 17 Jul 2025 pada 08.55
+-- Waktu pembuatan: 17 Jul 2025 pada 17.38
 -- Versi server: 10.4.28-MariaDB
 -- Versi PHP: 8.2.4
 
@@ -116,7 +116,7 @@ CREATE TABLE `gelombang` (
 
 INSERT INTO `gelombang` (`id_gelombang`, `tahun`, `gelombang_ke`, `nama_gelombang`, `status`) VALUES
 (1, '2025', 1, 'Gelombang 1 Tahun 2025', 'aktif'),
-(2, '2025', 2, 'Gelombang 2 Tahun 2025', 'dibuka');
+(2, '2025', 2, 'Gelombang 2 Tahun 2025', 'aktif');
 
 -- --------------------------------------------------------
 
@@ -347,14 +347,9 @@ CREATE TABLE `kelas` (
 --
 
 INSERT INTO `kelas` (`id_kelas`, `nama_kelas`, `id_gelombang`, `kapasitas`, `id_instruktur`) VALUES
-(1, '08.00 - 09.00 A', 1, 10, NULL),
+(1, '08.00 - 09.00 A', 1, 10, 2),
 (2, '08.00 - 09.00 B', 1, 10, 1),
-(3, '09.00 - 10.00 A', 1, 10, 3),
-(4, '09.00 - 10.00 B', 1, 10, 2),
-(5, '10.00 - 11.00 A', 1, 10, NULL),
-(6, '10.00 - 11.00 B', 1, 10, NULL),
-(7, '11.00 - 12.00 A', 1, 10, NULL),
-(9, '11.00 - 12.00 B', 1, 10, 5);
+(10, '08.00 - 09.00 A', 2, 10, 5);
 
 -- --------------------------------------------------------
 
@@ -376,7 +371,7 @@ CREATE TABLE `materi` (
 --
 
 INSERT INTO `materi` (`id_materi`, `deskripsi`, `id_instruktur`, `id_kelas`, `judul`, `file_materi`) VALUES
-(2, 'Materi Word Bagian 1', NULL, 9, 'SISTEM INFORMASI MANAJEMEN', '1751525348_RikaSlipBimbinganSkripsi_compressed.pdf');
+(2, 'Materi Word Bagian 1', 2, 1, 'SISTEM INFORMASI MANAJEMEN', '1751525348_RikaSlipBimbinganSkripsi_compressed.pdf');
 
 -- --------------------------------------------------------
 
@@ -402,9 +397,9 @@ CREATE TABLE `nilai` (
 --
 
 INSERT INTO `nilai` (`id_nilai`, `id_siswa`, `id_kelas`, `nilai_word`, `nilai_excel`, `nilai_ppt`, `nilai_internet`, `nilai_pengembangan`, `rata_rata`, `status_kelulusan`) VALUES
-(1, 14, 1, 60, 80, NULL, NULL, NULL, 70, 'lulus'),
-(2, 12, 2, 80, 80, NULL, NULL, NULL, 80, 'lulus'),
-(3, 8, 2, 90, 80, NULL, NULL, NULL, 85, 'lulus');
+(1, 14, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(2, 12, 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(3, 8, 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -414,6 +409,7 @@ INSERT INTO `nilai` (`id_nilai`, `id_siswa`, `id_kelas`, `nilai_word`, `nilai_ex
 
 CREATE TABLE `pendaftar` (
   `id_pendaftar` int(11) NOT NULL,
+  `id_gelombang` int(11) DEFAULT NULL,
   `nik` varchar(16) DEFAULT NULL,
   `nama_pendaftar` varchar(100) DEFAULT NULL,
   `tempat_lahir` varchar(50) DEFAULT NULL,
@@ -435,12 +431,11 @@ CREATE TABLE `pendaftar` (
 -- Dumping data untuk tabel `pendaftar`
 --
 
-INSERT INTO `pendaftar` (`id_pendaftar`, `nik`, `nama_pendaftar`, `tempat_lahir`, `tanggal_lahir`, `jenis_kelamin`, `pendidikan_terakhir`, `no_hp`, `email`, `alamat_lengkap`, `jam_pilihan`, `pas_foto`, `ktp`, `kk`, `ijazah`, `status_pendaftaran`) VALUES
-(1, '3171012101950001', 'Ahmad Rizki Pratama', 'Jakarta', '1995-01-21', 'Laki-Laki', 'SLTA', '081234567890', 'ahmad.rizki@email.com', 'Jl. Merdeka No. 123, RT 05/RW 03, Kelurahan Menteng, Jakarta Pusat', '09.00 - 10.00', '', 'ktp_ahmad.jpg', '', '', 'Terverifikasi'),
-(2, '3273024205920002', 'Siti Nurhaliza', 'Banjarmasin', '1992-05-02', 'Perempuan', 'S1', '082345678901', 'siti.nurhaliza@email.com', 'Jl. Braga No. 45, RT 02/RW 01, Kelurahan Braga, Bandung', '13.00 - 14.00', '', '', '', '', 'Terverifikasi'),
-(3, '3374031510980003', 'Budi Santoso', 'Tabalong', '1998-10-15', 'Laki-Laki', 'D2', '083456789012', 'budi.santoso@email.com', 'Jl. Pandanaran No. 78, RT 04/RW 02, Kelurahan Pekunden, Semarang Tengah', '15.00 - 16.00', '', '', '', '', 'Diterima'),
-(4, '3578012208890004', 'Maya Dewi Kusuma', 'Surabaya', '1989-08-22', 'Perempuan', 'SLTP', '084567890123', 'maya.dewi@email.com', 'Jl. Tunjungan No. 156, RT 03/RW 05, Kelurahan Genteng, Surabaya', '19.00 - 20.00', 'pas_foto_maya.jpg', '', '', '', 'Diterima'),
-(6, '6309077107050800', 'Rizka Nohaliza', 'Tabalong', '2002-09-09', 'Perempuan', 'S1', '082213594215', 'Kikifebriani07@guru.smp.belajar.id', 'JL. Adhyaksa VI, NO. 20A, RT. 26', '13.00 - 14.00', '1752668517_pas_foto_68779965159ce.jpg', '1752668517_ktp_6877996517790.jpg', '1752668517_kk_687799651830d.jpg', '1752668517_ijazah_6877996518a6a.jpg', 'Belum di Verifikasi');
+INSERT INTO `pendaftar` (`id_pendaftar`, `id_gelombang`, `nik`, `nama_pendaftar`, `tempat_lahir`, `tanggal_lahir`, `jenis_kelamin`, `pendidikan_terakhir`, `no_hp`, `email`, `alamat_lengkap`, `jam_pilihan`, `pas_foto`, `ktp`, `kk`, `ijazah`, `status_pendaftaran`) VALUES
+(1, 2, '3171012101950001', 'Ahmad Rizki Pratama', 'Jakarta', '1995-01-21', 'Laki-Laki', 'SLTA', '081234567890', 'ahmad.rizki@email.com', 'Jl. Merdeka No. 123, RT 05/RW 03, Kelurahan Menteng, Jakarta Pusat', '09.00 - 10.00', '', 'ktp_ahmad.jpg', '', '', 'Terverifikasi'),
+(2, 2, '3273024205920002', 'Siti Nurhaliza', 'Banjarmasin', '1992-05-02', 'Perempuan', 'S1', '082345678901', 'siti.nurhaliza@email.com', 'Jl. Braga No. 45, RT 02/RW 01, Kelurahan Braga, Bandung', '13.00 - 14.00', '', '', '', '', 'Terverifikasi'),
+(6, 2, '6309077107050800', 'Rizka Nohaliza', 'Tabalong', '2002-09-09', 'Perempuan', 'S1', '082213594215', 'Kikifebriani07@guru.smp.belajar.id', 'JL. Adhyaksa VI, NO. 20A, RT. 26', '13.00 - 14.00', '1752668517_pas_foto_68779965159ce.jpg', '1752668517_ktp_6877996517790.jpg', '1752668517_kk_687799651830d.jpg', '1752668517_ijazah_6877996518a6a.jpg', 'Terverifikasi'),
+(7, 2, '6309077107057000', 'Riki Ramadhan', 'Tabalong', '2000-09-09', 'Laki-Laki', 'SLTA', '082213594219', 'rikaapliana0@gmail.com', 'Kupang Nunding', '08.00 - 09.00', '1752741448_pas_foto_6878b64891df8.jpg', '1752741448_ktp_6878b64892390.jpg', '1752741448_kk_6878b64892914.jpg', '1752741448_ijazah_6878b64893355.jpg', 'Terverifikasi');
 
 -- --------------------------------------------------------
 
@@ -466,7 +461,8 @@ CREATE TABLE `pengaturan_pendaftaran` (
 --
 
 INSERT INTO `pengaturan_pendaftaran` (`id_pengaturan`, `id_gelombang`, `status_pendaftaran`, `kuota_maksimal`, `tanggal_buka`, `tanggal_tutup`, `keterangan`, `dibuat_oleh`, `created_at`, `updated_at`) VALUES
-(1, 1, 'dibuka', 200, NULL, NULL, 'Pendaftaran Gelombang 1 Tahun 2025', 1, '2025-07-16 11:47:59', '2025-07-16 13:37:16');
+(1, 1, 'ditutup', 10, NULL, '2025-07-17 00:00:00', 'Pendaftaran Gelombang 1 Tahun 2025', 1, '2025-07-16 11:47:59', '2025-07-17 12:41:51'),
+(2, 2, 'dibuka', 10, NULL, NULL, '', NULL, '2025-07-17 07:38:18', '2025-07-17 12:42:04');
 
 -- --------------------------------------------------------
 
@@ -677,20 +673,17 @@ CREATE TABLE `siswa` (
   `ktp` varchar(255) DEFAULT NULL,
   `kk` varchar(255) DEFAULT NULL,
   `ijazah` varchar(255) DEFAULT NULL,
-  `status_aktif` enum('aktif','nonaktif') DEFAULT NULL,
-  `id_gelombang` int(11) NOT NULL
+  `status_aktif` enum('aktif','nonaktif') DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data untuk tabel `siswa`
 --
 
-INSERT INTO `siswa` (`id_siswa`, `id_user`, `id_kelas`, `nik`, `nama`, `tempat_lahir`, `tanggal_lahir`, `jenis_kelamin`, `pendidikan_terakhir`, `no_hp`, `email`, `alamat_lengkap`, `pas_foto`, `ktp`, `kk`, `ijazah`, `status_aktif`, `id_gelombang`) VALUES
-(8, NULL, 2, '6309077107050002', 'Norlaila Hasanah', 'Tabalong', '2002-08-07', 'Perempuan', 'S1', '082213594215', 'lailahasanah02@gmail.com', 'Ds. Kupang Nunding', '1750252872_6852bd48d28ef.jpg', '1751585653_ktp_686713755fd67.pdf', '', '', 'aktif', 0),
-(12, NULL, 2, '6309077107050009', 'Muhammad Rizki Nugraha', 'Tabalong', '2001-09-08', 'Laki-Laki', 'D2', '082213592100', 'rikzkinugraha02@gmail.com', 'Kupang Nunding', '', '', '', '', 'aktif', 0),
-(14, 8, 1, '6309077107050008', 'Almanida ', 'Banjarmasin', '2002-08-08', 'Perempuan', 'D1', '082213594202', 'almanida@gmail.com', 'Tanjung Selatan    ', '', '', '', '', 'aktif', 0),
-(51, 13, 1, '3578012208890004', 'Maya Dewi Kusuma', 'Surabaya', '1989-08-22', 'Perempuan', 'SLTP', '084567890123', 'maya.dewi@email.com', 'Jl. Tunjungan No. 156, RT 03/RW 05, Kelurahan Genteng, Surabaya', 'pas_foto_maya.jpg', '', '', '', 'aktif', 0),
-(52, 14, 3, '3374031510980003', 'Budi Santoso', 'Tabalong', '1998-10-15', 'Laki-Laki', 'D2', '083456789012', 'budi.santoso@email.com', 'Jl. Pandanaran No. 78, RT 04/RW 02, Kelurahan Pekunden, Semarang Tengah', '', '', '', '', 'aktif', 0);
+INSERT INTO `siswa` (`id_siswa`, `id_user`, `id_kelas`, `nik`, `nama`, `tempat_lahir`, `tanggal_lahir`, `jenis_kelamin`, `pendidikan_terakhir`, `no_hp`, `email`, `alamat_lengkap`, `pas_foto`, `ktp`, `kk`, `ijazah`, `status_aktif`) VALUES
+(8, NULL, 1, '6309077107050002', 'Norlaila Hasanah', 'Tabalong', '2002-08-07', 'Perempuan', 'S1', '082213594215', 'lailahasanah02@gmail.com', 'Ds. Kupang Nunding', '1750252872_6852bd48d28ef.jpg', '1751585653_ktp_686713755fd67.pdf', '', '', 'aktif'),
+(12, NULL, 1, '6309077107050009', 'Muhammad Rizki Nugraha', 'Tabalong', '2001-09-08', 'Laki-Laki', 'D2', '082213592100', 'rikzkinugraha02@gmail.com', 'Kupang Nunding', '', '', '', '', 'aktif'),
+(14, 8, 1, '6309077107050008', 'Almanida ', 'Banjarmasin', '2002-08-08', 'Perempuan', 'D1', '082213594202', 'almanida@gmail.com', 'Tanjung Selatan    ', '', '', '', '', 'aktif');
 
 -- --------------------------------------------------------
 
@@ -718,8 +711,9 @@ INSERT INTO `user` (`id_user`, `username`, `password`, `role`, `remember_token`,
 (3, 'fetyfatimah', '$2y$10$hu37l/sRprS7vIRI7IgND.owVORrYvdz5MWxVcdnR9fOA/Ai12VJe', 'instruktur', NULL, NULL, NULL, '2025-06-28 13:21:28'),
 (6, 'Rika Apliana', '$2y$10$4cWKCyb0QwpzpOSFm9uHgOQZSVugqDzB1KqJc1gE.FJQGZQeW2tfG', 'admin', NULL, '14d21782598889a82a6d61ea6859121d9f25afca70b20579f7a75b831d34608d', '2025-06-28 19:58:55', '2025-06-28 13:49:54'),
 (8, 'almanida', '$2y$10$AfmN8xoG9Y37pxzLvcHLSenVMMXfqafJ1uwNYjzEGvXNTGoCfDny2', 'siswa', NULL, NULL, NULL, '2025-06-28 18:15:11'),
-(13, 'mayadewiku_2025', '$2y$10$TFAVjNOuikGTqGIf.3514.Z0NQ6O7bP7GILJKB4D0x91k4G6nxh0u', 'siswa', NULL, NULL, NULL, '2025-07-16 07:12:28'),
-(14, 'budisantos_2025', '$2y$10$CJq1/J4/Ajx0xoKSMFBskO7gW2ryMXNOnxqUrGaK0CXVgd5e0ztTi', 'siswa', NULL, NULL, NULL, '2025-07-16 07:17:32');
+(15, 'rikiramadh_2025', '$2y$10$KoyeFtT/2OCH5rSUhpRmve5xvvWRz2nbdrGMGjr8teP86Bi5fIH4W', 'siswa', NULL, NULL, NULL, '2025-07-17 14:40:48'),
+(16, 'rikiramadh_2025_1', '$2y$10$pIrkesYpJp9utowIsNItT.N1BzuqMDVZuAk7A6GZWtZMt4wmtYjWi', 'siswa', NULL, NULL, NULL, '2025-07-17 14:54:59'),
+(17, 'rikiramadh_2025_2', '$2y$10$ePY4UVIFQcxhcaUxZZ48ruaVCh5TcSf3PSyxvEfrPwA5Uxs3U7aBW', 'siswa', NULL, NULL, NULL, '2025-07-17 15:10:14');
 
 --
 -- Indexes for dumped tables
@@ -813,7 +807,8 @@ ALTER TABLE `nilai`
 -- Indeks untuk tabel `pendaftar`
 --
 ALTER TABLE `pendaftar`
-  ADD PRIMARY KEY (`id_pendaftar`);
+  ADD PRIMARY KEY (`id_pendaftar`),
+  ADD KEY `idx_id_gelombang` (`id_gelombang`);
 
 --
 -- Indeks untuk tabel `pengaturan_pendaftaran`
@@ -846,8 +841,7 @@ ALTER TABLE `pertanyaan_evaluasi`
 ALTER TABLE `siswa`
   ADD PRIMARY KEY (`id_siswa`),
   ADD KEY `id_user` (`id_user`),
-  ADD KEY `id_kelas` (`id_kelas`),
-  ADD KEY `id_gelombang` (`id_gelombang`);
+  ADD KEY `id_kelas` (`id_kelas`);
 
 --
 -- Indeks untuk tabel `user`
@@ -911,7 +905,7 @@ ALTER TABLE `jawaban_evaluasi`
 -- AUTO_INCREMENT untuk tabel `kelas`
 --
 ALTER TABLE `kelas`
-  MODIFY `id_kelas` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id_kelas` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT untuk tabel `materi`
@@ -929,13 +923,13 @@ ALTER TABLE `nilai`
 -- AUTO_INCREMENT untuk tabel `pendaftar`
 --
 ALTER TABLE `pendaftar`
-  MODIFY `id_pendaftar` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_pendaftar` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT untuk tabel `pengaturan_pendaftaran`
 --
 ALTER TABLE `pengaturan_pendaftaran`
-  MODIFY `id_pengaturan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_pengaturan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT untuk tabel `periode_evaluasi`
@@ -953,13 +947,13 @@ ALTER TABLE `pertanyaan_evaluasi`
 -- AUTO_INCREMENT untuk tabel `siswa`
 --
 ALTER TABLE `siswa`
-  MODIFY `id_siswa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+  MODIFY `id_siswa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT untuk tabel `user`
 --
 ALTER TABLE `user`
-  MODIFY `id_user` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id_user` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
@@ -1035,6 +1029,12 @@ ALTER TABLE `nilai`
   ADD CONSTRAINT `nilai_ibfk_2` FOREIGN KEY (`id_kelas`) REFERENCES `kelas` (`id_kelas`);
 
 --
+-- Ketidakleluasaan untuk tabel `pendaftar`
+--
+ALTER TABLE `pendaftar`
+  ADD CONSTRAINT `fk_pendaftar_gelombang` FOREIGN KEY (`id_gelombang`) REFERENCES `gelombang` (`id_gelombang`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
 -- Ketidakleluasaan untuk tabel `pengaturan_pendaftaran`
 --
 ALTER TABLE `pengaturan_pendaftaran`
@@ -1053,8 +1053,7 @@ ALTER TABLE `periode_evaluasi`
 --
 ALTER TABLE `siswa`
   ADD CONSTRAINT `siswa_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`),
-  ADD CONSTRAINT `siswa_ibfk_2` FOREIGN KEY (`id_kelas`) REFERENCES `kelas` (`id_kelas`),
-  ADD CONSTRAINT `siswa_ibfk_3` FOREIGN KEY (`id_gelombang`) REFERENCES `gelombang` (`id_gelombang`);
+  ADD CONSTRAINT `siswa_ibfk_2` FOREIGN KEY (`id_kelas`) REFERENCES `kelas` (`id_kelas`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

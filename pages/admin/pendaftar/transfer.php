@@ -4,6 +4,16 @@ require_once '../../../includes/auth.php';
 requireAdminAuth();
 
 include '../../../includes/db.php';
+include '../../../config/email_config.php';
+
+// Tambahan untuk email notification
+require_once '../../../vendor/phpmailer/PHPMailer.php';
+require_once '../../../vendor/phpmailer/SMTP.php';
+require_once '../../../vendor/phpmailer/Exception.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     $_SESSION['error'] = 'Metode request tidak valid';
@@ -135,14 +145,18 @@ try {
     // Commit transaksi
     mysqli_commit($conn);
     
-    // 9. Kirim email credentials
+    // 9. Kirim email credentials (menggunakan config)
     $emailSent = sendWelcomeEmail($pendaftar, $username, $password, $kelas);
     
     // 10. Log aktivitas
     $logMessage = "Transfer berhasil: {$pendaftar['nama_pendaftar']} (NIK: {$pendaftar['nik']}) -> Kelas: {$kelas['nama_kelas']} | Username: {$username}";
     logTransferActivity($logMessage, $emailSent);
     
-    $_SESSION['success'] = "Transfer berhasil! {$pendaftar['nama_pendaftar']} telah menjadi siswa aktif di kelas {$kelas['nama_kelas']}. Email credentials telah dikirim.";
+    if ($emailSent) {
+        $_SESSION['success'] = "Transfer berhasil! {$pendaftar['nama_pendaftar']} telah menjadi siswa aktif di kelas {$kelas['nama_kelas']}. Email credentials telah dikirim ke {$pendaftar['email']}.";
+    } else {
+        $_SESSION['success'] = "Transfer berhasil! {$pendaftar['nama_pendaftar']} telah menjadi siswa aktif di kelas {$kelas['nama_kelas']}. PENTING: Email gagal dikirim. Username: {$username}, Password: {$password} - Silakan informasikan secara manual.";
+    }
     
 } catch (Exception $e) {
     // Rollback transaksi jika terjadi error
@@ -250,64 +264,360 @@ function copyPendaftarFiles($pendaftar) {
 }
 
 /**
- * Kirim email selamat datang dengan credentials
+ * Kirim email selamat datang dengan credentials (MENGGUNAKAN CONFIG)
  */
 function sendWelcomeEmail($pendaftar, $username, $password, $kelas) {
     if (empty($pendaftar['email'])) return false;
     
     try {
-        $to = $pendaftar['email'];
-        $subject = "Selamat! Anda Diterima di LKP Pradata Komputer";
+        $mail = new PHPMailer(true);
         
-        $loginUrl = "http://" . $_SERVER['HTTP_HOST'] . "/lkp_webapp/pages/auth/login.php";
+        // Server settings - MENGGUNAKAN CONFIG
+        $mail->isSMTP();
+        $mail->Host = SMTP_HOST;
+        $mail->SMTPAuth = true;
+        $mail->Username = SMTP_USERNAME;
+        $mail->Password = SMTP_PASSWORD;
+        $mail->SMTPSecure = (SMTP_ENCRYPTION == 'tls') ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
+        $mail->Port = SMTP_PORT;
         
-        $message = "
-Kepada Yth. {$pendaftar['nama_pendaftar']},
-
-🎉 SELAMAT! Anda telah resmi diterima sebagai siswa di LKP Pradata Komputer! 🎉
-
-INFORMASI AKUN LOGIN:
-👤 Username: {$username}
-🔐 Password: {$password}
-🌐 Login URL: {$loginUrl}
-
-INFORMASI KELAS:
-📚 Kelas: {$kelas['nama_kelas']}
-🌊 Gelombang: {$kelas['nama_gelombang']}
-
-LANGKAH SELANJUTNYA:
-1. Login menggunakan username dan password di atas
-2. Lihat jadwal kelas Anda di dashboard
-3. Download materi pembelajaran yang tersedia
-4. Ikuti evaluasi berkala sesuai jadwal
-
-⚠️ PENTING:
-- Untuk keamanan, silakan ganti password setelah login pertama
-- Simpan informasi login ini dengan baik
-- Jangan bagikan akun Anda kepada orang lain
-
-Selamat bergabung dan semoga sukses dalam pembelajaran!
-
-Hormat kami,
-Tim LKP Pradata Komputer
-Kabupaten Tabalong
-
-📧 Email: admin@lkp-pradata.com
-📱 Website: lkp-pradata.com
-        ";
+        // Recipients
+        $mail->setFrom(FROM_EMAIL, FROM_NAME);
+        $mail->addAddress($pendaftar['email'], $pendaftar['nama_pendaftar']);
         
-        $headers = "From: admin@lkp-pradata.com\r\n";
-        $headers .= "Reply-To: admin@lkp-pradata.com\r\n";
-        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+        // Content
+        $mail->isHTML(true);
+        $mail->Subject = 'Selamat! Anda Diterima di ' . COMPANY_NAME;
+        $mail->Body = generateWelcomeEmailHTML($pendaftar, $username, $password, $kelas);
+        $mail->AltBody = generateWelcomeEmailText($pendaftar, $username, $password, $kelas);
         
-        $sent = mail($to, $subject, $message, $headers);
+        $mail->send();
         
-        return $sent;
+        // Log sukses
+        $logEntry = date('Y-m-d H:i:s') . " - Email welcome berhasil dikirim ke: {$pendaftar['email']} (Username: {$username})\n";
+        file_put_contents('../../../uploads/email_log.txt', $logEntry, FILE_APPEND | LOCK_EX);
+        
+        return true;
         
     } catch (Exception $e) {
-        error_log("Error sending welcome email: " . $e->getMessage());
+        // Log error
+        $logEntry = date('Y-m-d H:i:s') . " - Email welcome GAGAL dikirim ke: {$pendaftar['email']} - Error: {$e->getMessage()}\n";
+        file_put_contents('../../../uploads/email_log.txt', $logEntry, FILE_APPEND | LOCK_EX);
+        
         return false;
     }
+}
+
+/**
+ * Generate HTML email template (MENGGUNAKAN CONFIG)
+ */
+function generateWelcomeEmailHTML($pendaftar, $username, $password, $kelas) {
+    $currentDate = date('d F Y');
+    $currentTime = date('H:i');
+    
+    return "
+    <!DOCTYPE html>
+    <html lang='id'>
+    <head>
+        <meta charset='UTF-8'>
+        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+        <title>Selamat Datang di " . COMPANY_NAME . "</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+                color: #333;
+                margin: 0;
+                padding: 20px;
+                background-color: #f5f5f5;
+            }
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background: white;
+                padding: 30px;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+                padding-bottom: 20px;
+                border-bottom: 2px solid #007bff;
+            }
+            .header h1 {
+                color: #007bff;
+                margin: 0;
+                font-size: 28px;
+            }
+            .header p {
+                color: #666;
+                margin: 5px 0 0 0;
+            }
+            .success-message {
+                background: #d4edda;
+                color: #155724;
+                padding: 15px;
+                border-radius: 5px;
+                margin: 20px 0;
+                text-align: center;
+                font-weight: bold;
+                border: 1px solid #c3e6cb;
+            }
+            .content {
+                margin: 20px 0;
+            }
+            .content p {
+                margin-bottom: 15px;
+            }
+            .info-table {
+                width: 100%;
+                margin: 20px 0;
+                border-collapse: collapse;
+            }
+            .info-table td {
+                padding: 10px;
+                border-bottom: 1px solid #eee;
+                vertical-align: top;
+            }
+            .info-table td:first-child {
+                font-weight: bold;
+                width: 120px;
+                color: #555;
+            }
+            .credentials {
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 5px;
+                margin: 25px 0;
+                border: 1px solid #dee2e6;
+            }
+            .credentials h3 {
+                margin: 0 0 15px 0;
+                color: #333;
+                font-size: 18px;
+            }
+            .credential-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin: 12px 0;
+                padding: 10px;
+                background: white;
+                border-radius: 4px;
+                border: 1px solid #ddd;
+            }
+            .credential-label {
+                font-weight: bold;
+                color: #555;
+            }
+            .credential-value {
+                font-family: 'Courier New', monospace;
+                font-weight: bold;
+                color: #007bff;
+                background: #e9ecef;
+                padding: 4px 8px;
+                border-radius: 3px;
+            }
+            .login-button {
+                text-align: center;
+                margin: 25px 0;
+            }
+            .login-button a {
+                display: inline-block;
+                background: #007bff;
+                color: white;
+                padding: 12px 30px;
+                text-decoration: none;
+                border-radius: 5px;
+                font-weight: bold;
+                font-size: 16px;
+            }
+            .warning {
+                background: #fff3cd;
+                color: #856404;
+                padding: 15px;
+                border-radius: 5px;
+                margin: 20px 0;
+                border: 1px solid #ffeaa7;
+            }
+            .warning strong {
+                color: #856404;
+            }
+            .steps {
+                margin: 20px 0;
+            }
+            .steps ol {
+                padding-left: 20px;
+            }
+            .steps li {
+                margin: 8px 0;
+            }
+            .contact {
+                margin: 30px 0;
+                padding: 20px;
+                background: #f8f9fa;
+                border-radius: 5px;
+            }
+            .contact h3 {
+                margin: 0 0 15px 0;
+                color: #333;
+            }
+            .contact p {
+                margin: 5px 0;
+            }
+            .footer {
+                text-align: center;
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #dee2e6;
+                color: #6c757d;
+                font-size: 13px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <div class='header'>
+                <h1>🎉 Selamat Datang!</h1>
+                <p> LKP PRADATA KOMPUTER TABALONG </p>
+            </div>
+            
+            <div class='success-message'>
+                ✅ PENDAFTARAN ANDA DITERIMA
+            </div>
+            
+            <div class='content'>
+                <p>Halo <strong>{$pendaftar['nama_pendaftar']}</strong>,</p>
+                
+                <p>Selamat! Kami dengan senang hati menginformasikan bahwa pendaftaran Anda di <strong> LKP PRADATA KOMPUTER TABALONG </strong> telah <strong>DITERIMA</strong> dan Anda resmi menjadi siswa kami.</p>
+                
+                <table class='info-table'>
+                    <tr>
+                        <td>Kelas</td>
+                        <td>{$kelas['nama_kelas']}</td>
+                    </tr>
+                    <tr>
+                        <td>Gelombang</td>
+                        <td>{$kelas['nama_gelombang']}</td>
+                    </tr>
+                    <tr>
+                        <td>Kapasitas</td>
+                        <td>{$kelas['kapasitas']} siswa</td>
+                    </tr>
+                </table>
+                
+                <p>Untuk mengakses sistem pembelajaran online, berikut adalah informasi login Anda:</p>
+                
+                <div class='credentials'>
+                    <h3>🔐 Informasi Login</h3>
+                    <div class='credential-row'>
+                        <span class='credential-label'>Username:</span>
+                        <span class='credential-value'>{$username}</span>
+                    </div>
+                    <div class='credential-row'>
+                        <span class='credential-label'>Password:</span>
+                        <span class='credential-value'>{$password}</span>
+                    </div>
+                </div>
+                
+                <div class='login-button'>
+                    <a href='" . LOGIN_URL . "'>LOGIN KE SISTEM</a>
+                </div>
+                
+                <div class='warning'>
+                    <strong>⚠️ Penting:</strong> Simpan informasi login ini dengan baik dan jangan bagikan kepada siapa pun. Segera ubah password setelah login pertama kali untuk keamanan akun Anda.
+                </div>
+                
+                <div class='steps'>
+                    <h3>📚 Langkah Selanjutnya:</h3>
+                    <ol>
+                        <li>Login ke sistem menggunakan username dan password di atas</li>
+                        <li>Lengkapi profil Anda di sistem</li>
+                        <li>Cek jadwal pembelajaran di dashboard</li>
+                        <li>Unduh materi pembelajaran yang tersedia</li>
+                        <li>Ikuti evaluasi dan ujian sesuai jadwal</li>
+                    </ol>
+                </div>
+                
+                <div class='contact'>
+                    <h3>📞 Butuh Bantuan?</h3>
+                    <p><strong>Email:</strong>awiekpradata@gmail.com</p>
+                    <p><strong>Telepon:</strong> (0526) 2023798 </p>
+                    <p><strong>WhatsApp:</strong> 0822 1359 4215</p>
+                </div>
+                
+                <p>Terima kasih telah mempercayai LKP PRADATA KOMPUTER TABALONG untuk mengembangkan kemampuan komputer Anda. Kami berkomitmen memberikan pelayanan terbaik untuk kesuksesan pembelajaran Anda.</p>
+                
+                <p>Selamat bergabung dan semoga sukses! 🚀</p>
+                
+                <p>Salam hangat,<br>
+                <strong>TIM LKP PRADATA KOMPUTER TABALONG</strong></p>
+            </div>
+            
+            <div class='footer'>
+                <p>Email ini dikirim secara otomatis pada {$currentDate} pukul {$currentTime} WIB</p>
+                <p>" . EMAIL_FOOTER_TEXT . "</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    ";
+}
+
+/**
+ * Generate text email template (MENGGUNAKAN CONFIG)
+ */
+function generateWelcomeEmailText($pendaftar, $username, $password, $kelas) {
+    $currentDate = date('d F Y');
+    $currentTime = date('H:i');
+    
+    return "
+SELAMAT DATANG DI " . COMPANY_NAME . "
+
+Kepada Yth,
+{$pendaftar['nama_pendaftar']}
+
+Selamat! Pendaftaran Anda di " . COMPANY_NAME . " telah DITERIMA.
+
+INFORMASI KELAS:
+- Kelas: {$kelas['nama_kelas']}
+- Gelombang: {$kelas['nama_gelombang']}
+- Kapasitas: {$kelas['kapasitas']} siswa
+
+INFORMASI LOGIN:
+- Username: {$username}
+- Password: {$password}
+- Login URL: " . LOGIN_URL . "
+
+PENTING:
+- Simpan informasi login ini dengan baik
+- Jangan bagikan kepada siapa pun
+- Segera ubah password setelah login pertama
+
+LANGKAH SELANJUTNYA:
+1. Login ke sistem menggunakan kredensial di atas
+2. Lengkapi profil Anda di sistem
+3. Cek jadwal pembelajaran di dashboard
+4. Unduh materi pembelajaran yang tersedia
+5. Ikuti evaluasi dan ujian sesuai jadwal
+
+KONTAK:
+- Email: " . COMPANY_EMAIL . "
+- Telepon: " . COMPANY_PHONE . "
+- WhatsApp: " . COMPANY_WHATSAPP . "
+- Alamat: " . COMPANY_ADDRESS . "
+
+Terima kasih telah mempercayai " . COMPANY_NAME . ".
+
+Salam hangat,
+Tim " . COMPANY_NAME . "
+
+---
+Email dikirim pada {$currentDate} pukul {$currentTime} WIB
+" . EMAIL_FOOTER_TEXT . "
+    ";
 }
 
 /**

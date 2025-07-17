@@ -117,10 +117,7 @@ function buildUrlWithFilters($page) {
                     <li class="breadcrumb-item">
                       <a href="../../dashboard.php">Dashboard</a>
                     </li>
-                    <li class="breadcrumb-item">
-                      <a href="../index.php">Pengaturan</a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">Kelola Gelombang</li>
+                    <li class="breadcrumb-item active" aria-current="page">Gelombang</li>
                   </ol>
                 </nav>
               </div>
@@ -158,76 +155,7 @@ function buildUrlWithFilters($page) {
           <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
 
-        <!-- Statistics Cards -->
-        <div class="row mb-4">
-          <div class="col-md-3 mb-3">
-            <div class="card stats-card stats-card-mobile">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center stats-card-content">
-                  <div class="flex-grow-1 stats-text-content">
-                    <h6 class="mb-1 stats-title">Total Gelombang</h6>
-                    <h3 class="mb-0 stats-number"><?= number_format($stats['total']) ?></h3>
-                    <small class="text-muted stats-subtitle">Keseluruhan</small>
-                  </div>
-                  <div class="stats-icon bg-primary-light stats-icon-mobile">
-                    <i class="bi bi-layers text-primary"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="col-md-3 mb-3">
-            <div class="card stats-card stats-card-mobile">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center stats-card-content">
-                  <div class="flex-grow-1 stats-text-content">
-                    <h6 class="mb-1 stats-title">Gelombang Aktif</h6>
-                    <h3 class="mb-0 stats-number"><?= number_format($stats['aktif']) ?></h3>
-                    <small class="text-muted stats-subtitle">Sedang berjalan</small>
-                  </div>
-                  <div class="stats-icon bg-success-light stats-icon-mobile">
-                    <i class="bi bi-play-circle text-success"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="col-md-3 mb-3">
-            <div class="card stats-card stats-card-mobile">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center stats-card-content">
-                  <div class="flex-grow-1 stats-text-content">
-                    <h6 class="mb-1 stats-title">Pendaftaran Terbuka</h6>
-                    <h3 class="mb-0 stats-number"><?= number_format($stats['dibuka']) ?></h3>
-                    <small class="text-muted stats-subtitle">Formulir aktif</small>
-                  </div>
-                  <div class="stats-icon bg-warning-light stats-icon-mobile">
-                    <i class="bi bi-door-open text-warning"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-3 mb-3">
-            <div class="card stats-card stats-card-mobile">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center stats-card-content">
-                  <div class="flex-grow-1 stats-text-content">
-                    <h6 class="mb-1 stats-title">Gelombang Selesai</h6>
-                    <h3 class="mb-0 stats-number"><?= number_format($stats['selesai']) ?></h3>
-                    <small class="text-muted stats-subtitle">Sudah selesai</small>
-                  </div>
-                  <div class="stats-icon bg-secondary-light stats-icon-mobile">
-                    <i class="bi bi-check-circle text-secondary"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+               </div>
 
         <!-- Main Content Card -->
         <div class="card content-card">

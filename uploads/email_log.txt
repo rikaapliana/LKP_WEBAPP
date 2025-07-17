@@ -93,3 +93,8 @@ IP: ::1
 2025-07-16 07:12:31 - Email verifikasi dikirim ke: ahmad.rizki@email.com - Status: Gagal
 2025-07-16 07:54:39 - Email penolakan dikirim ke: ahmad.rizki@email.com - Status: Gagal
 2025-07-16 08:03:55 - Email verifikasi dikirim ke: ahmad.rizki@email.com - Status: Gagal
+2025-07-17 09:44:03 - Email verifikasi dikirim ke: Kikifebriani07@guru.smp.belajar.id - Status: Gagal
+2025-07-17 10:45:48 - Email verifikasi dikirim ke: Rikifebrian07@guru.smp.belajar.id - Status: Gagal
+2025-07-17 16:40:53 - Email welcome berhasil dikirim ke: rikaapliana0@gmail.com (Username: rikiramadh_2025)
+2025-07-17 16:55:05 - Email welcome berhasil dikirim ke: rikaapliana0@gmail.com (Username: rikiramadh_2025_1)
+2025-07-17 17:10:21 - Email welcome berhasil dikirim ke: rikaapliana0@gmail.com (Username: rikiramadh_2025_2)

@@ -19,9 +19,10 @@ $countResult = mysqli_query($conn, $countQuery);
 $totalRecords = mysqli_fetch_assoc($countResult)['total'];
 $totalPages = ceil($totalRecords / $recordsPerPage);
 
-// Ambil data pendaftar dengan pagination
-$query = "SELECT p.* 
+// Ambil data pendaftar dengan pagination dan data gelombang
+$query = "SELECT p.*, g.nama_gelombang, g.gelombang_ke, g.tahun 
           FROM pendaftar p 
+          LEFT JOIN gelombang g ON p.id_gelombang = g.id_gelombang
           ORDER BY p.id_pendaftar DESC
           LIMIT $recordsPerPage OFFSET $offset";
 $result = mysqli_query($conn, $query);
@@ -42,6 +43,13 @@ $pendaftarDiterima = mysqli_fetch_assoc($resultDiterima)['total'];
 // Untuk dropdown jam pilihan
 $jamQuery = "SELECT DISTINCT jam_pilihan FROM pendaftar WHERE jam_pilihan IS NOT NULL ORDER BY jam_pilihan";
 $jamResult = mysqli_query($conn, $jamQuery);
+
+// Untuk dropdown gelombang
+$gelombangQuery = "SELECT DISTINCT g.id_gelombang, g.nama_gelombang, g.gelombang_ke, g.tahun 
+                   FROM gelombang g 
+                   INNER JOIN pendaftar p ON g.id_gelombang = p.id_gelombang 
+                   ORDER BY g.tahun DESC, g.gelombang_ke DESC";
+$gelombangResult = mysqli_query($conn, $gelombangQuery);
 
 // Untuk dropdown status
 $statusOptions = ['Belum di Verifikasi', 'Terverifikasi', 'Diterima', 'Ditolak'];
@@ -223,28 +231,6 @@ function buildUrlWithFilters($page) {
                   <i class="bi bi-pencil-square me-2"></i>Kelola Data Pendaftar
                 </h5>
               </div>
-              <div class="col-md-6 text-md-end">
-                <div class="btn-group ms-2">
-                  <button type="button" class="btn btn-secondary-formal dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-download me-1"></i>
-                    Export Data
-                  </button>
-                  <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                    <li>
-                      <a class="dropdown-item" href="export-pdf.php" target="_blank">
-                        <i class="bi bi-file-pdf text-danger me-2"></i>
-                        Export ke PDF
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="export-excel.php">
-                        <i class="bi bi-file-excel text-success me-2"></i>
-                        Export ke Excel
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -281,6 +267,17 @@ function buildUrlWithFilters($page) {
                       <li>
                         <a class="dropdown-item sort-option" href="#" data-sort="nama" data-order="desc">
                           <i class="bi bi-sort-alpha-up me-2"></i>Nama Z-A
+                        </a>
+                      </li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li>
+                        <a class="dropdown-item sort-option" href="#" data-sort="gelombang" data-order="asc">
+                          <i class="bi bi-calendar-event me-2"></i>Gelombang A-Z
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item sort-option" href="#" data-sort="gelombang" data-order="desc">
+                          <i class="bi bi-calendar-event me-2"></i>Gelombang Z-A
                         </a>
                       </li>
                       <li><hr class="dropdown-divider"></li>
@@ -339,13 +336,31 @@ function buildUrlWithFilters($page) {
                         </select>
                       </div>
                       
+                      <!-- Filter Gelombang -->
+                      <div class="mb-3">
+                        <label class="form-label small text-muted mb-1">Gelombang</label>
+                        <select class="form-select form-select-sm" id="filterGelombang">
+                          <option value="">Semua Gelombang</option>
+                          <?php 
+                          if ($gelombangResult && mysqli_num_rows($gelombangResult) > 0) {
+                            mysqli_data_seek($gelombangResult, 0);
+                            while($gelombang = mysqli_fetch_assoc($gelombangResult)): ?>
+                              <option value="<?= $gelombang['id_gelombang'] ?>">
+                                <?= htmlspecialchars($gelombang['nama_gelombang']) ?> 
+                                (<?= htmlspecialchars($gelombang['tahun']) ?>)
+                              </option>
+                            <?php endwhile;
+                          } ?>
+                        </select>
+                      </div>
+                      
                       <!-- Filter Jam Pilihan -->
                       <div class="mb-3">
                         <label class="form-label small text-muted mb-1">Jam Pilihan</label>
                         <select class="form-select form-select-sm" id="filterJam">
                           <option value="">Semua Jam</option>
                           <?php 
-                          if ($jamResult) {
+                          if ($jamResult && mysqli_num_rows($jamResult) > 0) {
                             mysqli_data_seek($jamResult, 0);
                             while($jam = mysqli_fetch_assoc($jamResult)): ?>
                               <option value="<?= htmlspecialchars($jam['jam_pilihan']) ?>">
@@ -433,6 +448,7 @@ function buildUrlWithFilters($page) {
                   <th>No</th>
                   <th>NIK</th>
                   <th>Nama</th>
+                  <th>Gelombang</th>
                   <th>Tempat Lahir</th>
                   <th>Tanggal Lahir</th>
                   <th>Jenis Kelamin</th>
@@ -469,7 +485,20 @@ function buildUrlWithFilters($page) {
                         <div class="fw-medium"><?= htmlspecialchars($pendaftar['nama_pendaftar']) ?></div>
                       </td>
 
-                        <!-- Tempat Lahir -->
+                      <!-- Gelombang -->
+                      <td class="align-middle text-nowrap">
+                        <?php if($pendaftar['nama_gelombang']): ?>
+                          <div data-gelombang-id="<?= $pendaftar['id_gelombang'] ?>">
+                            <?= htmlspecialchars($pendaftar['nama_gelombang']) ?>
+                          </div>
+                        <?php else: ?>
+                          <span class="text-muted" data-gelombang-id="">
+                            <i class="bi bi-dash-circle"></i> Tidak ada
+                          </span>
+                        <?php endif; ?>
+                      </td>
+
+                      <!-- Tempat Lahir -->
                       <td class="align-middle">
                         <small><?= htmlspecialchars($pendaftar['tempat_lahir']) ?></small>
                       </td>
@@ -488,7 +517,6 @@ function buildUrlWithFilters($page) {
                         <?php endif; ?>
                       </td>
                       
-                     
                       <!-- Pendidikan -->
                       <td class="align-middle">
                         <small><?= htmlspecialchars($pendaftar['pendidikan_terakhir'] ?? '-') ?></small>
@@ -573,6 +601,7 @@ function buildUrlWithFilters($page) {
                           </span>
                         <?php endif; ?>
                       </td>
+
                       
                       <!-- Ijazah -->
                       <td class="text-center align-middle" style="text-align: center !important;">
@@ -883,7 +912,7 @@ function buildUrlWithFilters($page) {
                   <?php endwhile; ?>
                 <?php else: ?>
                   <tr>
-                    <td colspan="16" class="text-center">
+                    <td colspan="18" class="text-center">
                       <div class="empty-state py-5">
                         <i class="bi bi-person-plus display-4 text-muted mb-3 d-block"></i>
                         <h5>Belum Ada Data Pendaftar</h5>
@@ -1055,6 +1084,14 @@ function buildUrlWithFilters($page) {
             });
             break;
             
+          case 'gelombang':
+            sortedRows = [...rows].sort((a, b) => {
+              const aGelombang = (a.cells[3]?.textContent || '').trim().toLowerCase();
+              const bGelombang = (b.cells[3]?.textContent || '').trim().toLowerCase();
+              return order === 'asc' ? aGelombang.localeCompare(bGelombang) : bGelombang.localeCompare(aGelombang);
+            });
+            break;
+            
           case 'tanggal':
             sortedRows = [...rows].sort((a, b) => {
               const parseDate = (dateStr) => {
@@ -1069,8 +1106,8 @@ function buildUrlWithFilters($page) {
                 }
               };
               
-              const aDateCell = a.cells[3]?.querySelector('small.text-muted');
-              const bDateCell = b.cells[3]?.querySelector('small.text-muted');
+              const aDateCell = a.cells[5]?.querySelector('small');
+              const bDateCell = b.cells[5]?.querySelector('small');
               const aDate = parseDate((aDateCell?.textContent || '').trim());
               const bDate = parseDate((bDateCell?.textContent || '').trim());
               return order === 'asc' ? aDate - bDate : bDate - aDate;
@@ -1087,8 +1124,8 @@ function buildUrlWithFilters($page) {
             
           case 'status':
             sortedRows = [...rows].sort((a, b) => {
-              const aStatus = (a.cells[14]?.textContent || '').trim();
-              const bStatus = (b.cells[14]?.textContent || '').trim();
+              const aStatus = (a.cells[16]?.textContent || '').trim();
+              const bStatus = (b.cells[16]?.textContent || '').trim();
               return order === 'asc' ? aStatus.localeCompare(bStatus) : bStatus.localeCompare(aStatus);
             });
             break;
@@ -1115,6 +1152,7 @@ function buildUrlWithFilters($page) {
     // Filter functionality
     const searchInput = document.getElementById('searchInput');
     const filterStatus = document.getElementById('filterStatus');
+    const filterGelombang = document.getElementById('filterGelombang');
     const filterJam = document.getElementById('filterJam');
     const filterJK = document.getElementById('filterJK');
     const filterPendidikan = document.getElementById('filterPendidikan');
@@ -1135,6 +1173,7 @@ function buildUrlWithFilters($page) {
     function applyFilters() {
       const searchTerm = (searchInput?.value || '').toLowerCase().trim();
       const statusFilter = filterStatus?.value || '';
+      const gelombangFilter = filterGelombang?.value || '';
       const jamFilter = filterJam?.value || '';
       const jkFilter = filterJK?.value || '';
       const pendidikanFilter = filterPendidikan?.value || '';
@@ -1143,6 +1182,7 @@ function buildUrlWithFilters($page) {
       activeFilters = 0;
       
       if (statusFilter) activeFilters++;
+      if (gelombangFilter) activeFilters++;
       if (jamFilter) activeFilters++;
       if (jkFilter) activeFilters++;
       if (pendidikanFilter) activeFilters++;
@@ -1153,10 +1193,14 @@ function buildUrlWithFilters($page) {
         try {
           const nama = (row.cells[2]?.textContent || '').toLowerCase();
           const nik = (row.cells[1]?.textContent || '').toLowerCase();
-          const email = (row.cells[7]?.textContent || '').toLowerCase();
-          const tempat = (row.cells[3]?.querySelector('small.fw-medium')?.textContent || '').toLowerCase();
+          const email = (row.cells[9]?.textContent || '').toLowerCase();
+          const tempat = (row.cells[4]?.textContent || '').toLowerCase();
           
-          const statusElement = row.cells[14]?.querySelector('.badge');
+          // Ambil data gelombang dari kolom ke-3 (index 3)
+          const gelombangBadge = row.cells[3]?.querySelector('.badge') || row.cells[3]?.querySelector('[data-gelombang-id]');
+          const gelombangId = gelombangBadge ? gelombangBadge.dataset.gelombangId : '';
+          
+          const statusElement = row.cells[16]?.querySelector('.badge');
           let status = '';
           if (statusElement) {
             const statusText = statusElement.textContent.trim();
@@ -1166,17 +1210,13 @@ function buildUrlWithFilters($page) {
             else if (statusText.includes('Ditolak')) status = 'Ditolak';
           }
           
-          const jamElement = row.cells[9]?.querySelector('.badge');
-          const jam = jamElement ? jamElement.textContent.replace(/.*\s/, '').trim() : '';
+          const jam = (row.cells[11]?.textContent || '').trim();
           
-          const jkElement = row.cells[4]?.querySelector('.badge');
           let jk = '';
-          if (jkElement) {
-            const jkText = jkElement.textContent.trim();
-            jk = jkText.includes('L') ? 'Laki-Laki' : 'Perempuan';
-          }
+          const jkText = (row.cells[6]?.textContent || '').trim();
+          jk = jkText.includes('Laki-Laki') ? 'Laki-Laki' : 'Perempuan';
           
-          const pendidikan = (row.cells[5]?.textContent || '').trim();
+          const pendidikan = (row.cells[7]?.textContent || '').trim();
           
           let showRow = true;
           
@@ -1189,6 +1229,7 @@ function buildUrlWithFilters($page) {
           }
           
           if (statusFilter && status !== statusFilter) showRow = false;
+          if (gelombangFilter && gelombangId !== gelombangFilter) showRow = false;
           if (jamFilter && jam !== jamFilter) showRow = false;
           if (jkFilter && jk !== jkFilter) showRow = false;
           if (pendidikanFilter && pendidikan !== pendidikanFilter) showRow = false;
@@ -1249,6 +1290,7 @@ function buildUrlWithFilters($page) {
         e.stopPropagation();
         if (searchInput) searchInput.value = '';
         if (filterStatus) filterStatus.value = '';
+        if (filterGelombang) filterGelombang.value = '';
         if (filterJam) filterJam.value = '';
         if (filterJK) filterJK.value = '';
         if (filterPendidikan) filterPendidikan.value = '';

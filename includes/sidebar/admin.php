@@ -185,7 +185,7 @@ $isLaporanActive = isGroupSubPage($activePage, $laporanPages);
 
             <ul class="nav flex-column submenu <?= $isLaporanActive ? 'show' : '' ?>">
                 <li class="nav-item">
-                    <a class="nav-link submenu-link <?= ($activePage == 'laporan-instruktur') ? 'active' : '' ?>" href="<?= $baseURL ?>instruktur/export-pdf.php">
+                    <a class="nav-link submenu-link <?= ($activePage == 'laporan-instruktur') ? 'active' : '' ?>" href="<?= $baseURL ?>instruktur/laporan_instruktur.php">
                        Laporan Instruktur
                     </a>
                 </li>
