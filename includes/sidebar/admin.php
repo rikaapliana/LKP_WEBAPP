@@ -205,7 +205,7 @@ $isLaporanActive = isGroupSubPage($activePage, $laporanPages);
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link submenu-link <?= ($activePage == 'laporan-siswa') ? 'active' : '' ?>" href="<?= $baseURL ?>siswa/export-pdf.php">
+                    <a class="nav-link submenu-link <?= ($activePage == 'laporan-siswa') ? 'active' : '' ?>" href="<?= $baseURL ?>siswa/cetak_laporan.php">
                         Laporan Siswa
                     </a>
                 </li>

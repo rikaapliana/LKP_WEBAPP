@@ -336,7 +336,7 @@ function buildUrlWithFilters($page) {
                 </h5>
               </div>
               <div class="col-md-4 text-md-end">
-                <a href="../gelombang/tambah.php" class="btn btn-primary-formal btn-sm">
+                <a href="../gelombang/tambah.php" class="btn btn-tambah-soft btn-sm">
                   <i class="bi bi-plus-circle"></i>
                   Tambah Data
                 </a>

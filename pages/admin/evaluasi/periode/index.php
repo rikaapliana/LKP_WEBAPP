@@ -356,7 +356,7 @@ function formatPeriodeWaktu($tanggal_buka, $tanggal_tutup, $status) {
                 </h5>
               </div>
               <div class="col-md-6 text-md-end">
-                <a href="tambah.php" class="btn btn-primary-formal">
+                <a href="tambah.php" class="btn btn-tambah-soft">
                   <i class="bi bi-plus-circle"></i>
                   Buat Periode Baru
                 </a>
@@ -625,13 +625,13 @@ function formatPeriodeWaktu($tanggal_buka, $tanggal_tutup, $status) {
                           <a href="index.php" class="btn btn-outline-primary me-2">
                             <i class="bi bi-arrow-clockwise me-2"></i>Reset Filter
                           </a>
-                          <a href="tambah.php" class="btn btn-primary">
+                          <a href="tambah.php" class="btn-tambah-soft">
                             <i class="bi bi-plus-circle me-2"></i>Buat Periode Baru
                           </a>
                         <?php else: ?>
                           <h5>Belum Ada Periode Evaluasi</h5>
                           <p class="mb-3 text-muted">Mulai buat periode evaluasi untuk mengumpulkan feedback siswa</p>
-                          <a href="tambah.php" class="btn btn-primary">
+                          <a href="tambah.php" class="btn btn-tambah-soft">
                             <i class="bi bi-plus-circle me-2"></i>Buat Periode Pertama
                           </a>
                         <?php endif; ?>

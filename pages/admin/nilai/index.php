@@ -212,7 +212,7 @@ $statusOptions = ['lulus', 'tidak lulus', 'belum_lengkap'];
                 </h5>
               </div>
               <div class="col-md-6 text-md-end">
-                <a href="tambah.php" class="btn btn-primary-formal">
+                <a href="tambah.php" class="btn btn-tambah-soft">
                   <i class="bi bi-plus-circle"></i>
                   Tambah Data
                 </a>
@@ -664,7 +664,7 @@ $statusOptions = ['lulus', 'tidak lulus', 'belum_lengkap'];
                         <i class="bi bi-clipboard-data display-4 text-muted mb-3 d-block"></i>
                         <h5>Belum Ada Data Nilai</h5>
                         <p class="mb-3 text-muted">Mulai tambahkan nilai siswa untuk evaluasi pembelajaran</p>
-                        <a href="tambah.php" class="btn btn-primary">
+                        <a href="tambah.php" class="btn btn-tambah-soft">
                           <i class="bi bi-plus-circle me-2"></i>Tambah Nilai Pertama
                         </a>
                       </div>

@@ -430,7 +430,7 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
           </div>
           
           <div class="col-6 col-lg-3">
-            <a href="evaluasi/" class="text-decoration-none">
+            <a href="pendaftar/grafik.php" class="text-decoration-none">
               <div class="card stats-card stats-card-clickable">
                 <div class="card-body text-center p-3">
                   <div class="stats-icon bg-secondary text-white mb-2">

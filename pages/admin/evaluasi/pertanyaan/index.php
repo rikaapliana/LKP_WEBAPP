@@ -320,7 +320,7 @@ function getPilihanJawaban($pilihan_jawaban) {
                             <a href="../periode/index.php" class="btn btn-kembali">
                                 Kembali
                             </a>
-                            <a href="tambah.php" class="btn btn-primary-formal ms-2">
+                            <a href="tambah.php" class="btn btn-tambah-soft ms-2">
                                 <i class="bi bi-plus-circle"></i>
                                 Tambah Pertanyaan
                             </a>
@@ -633,13 +633,13 @@ function getPilihanJawaban($pilihan_jawaban) {
                           <a href="index.php" class="btn btn-outline-primary me-2">
                             <i class="bi bi-arrow-clockwise me-2"></i>Reset Filter
                           </a>
-                          <a href="tambah.php" class="btn btn-primary">
+                          <a href="tambah.php" class="btn btn-tambah-soft">
                             <i class="bi bi-plus-circle me-2"></i>Tambah Pertanyaan
                           </a>
                         <?php else: ?>
                           <h5>Belum Ada Bank Soal</h5>
                           <p class="mb-3 text-muted">Mulai tambahkan pertanyaan untuk evaluasi siswa</p>
-                          <a href="tambah.php" class="btn btn-primary">
+                          <a href="tambah.php" class="btn btn-tambah-soft">
                             <i class="bi bi-plus-circle me-2"></i>Tambah Pertanyaan Pertama
                           </a>
                         <?php endif; ?>

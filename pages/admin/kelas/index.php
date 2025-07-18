@@ -154,7 +154,7 @@ $statusOptions = ['aktif', 'selesai', 'dibuka'];
                 </h5>
               </div>
               <div class="col-md-6 text-md-end">
-                <a href="tambah.php" class="btn btn-primary-formal">
+                <a href="tambah.php" class="btn btn-tambah-soft">
                   <i class="bi bi-plus-circle"></i>
                   Tambah Data
                 </a>
@@ -518,7 +518,7 @@ $statusOptions = ['aktif', 'selesai', 'dibuka'];
                         <i class="bi bi-building display-4 text-muted mb-3 d-block"></i>
                         <h5>Belum Ada Data Kelas</h5>
                         <p class="mb-3 text-muted">Mulai tambahkan data kelas untuk mengatur program pelatihan</p>
-                        <a href="tambah.php" class="btn btn-primary">
+                        <a href="tambah.php" class="btn btn-tambah-soft">
                           <i class="bi bi-plus-circle me-2"></i>Tambah Kelas Pertama
                         </a>
                       </div>

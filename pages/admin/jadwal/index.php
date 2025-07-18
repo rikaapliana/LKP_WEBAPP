@@ -288,7 +288,7 @@ function buildUrlWithFilters($page = null) {
               </div>
               <div class="col-md-6 text-md-end">
                 <div class="btn-group me-2">
-                  <button type="button" class="btn btn-primary-formal dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  <button type="button" class="btn btn-tambah-soft dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-plus-circle me-1"></i>
                     Tambah Data
                   </button>
@@ -676,7 +676,7 @@ function buildUrlWithFilters($page = null) {
                               <i class="bi bi-arrow-clockwise me-2"></i>Reset Filter
                             </a>
                           <?php endif; ?>
-                          <a href="tambah.php" class="btn btn-primary">
+                          <a href="tambah.php" class="btn btn-tambah-soft">
                             <i class="bi bi-calendar-plus me-2"></i>Tambah Jadwal Manual
                           </a>
                           <a href="generate.php" class="btn btn-success">

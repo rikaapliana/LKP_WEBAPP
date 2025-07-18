@@ -148,7 +148,7 @@ $gelombangResult = mysqli_query($conn, $gelombangQuery);
                 </h5>
               </div>
               <div class="col-md-6 text-md-end">
-                <a href="tambah.php" class="btn btn-primary-formal">
+                <a href="tambah.php" class="btn btn-tambah-soft">
                   <i class="bi bi-plus-circle"></i>
                   Tambah Data
                 </a>
@@ -532,7 +532,7 @@ $gelombangResult = mysqli_query($conn, $gelombangQuery);
                         <i class="bi bi-journal-bookmark display-4 text-muted mb-3 d-block"></i>
                         <h5>Belum Ada Data Materi</h5>
                         <p class="mb-3 text-muted">Mulai tambahkan materi pembelajaran untuk kelas</p>
-                        <a href="tambah.php" class="btn btn-primary">
+                        <a href="tambah.php" class="btn btn-tambah-soft">
                           <i class="bi bi-plus-circle me-2"></i>Tambah Materi Pertama
                         </a>
                       </div>

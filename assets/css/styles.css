@@ -6991,11 +6991,11 @@ textarea.form-control-lg {
   transform: translateY(-1px);
 }
 
-/* Formal Soft Buttons - Warna lembut dan nyaman */
+/* Formal Normal Buttons - Warna tegas dan normal */
 .btn-edit-soft {
-  background-color: #f0f9ff;
-  color: #0369a1;
-  border: 1px solid #bae6fd;
+  background-color: #3b82f6;
+  color: #ffffff;
+  border: 1px solid #3b82f6;
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 14px;
@@ -7004,15 +7004,15 @@ textarea.form-control-lg {
 }
 
 .btn-edit-soft:hover {
-  background-color: #e0f2fe;
-  border-color: #7dd3fc;
-  color: #0c4a6e;
+  background-color: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
 }
 
 .btn-hapus-soft {
-  background-color: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
+  background-color: #ef4444;
+  color: #ffffff;
+  border: 1px solid #ef4444;
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 14px;
@@ -7021,15 +7021,15 @@ textarea.form-control-lg {
 }
 
 .btn-hapus-soft:hover {
-  background-color: #fee2e2;
-  border-color: #fca5a5;
-  color: #991b1b;
+  background-color: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
 }
 
 .btn-detail-soft {
-  background-color: #f8fafc;
-  color: #475569;
-  border: 1px solid #e2e8f0;
+  background-color: #6b7280;
+  color: #ffffff;
+  border: 1px solid #6b7280;
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 14px;
@@ -7038,15 +7038,15 @@ textarea.form-control-lg {
 }
 
 .btn-detail-soft:hover {
-  background-color: #f1f5f9;
-  border-color: #cbd5e1;
-  color: #334155;
+  background-color: #4b5563;
+  border-color: #4b5563;
+  color: #ffffff;
 }
 
 .btn-tambah-soft {
-  background-color: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
+  background-color: #10b981;
+  color: #ffffff;
+  border: 1px solid #10b981;
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 14px;
@@ -7055,15 +7055,15 @@ textarea.form-control-lg {
 }
 
 .btn-tambah-soft:hover {
-  background-color: #dcfce7;
-  border-color: #86efac;
-  color: #14532d;
+  background-color: #059669;
+  border-color: #059669;
+  color: #ffffff;
 }
 
 .btn-warning-soft {
-  background-color: #fffbeb;
-  color: #d97706;
-  border: 1px solid #fed7aa;
+  background-color: #f59e0b;
+  color: #ffffff;
+  border: 1px solid #f59e0b;
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 14px;
@@ -7072,16 +7072,16 @@ textarea.form-control-lg {
 }
 
 .btn-warning-soft:hover {
-  background-color: #fef3c7;
-  border-color: #fbbf24;
-  color: #92400e;
+  background-color: #d97706;
+  border-color: #d97706;
+  color: #ffffff;
 }
 
 /* Button Aksi Khusus untuk Lembaga */
 .btn-cetak-soft {
-  background-color: #f5f3ff;
-  color: #7c3aed;
-  border: 1px solid #c4b5fd;
+  background-color: #06b6d4;
+  color: #ffffff;
+  border: 1px solid #06b6d4;
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 14px;
@@ -7090,15 +7090,15 @@ textarea.form-control-lg {
 }
 
 .btn-cetak-soft:hover {
-  background-color: #ede9fe;
-  border-color: #a78bfa;
-  color: #5b21b6;
+  background-color: #0891b2;
+  border-color: #0891b2;
+  color: #ffffff;
 }
 
 .btn-download-soft {
-  background-color: #ecfdf5;
-  color: #059669;
-  border: 1px solid #a7f3d0;
+  background-color: #10b981;
+  color: #ffffff;
+  border: 1px solid #10b981;
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 14px;
@@ -7107,15 +7107,15 @@ textarea.form-control-lg {
 }
 
 .btn-download-soft:hover {
-  background-color: #d1fae5;
-  border-color: #6ee7b7;
-  color: #047857;
+  background-color: #059669;
+  border-color: #059669;
+  color: #ffffff;
 }
 
 .btn-upload-soft {
-  background-color: #fff7ed;
-  color: #ea580c;
-  border: 1px solid #fed7aa;
+  background-color: #f97316;
+  color: #ffffff;
+  border: 1px solid #f97316;
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 14px;
@@ -7124,15 +7124,15 @@ textarea.form-control-lg {
 }
 
 .btn-upload-soft:hover {
-  background-color: #ffedd5;
-  border-color: #fdba74;
-  color: #c2410c;
+  background-color: #ea580c;
+  border-color: #ea580c;
+  color: #ffffff;
 }
 
 .btn-verifikasi-soft {
-  background-color: #f0f9ff;
-  color: #0284c7;
-  border: 1px solid #bae6fd;
+  background-color: #0ea5e9;
+  color: #ffffff;
+  border: 1px solid #0ea5e9;
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 14px;
@@ -7141,15 +7141,15 @@ textarea.form-control-lg {
 }
 
 .btn-verifikasi-soft:hover {
-  background-color: #e0f2fe;
-  border-color: #7dd3fc;
-  color: #0369a1;
+  background-color: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
 }
 
 .btn-tolak-soft {
-  background-color: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
+  background-color: #ef4444;
+  color: #ffffff;
+  border: 1px solid #ef4444;
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 14px;
@@ -7158,15 +7158,15 @@ textarea.form-control-lg {
 }
 
 .btn-tolak-soft:hover {
-  background-color: #fee2e2;
-  border-color: #fca5a5;
-  color: #991b1b;
+  background-color: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
 }
 
 .btn-aktifkan-soft {
-  background-color: #f0fdf4;
-  color: #16a34a;
-  border: 1px solid #bbf7d0;
+  background-color: #22c55e;
+  color: #ffffff;
+  border: 1px solid #22c55e;
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 14px;
@@ -7175,15 +7175,15 @@ textarea.form-control-lg {
 }
 
 .btn-aktifkan-soft:hover {
-  background-color: #dcfce7;
-  border-color: #86efac;
-  color: #15803d;
+  background-color: #16a34a;
+  border-color: #16a34a;
+  color: #ffffff;
 }
 
 .btn-nonaktif-soft {
-  background-color: #f9fafb;
-  color: #6b7280;
-  border: 1px solid #d1d5db;
+  background-color: #9ca3af;
+  color: #ffffff;
+  border: 1px solid #9ca3af;
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 14px;
@@ -7192,15 +7192,15 @@ textarea.form-control-lg {
 }
 
 .btn-nonaktif-soft:hover {
-  background-color: #f3f4f6;
-  border-color: #9ca3af;
-  color: #4b5563;
+  background-color: #6b7280;
+  border-color: #6b7280;
+  color: #ffffff;
 }
 
 .btn-bayar-soft {
-  background-color: #fefce8;
-  color: #ca8a04;
-  border: 1px solid #fde047;
+  background-color: #eab308;
+  color: #ffffff;
+  border: 1px solid #eab308;
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 14px;
@@ -7209,15 +7209,15 @@ textarea.form-control-lg {
 }
 
 .btn-bayar-soft:hover {
-  background-color: #fef3c7;
-  border-color: #facc15;
-  color: #a16207;
+  background-color: #ca8a04;
+  border-color: #ca8a04;
+  color: #ffffff;
 }
 
 .btn-kirim-soft {
-  background-color: #eff6ff;
-  color: #2563eb;
-  border: 1px solid #bfdbfe;
+  background-color: #3b82f6;
+  color: #ffffff;
+  border: 1px solid #3b82f6;
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 14px;
@@ -7226,9 +7226,9 @@ textarea.form-control-lg {
 }
 
 .btn-kirim-soft:hover {
-  background-color: #dbeafe;
-  border-color: #93c5fd;
-  color: #1d4ed8;
+  background-color: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
 }
 
 /* Button Group untuk form actions */

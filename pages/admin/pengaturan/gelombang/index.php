@@ -167,9 +167,9 @@ function buildUrlWithFilters($page) {
                 </h5>
               </div>
               <div class="col-md-6 text-md-end">
-                <a href="tambah.php" class="btn btn-primary-formal">
+                <a href="tambah.php" class="btn btn-tambah-soft">
                   <i class="bi bi-plus-circle"></i>
-                  Tambah Gelombang
+                  Tambah Data
                 </a>
               </div>
             </div>
@@ -396,7 +396,7 @@ function buildUrlWithFilters($page) {
                         <i class="bi bi-layers display-4 text-muted mb-3 d-block"></i>
                         <h5>Belum Ada Gelombang</h5>
                         <p class="mb-3 text-muted">Mulai dengan membuat gelombang pelatihan pertama</p>
-                        <a href="tambah.php" class="btn btn-primary">
+                        <a href="tambah.php" class="btn btn-tambah-soft">
                           <i class="bi bi-plus-circle me-2"></i>Buat Gelombang Pertama
                         </a>
                       </div>
