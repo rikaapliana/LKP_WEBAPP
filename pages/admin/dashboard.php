@@ -59,9 +59,8 @@ $gelombangDibuka = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM ge
 // 7. Status formulir pendaftaran
 $formulirAktif = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM pengaturan_pendaftaran WHERE status_pendaftaran = 'dibuka'"))[0];
 
-// 8. Evaluasi yang sedang berlangsung
-$evaluasiAktif = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM periode_evaluasi WHERE status = 'aktif'"))[0];
-
+// 8. Grafik Pendaftar (menggantikan evaluasi aktif)
+$pendaftarGelombangAktif = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM pendaftar p JOIN gelombang g ON p.id_gelombang = g.id_gelombang WHERE g.status IN ('aktif', 'dibuka')"))[0];
 // Query untuk tabel
 $queryKelas = "SELECT k.nama_kelas, k.kapasitas, i.nama AS instruktur, g.nama_gelombang, g.status as status_gelombang,
                COUNT(s.id_siswa) as jumlah_siswa
@@ -288,7 +287,7 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
                 
                 <!-- Welcome Text -->
                 <div>
-                  <h2 class="mb-1 font-roboto">Selamat Datang, <?= htmlspecialchars($AdminData['nama']) ?>!</h2>
+                  <h2 class="mb-1 font-roboto">Selamat Datang, <?= htmlspecialchars($AdminData['nama']) ?></h2>
                   <p class="mb-0 opacity-90">
                     Anda sedang login sebagai <strong>Administrator</strong><br>
                     <strong>LKP Pradata Komputer Kabupaten Tabalong</strong>
@@ -311,7 +310,7 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
               </div>
             </div>
             <div class="col-md-4 text-end ">
-              <i class="bi bi-speedometer2 fs-1 opacity-75"></i>
+              <i class="bi bi-person-workspace fs-1 opacity-75"></i>
             </div>
           </div>
         </div>
@@ -428,24 +427,24 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
               </div>
             </a>
           </div>
-          
-          <div class="col-6 col-lg-3">
-            <a href="pendaftar/grafik.php" class="text-decoration-none">
-              <div class="card stats-card stats-card-clickable">
-                <div class="card-body text-center p-3">
-                  <div class="stats-icon bg-secondary text-white mb-2">
-                    <i class="bi bi-list-check"></i>
-                  </div>
-                  <h4 class="fw-bold mb-1"><?= $evaluasiAktif ?></h4>
-                  <p class="text-muted mb-0 small">Evaluasi Aktif</p>
-                  <small class="text-<?= $evaluasiAktif > 0 ? 'primary' : 'muted' ?>">
-                    <i class="bi bi-clipboard-check"></i> 
-                    <?= $evaluasiAktif > 0 ? 'Sedang berlangsung' : 'Tidak ada evaluasi' ?>
-                  </small>
+
+        <div class="col-6 col-lg-3">
+          <a href="pendaftar/grafik.php" class="text-decoration-none">
+            <div class="card stats-card stats-card-clickable">
+              <div class="card-body text-center p-3">
+                <div class="stats-icon bg-secondary text-white mb-2">
+                  <i class="bi bi-bar-chart-line-fill"></i>
                 </div>
+                <h4 class="fw-bold mb-1"><?= number_format($pendaftarGelombangAktif) ?></h4>
+                <p class="text-muted mb-0 small">Grafik Pendaftar</p>
+                <small class="text-info">
+                  <i class="bi bi-people-fill"></i> 
+                  Pendaftar gelombang aktif
+                </small>
               </div>
-            </a>
-          </div>
+            </div>
+          </a>
+        </div>
         </div>
         
         <!-- Content Cards Row -->

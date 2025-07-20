@@ -185,22 +185,17 @@ $isLaporanActive = isGroupSubPage($activePage, $laporanPages);
 
             <ul class="nav flex-column submenu <?= $isLaporanActive ? 'show' : '' ?>">
                 <li class="nav-item">
-                    <a class="nav-link submenu-link <?= ($activePage == 'laporan-instruktur') ? 'active' : '' ?>" href="<?= $baseURL ?>instruktur/laporan_instruktur.php">
+                    <a class="nav-link submenu-link <?= ($activePage == 'laporan-instruktur') ? 'active' : '' ?>" href="<?= $baseURL ?>instruktur/cetak_laporan.php">
                        Laporan Instruktur
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link submenu-link <?= ($activePage == 'laporan-kelas') ? 'active' : '' ?>" href="<?= $baseURL ?>kelas/export-pdf.php">
+                    <a class="nav-link submenu-link <?= ($activePage == 'laporan-kelas') ? 'active' : '' ?>" href="<?= $baseURL ?>kelas/cetak_laporan.php">
                         Laporan Kelas
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link submenu-link <?= ($activePage == 'laporan-materi') ? 'active' : '' ?>" href="<?= $baseURL ?>materi/export-pdf.php">
-                       Laporan Materi
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link submenu-link <?= ($activePage == 'laporan-pendaftar') ? 'active' : '' ?>" href="<?= $baseURL ?>pendaftar/export-pdf.php">
+                    <a class="nav-link submenu-link <?= ($activePage == 'laporan-pendaftar') ? 'active' : '' ?>" href="<?= $baseURL ?>pendaftar/cetak_laporan.php">
                         Laporan Pendaftar
                     </a>
                 </li>
@@ -210,17 +205,17 @@ $isLaporanActive = isGroupSubPage($activePage, $laporanPages);
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link submenu-link <?= ($activePage == 'laporan-jadwal') ? 'active' : '' ?>" href="<?= $baseURL ?>jadwal/export-pdf.php">
+                    <a class="nav-link submenu-link <?= ($activePage == 'laporan-jadwal') ? 'active' : '' ?>" href="<?= $baseURL ?>jadwal/cetak_laporan.php">
                         Laporan Jadwal
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link submenu-link <?= ($activePage == 'laporan-nilai') ? 'active' : '' ?>" href="<?= $baseURL ?>nilai/export-pdf.php">
+                    <a class="nav-link submenu-link <?= ($activePage == 'laporan-nilai') ? 'active' : '' ?>" href="<?= $baseURL ?>nilai/cetak_laporan.php">
                         Laporan Nilai
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link submenu-link <?= ($activePage == 'laporan-hasil-evaluasi') ? 'active' : '' ?>" href="<?= $baseURL ?>hasil-evaluasi/export-excel.php">
+                    <a class="nav-link submenu-link <?= ($activePage == 'laporan-hasil-evaluasi') ? 'active' : '' ?>" href="<?= $baseURL ?>analisis-evaluasi/index.php">
                         Laporan Hasil Evaluasi
                     </a>
                 </li>

@@ -10,7 +10,7 @@ $baseURL = '../';
 // Pagination settings
 $recordsPerPage = 20;
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$currentPage = max(1, $currentPage); // Ensure minimum page is 1
+$currentPage = max(1, $currentPage);
 $offset = ($currentPage - 1) * $recordsPerPage;
 
 // Get filter parameters from URL
@@ -99,7 +99,6 @@ if (!empty($whereConditions)) {
     $whereClause = 'WHERE ' . implode(' AND ', $whereConditions);
 }
 
-// Default order: Tanggal terbaru dulu, waktu mulai ascending untuk hari yang sama
 $orderClause = "ORDER BY j.tanggal DESC, j.waktu_mulai ASC";
 
 // Count total records with filters
@@ -133,7 +132,6 @@ $query = "SELECT j.*,
           k.nama_kelas, 
           g.nama_gelombang,
           i.nama as nama_instruktur,
-          DAYNAME(j.tanggal) as hari_nama,
           CASE DAYNAME(j.tanggal)
             WHEN 'Monday' THEN 'Senin'
             WHEN 'Tuesday' THEN 'Selasa' 
@@ -219,14 +217,11 @@ function buildUrlWithFilters($page = null) {
       <nav class="top-navbar">
         <div class="container-fluid px-3 px-md-4">
           <div class="d-flex align-items-center">
-            <!-- Left: Hamburger + Page Info -->
             <div class="d-flex align-items-center flex-grow-1">
-              <!-- Sidebar Toggle Button -->
               <button class="btn btn-link text-dark p-2 me-3 sidebar-toggle" type="button" id="sidebarToggle">
                 <i class="bi bi-list fs-4"></i>
               </button>
               
-              <!-- Page Title & Breadcrumb -->
               <div class="page-info">
                 <h2 class="page-title mb-1">DATA JADWAL</h2>
                 <nav aria-label="breadcrumb">
@@ -243,7 +238,6 @@ function buildUrlWithFilters($page = null) {
               </div>
             </div>
             
-            <!-- Right: Optional Info -->
             <div class="d-flex align-items-center">
               <div class="navbar-page-info d-none d-md-block">
                 <small class="text-muted">
@@ -287,29 +281,38 @@ function buildUrlWithFilters($page = null) {
                 </h5>
               </div>
               <div class="col-md-6 text-md-end">
-                <div class="btn-group me-2">
-                  <button type="button" class="btn btn-tambah-soft dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-plus-circle me-1"></i>
-                    Tambah Data
+                <div class="d-flex button-group-header justify-content-md-end gap-2">
+                  <div class="btn-group">
+                    <button type="button" class="btn btn-tambah-soft dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                      <i class="bi bi-plus-circle me-1"></i>
+                      Tambah Data
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                      <li>
+                        <a class="dropdown-item" href="tambah.php">
+                          <i class="bi bi-calendar-plus text-primary me-2"></i>
+                          Tambah Manual
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item" href="generate.php">
+                          <i class="bi bi-calendar-range text-success me-2"></i>
+                          Generate Otomatis
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                  <button type="button" 
+                          class="btn btn-cetak-soft" 
+                          onclick="cetakLaporanPDF()" 
+                          id="btnCetakPDF"
+                          title="Cetak laporan data jadwal">
+                    <i class="bi bi-printer me-2"></i>Cetak Data
                   </button>
-                  <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                    <li>
-                      <a class="dropdown-item" href="tambah.php">
-                        <i class="bi bi-calendar-plus text-primary me-2"></i>
-                        Tambah Manual
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="generate.php">
-                        <i class="bi bi-calendar-range text-success me-2"></i>
-                        Generate Otomatis
-                      </a>
-                    </li>
-                  </ul>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
           <!-- Search/Filter Controls -->
           <div class="p-3 border-bottom">
@@ -462,7 +465,7 @@ function buildUrlWithFilters($page = null) {
                   </div>
                 </div>
               </div>
-            </div>
+            </form>
           </div>
           
           <!-- Table -->
@@ -483,7 +486,7 @@ function buildUrlWithFilters($page = null) {
               <tbody>
                 <?php if ($result && mysqli_num_rows($result) > 0): ?>
                   <?php 
-                  $no = ($currentPage - 1) * $recordsPerPage + 1; // Start numbering from correct position
+                  $no = ($currentPage - 1) * $recordsPerPage + 1;
                   while ($jadwal = mysqli_fetch_assoc($result)): 
                   ?>
                     <?php
@@ -494,24 +497,20 @@ function buildUrlWithFilters($page = null) {
                     $isUpcoming = $tanggalJadwal > $today;
                     ?>
                     <tr>
-                      <!-- No -->
-                      <td class="text-center align-middle" style="text-align: center !important;"><?= $no++ ?></td>
+                      <td class="text-center align-middle"><?= $no++ ?></td>
                       
-                      <!-- Tanggal -->
                       <td class="align-middle">
                         <span class="<?= $isToday ? 'text-primary' : ($isPast ? 'text-muted' : '') ?>">
                           <?= date('d/m/Y', strtotime($jadwal['tanggal'])) ?>
                         </span>
                       </td>
                       
-                      <!-- Hari -->
                       <td class="align-middle">
                         <span class="<?= $isToday ? 'text-primary' : '' ?>">
                           <?= htmlspecialchars($jadwal['hari_indonesia']) ?>
                         </span>
                       </td>
                       
-                      <!-- Waktu -->
                       <td class="align-middle text-start">
                         <span>
                           <?= date('H:i', strtotime($jadwal['waktu_mulai'])) ?> - 
@@ -519,7 +518,6 @@ function buildUrlWithFilters($page = null) {
                         </span>
                       </td>
                       
-                      <!-- Kelas -->
                       <td class="align-middle">
                         <div class="fw-medium"><?= htmlspecialchars($jadwal['nama_kelas']) ?></div>
                         <?php if($jadwal['nama_gelombang']): ?>
@@ -527,12 +525,10 @@ function buildUrlWithFilters($page = null) {
                         <?php endif; ?>
                       </td>
                       
-                      <!-- Instruktur -->
                       <td class="align-middle">
                         <span><?= htmlspecialchars($jadwal['nama_instruktur'] ?? 'Belum ditentukan') ?></span>
                       </td>
                       
-                      <!-- Status -->
                       <td class="align-middle">
                         <?php if($isToday): ?>
                           <span class="badge bg-primary">
@@ -549,7 +545,6 @@ function buildUrlWithFilters($page = null) {
                         <?php endif; ?>
                       </td>
                       
-                      <!-- Aksi -->
                       <td class="text-center align-middle">
                         <div class="btn-group btn-group-sm" role="group">
                           <a href="detail.php?id=<?= $jadwal['id_jadwal'] ?>" 
@@ -579,8 +574,6 @@ function buildUrlWithFilters($page = null) {
                     <div class="modal fade" id="modalHapus<?= $jadwal['id_jadwal'] ?>" tabindex="-1" aria-labelledby="modalHapusLabel<?= $jadwal['id_jadwal'] ?>" aria-hidden="true">
                       <div class="modal-dialog modal-dialog-centered modal-sm">
                         <div class="modal-content border-0 shadow-lg">
-                          
-                          <!-- Modal Header -->
                           <div class="modal-header bg-danger text-white border-0">
                             <div class="w-100">
                               <div class="warning-icon">
@@ -593,7 +586,6 @@ function buildUrlWithFilters($page = null) {
                             </div>
                           </div>
                           
-                          <!-- Modal Body -->
                           <div class="modal-body">
                             <p>Anda yakin ingin menghapus jadwal:</p>
                             
@@ -625,7 +617,6 @@ function buildUrlWithFilters($page = null) {
                             </div>
                           </div>
                           
-                          <!-- Modal Footer -->
                           <div class="modal-footer border-0">
                             <div class="row g-2 w-100">
                               <div class="col-6">
@@ -646,7 +637,6 @@ function buildUrlWithFilters($page = null) {
                               </div>
                             </div>
                           </div>
-                          
                         </div>
                       </div>
                     </div>
@@ -697,7 +687,6 @@ function buildUrlWithFilters($page = null) {
             <div class="d-flex justify-content-end align-items-center">
               <nav aria-label="Page navigation">
                 <ul class="pagination pagination-sm mb-0">
-                  <!-- Previous Button -->
                   <li class="page-item <?= ($currentPage <= 1) ? 'disabled' : '' ?>">
                     <a class="page-link" href="<?= ($currentPage > 1) ? buildUrlWithFilters($currentPage - 1) : '#' ?>">
                       <i class="bi bi-chevron-left"></i>
@@ -705,11 +694,9 @@ function buildUrlWithFilters($page = null) {
                   </li>
                   
                   <?php
-                  // Calculate pagination range
                   $startPage = max(1, $currentPage - 2);
                   $endPage = min($totalPages, $currentPage + 2);
                   
-                  // Adjust range if we're near the beginning or end
                   if ($endPage - $startPage < 4) {
                     if ($startPage == 1) {
                       $endPage = min($totalPages, $startPage + 4);
@@ -719,7 +706,6 @@ function buildUrlWithFilters($page = null) {
                   }
                   ?>
                   
-                  <!-- First page if not in range -->
                   <?php if ($startPage > 1): ?>
                     <li class="page-item">
                       <a class="page-link" href="<?= buildUrlWithFilters(1) ?>">1</a>
@@ -731,14 +717,12 @@ function buildUrlWithFilters($page = null) {
                     <?php endif; ?>
                   <?php endif; ?>
                   
-                  <!-- Page numbers -->
                   <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
                     <li class="page-item <?= ($i == $currentPage) ? 'active' : '' ?>">
                       <a class="page-link" href="<?= buildUrlWithFilters($i) ?>"><?= $i ?></a>
                     </li>
                   <?php endfor; ?>
                   
-                  <!-- Last page if not in range -->
                   <?php if ($endPage < $totalPages): ?>
                     <?php if ($endPage < $totalPages - 1): ?>
                       <li class="page-item disabled">
@@ -750,7 +734,6 @@ function buildUrlWithFilters($page = null) {
                     </li>
                   <?php endif; ?>
                   
-                  <!-- Next Button -->
                   <li class="page-item <?= ($currentPage >= $totalPages) ? 'disabled' : '' ?>">
                     <a class="page-link" href="<?= ($currentPage < $totalPages) ? buildUrlWithFilters($currentPage + 1) : '#' ?>">
                       <i class="bi bi-chevron-right"></i>
@@ -761,8 +744,11 @@ function buildUrlWithFilters($page = null) {
             </div>
           </div>
           <?php endif; ?>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <!-- Scripts - Offline -->
   <script src="../../../assets/js/bootstrap.bundle.min.js"></script>
   <script src="../../../assets/js/scripts.js"></script>
 
@@ -772,27 +758,24 @@ function buildUrlWithFilters($page = null) {
     const searchInput = document.getElementById('searchInput');
     const filterTanggal = document.getElementById('filterTanggal');
     
-    // Auto submit on search input with debounce
     let searchTimeout;
     if (searchInput) {
       searchInput.addEventListener('input', function() {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
-          document.getElementById('pageInput').value = 1; // Reset to page 1
+          document.getElementById('pageInput').value = 1;
           form.submit();
         }, 500);
       });
     }
     
-    // Auto submit on date filter change
     if (filterTanggal) {
       filterTanggal.addEventListener('change', function() {
-        document.getElementById('pageInput').value = 1; // Reset to page 1
+        document.getElementById('pageInput').value = 1;
         form.submit();
       });
     }
     
-    // Prevent dropdown from closing when clicking inside filter dropdown
     const filterDropdown = document.querySelector('.dropdown-menu.p-3');
     if (filterDropdown) {
       filterDropdown.addEventListener('click', function(e) {
@@ -800,7 +783,6 @@ function buildUrlWithFilters($page = null) {
       });
     }
     
-    // Initialize tooltips
     try {
       const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
       const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -809,24 +791,71 @@ function buildUrlWithFilters($page = null) {
     } catch (e) {
       console.log('Tooltip initialization skipped');
     }
+    
+    updateCetakButtonState();
   });
 
-  // Fungsi konfirmasi hapus
+  function cetakLaporanPDF() {
+    const btnCetak = document.getElementById('btnCetakPDF');
+    
+    btnCetak.disabled = true;
+    btnCetak.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Memproses...';
+    
+    const form = document.getElementById('filterForm');
+    const formData = new FormData(form);
+    
+    let url = 'cetak_laporan.php?';
+    const params = [];
+    
+    if (formData.get('search')) params.push('search=' + encodeURIComponent(formData.get('search')));
+    if (formData.get('filter_kelas')) params.push('filter_kelas=' + encodeURIComponent(formData.get('filter_kelas')));
+    if (formData.get('filter_instruktur')) params.push('filter_instruktur=' + encodeURIComponent(formData.get('filter_instruktur')));
+    if (formData.get('filter_hari')) params.push('filter_hari=' + encodeURIComponent(formData.get('filter_hari')));
+    if (formData.get('filter_periode')) params.push('filter_periode=' + encodeURIComponent(formData.get('filter_periode')));
+    if (formData.get('filter_tanggal')) params.push('filter_tanggal=' + encodeURIComponent(formData.get('filter_tanggal')));
+    
+    url += params.join('&');
+    
+    const pdfWindow = window.open(url, '_blank');
+    
+    setTimeout(() => {
+      btnCetak.disabled = false;
+      btnCetak.innerHTML = '<i class="bi bi-printer me-2"></i>Cetak Data';
+      
+      if (!pdfWindow || pdfWindow.closed || typeof pdfWindow.closed == 'undefined') {
+        alert('Popup diblokir! Silakan izinkan popup untuk mengunduh laporan PDF.');
+      }
+    }, 2000);
+  }
+
+  function updateCetakButtonState() {
+    const btnCetak = document.getElementById('btnCetakPDF');
+    const tableRows = document.querySelectorAll('#jadwalTable tbody tr');
+    const emptyState = document.querySelector('#jadwalTable tbody .empty-state');
+    const hasData = tableRows.length > 0 && !emptyState;
+    
+    if (!hasData) {
+      btnCetak.disabled = true;
+      btnCetak.title = 'Tidak ada data untuk dicetak';
+    } else {
+      btnCetak.disabled = false;
+      const visibleRows = Array.from(tableRows).filter(row => !row.querySelector('.empty-state'));
+      btnCetak.title = `Cetak ${visibleRows.length} data jadwal`;
+    }
+  }
+
   function confirmDelete(id, tanggal) {
-    // Tutup modal Bootstrap terlebih dahulu
     const modal = bootstrap.Modal.getInstance(document.getElementById('modalHapus' + id));
     if (modal) {
       modal.hide();
     }
     
-    // Tampilkan loading pada tombol
     const deleteBtn = document.querySelector(`#modalHapus${id} .btn-danger`);
     if (deleteBtn) {
       deleteBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Memproses...';
       deleteBtn.disabled = true;
     }
     
-    // Tunggu modal tertutup, lalu redirect
     setTimeout(() => {
       window.location.href = `hapus.php?id=${id}&confirm=delete`;
     }, 1000);

@@ -197,8 +197,11 @@ $materi_labels = [
   <link rel="stylesheet" href="../../../assets/css/styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
-  <style>
+  <!-- SweetAlert2 for better alerts -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
+  <style>
+
 
   .chart-container {
     position: relative;
@@ -343,38 +346,69 @@ $materi_labels = [
       <div class="container-fluid mt-4">
         <!-- Filter Section -->
         <div class="filter-section">
-          <div class="row align-items-center">
-            <div class="col-md-6">
+          <div class="row align-items-center mb-3">
+            <div class="col-md-8">
               <h6 class="mb-2">
                 <i class="bi bi-filter me-2"></i>Filter Periode Evaluasi
               </h6>
-              <select class="form-select" id="periodeSelect" onchange="changePeriode()">
-                <option value="">Pilih Periode Evaluasi</option>
-                <?php foreach ($periodeList as $periode): ?>
-                  <option value="<?= $periode['id_periode'] ?>" <?= $selectedPeriode == $periode['id_periode'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($periode['nama_evaluasi']) ?> 
-                    (<?= $periode['evaluasi_selesai'] ?>/<?= $periode['total_evaluasi'] ?> selesai)
-                  </option>
-                <?php endforeach; ?>
-              </select>
-            </div>
-            <?php if ($currentPeriode): ?>
-            <div class="col-md-6 mt-3 mt-md-0">
-              <div class="d-flex justify-content-md-end">
-                <div class="text-center text-md-end">
-                  <h6 class="mb-1"><?= htmlspecialchars($currentPeriode['nama_evaluasi']) ?></h6>
-                  <small class="text-muted">
-                    <?= $currentPeriode['nama_gelombang'] ?> • 
-                    <?= formatTanggalIndonesia($currentPeriode['tanggal_buka']) ?> - <?= formatTanggalIndonesia($currentPeriode['tanggal_tutup']) ?>
-                    <?php if($currentPeriode['materi_terkait']): ?>
-                      • <?= $materi_labels[$currentPeriode['materi_terkait']] ?? ucfirst($currentPeriode['materi_terkait']) ?>
-                    <?php endif; ?>
-                  </small>
+              <div class="d-flex align-items-center gap-3">
+                <div class="flex-grow-1">
+                  <select class="form-select" id="periodeSelect" onchange="changePeriode()">
+                    <option value="">Pilih Periode Evaluasi</option>
+                    <?php foreach ($periodeList as $periode): ?>
+                      <option value="<?= $periode['id_periode'] ?>" <?= $selectedPeriode == $periode['id_periode'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($periode['nama_evaluasi']) ?> 
+                        (<?= $periode['evaluasi_selesai'] ?>/<?= $periode['total_evaluasi'] ?> selesai)
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
                 </div>
+                
+                <?php if ($currentPeriode): ?>
+                <!-- Button Cetak PDF sejajar dengan dropdown -->
+                <div class="flex-shrink-0">
+                  <button type="button" 
+                          class="btn btn-cetak-soft" 
+                          onclick="cetakLaporanPDF()" 
+                          id="btnCetakPDF"
+                          title="Cetak laporan analisis evaluasi dalam format PDF"
+                          <?php 
+                          // Disable button jika tidak ada data rating atau evaluasi belum selesai
+                          $hasData = !empty($ratingData) || !empty($multipleChoiceData) || !empty($feedbackData);
+                          $hasCompletedEvaluation = $currentPeriode && $currentPeriode['evaluasi_selesai'] > 0;
+                          
+                          if (!$hasData || !$hasCompletedEvaluation) {
+                              echo 'disabled';
+                          }
+                          ?>>
+                    <i class="bi bi-printer me-2"></i>
+                    <?php if ($hasData && $hasCompletedEvaluation): ?>
+                      Cetak Data
+                    <?php else: ?>
+                      Tidak Ada Data
+                    <?php endif; ?>
+                  </button>
+                </div>
+                <?php endif; ?>
               </div>
             </div>
-            <?php endif; ?>
           </div>
+          
+          <?php if ($currentPeriode): ?>
+          <!-- Keterangan di bawah dalam row terpisah -->
+          <div class="row">
+            <div class="col-12">
+              <small class="text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                <?= $currentPeriode['nama_gelombang'] ?> • 
+                <?= formatTanggalIndonesia($currentPeriode['tanggal_buka']) ?> - <?= formatTanggalIndonesia($currentPeriode['tanggal_tutup']) ?>
+                <?php if($currentPeriode['materi_terkait']): ?>
+                  • <?= $materi_labels[$currentPeriode['materi_terkait']] ?? ucfirst($currentPeriode['materi_terkait']) ?>
+                <?php endif; ?>
+              </small>
+            </div>
+          </div>
+          <?php endif; ?>
         </div>
 
 <?php if ($currentPeriode && !empty($pertanyaanData)): ?>
@@ -668,6 +702,7 @@ $materi_labels = [
   <!-- Scripts -->
   <script src="../../../assets/js/bootstrap.bundle.min.js"></script>
   <script src="../../../assets/js/scripts.js"></script>
+  <script src="../../../assets/js/chart.min.js"></script>
 
   <script>
   // Global chart configs
@@ -681,6 +716,139 @@ $materi_labels = [
       window.location.href = `?periode=${selectedValue}`;
     } else {
       window.location.href = 'index.php';
+    }
+  }
+
+  // Fungsi Cetak PDF untuk Analisis Evaluasi dengan Charts
+  function cetakLaporanPDF() {
+    const button = document.getElementById('btnCetakPDF');
+    const originalHTML = button.innerHTML;
+    
+    // Set loading state
+    button.disabled = true;
+    button.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Capturing Charts...';
+    
+    // Ambil periode yang sedang dipilih
+    const selectedPeriode = document.getElementById('periodeSelect')?.value || '';
+    
+    if (!selectedPeriode) {
+      button.disabled = false;
+      button.innerHTML = originalHTML;
+      
+      Swal.fire({
+        title: 'Error!',
+        text: 'Silakan pilih periode evaluasi terlebih dahulu.',
+        icon: 'warning',
+        confirmButtonText: 'OK'
+      });
+      return;
+    }
+    
+    // Capture all charts as base64 images
+    captureChartsAndGeneratePDF(selectedPeriode, button, originalHTML);
+  }
+
+  async function captureChartsAndGeneratePDF(selectedPeriode, button, originalHTML) {
+    try {
+      button.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processing Charts...';
+      
+      const chartImages = {};
+      
+      // Capture Rating Chart
+      const ratingChart = Chart.getChart('ratingChart');
+      if (ratingChart) {
+        chartImages.ratingChart = ratingChart.toBase64Image('image/png', 1.0);
+      }
+      
+      // Capture Completion Chart
+      const completionChart = Chart.getChart('completionChart');
+      if (completionChart) {
+        chartImages.completionChart = completionChart.toBase64Image('image/png', 1.0);
+      }
+      
+      // Capture Class Performance Chart
+      const classChart = Chart.getChart('classChart');
+      if (classChart) {
+        chartImages.classChart = classChart.toBase64Image('image/png', 1.0);
+      }
+      
+      // Capture Multiple Choice Chart
+      const mcChart = Chart.getChart('multipleChoiceChart');
+      if (mcChart) {
+        chartImages.multipleChoiceChart = mcChart.toBase64Image('image/png', 1.0);
+      }
+      
+      button.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Generating PDF...';
+      
+      // Send charts data to PHP for PDF generation
+      const formData = new FormData();
+      formData.append('periode', selectedPeriode);
+      formData.append('chartImages', JSON.stringify(chartImages));
+      
+      // Use fetch to send data and open PDF
+      const response = await fetch('cetak_laporan.php', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        // Get the blob and create URL for PDF
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        
+        // Open in new tab
+        const newWindow = window.open(url, '_blank');
+        
+        // Clean up URL after use
+        setTimeout(() => {
+          window.URL.revokeObjectURL(url);
+        }, 1000);
+        
+        // Handle popup blocked
+        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+          // Create download link as fallback
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Analisis_Evaluasi_${selectedPeriode}_${new Date().toISOString().slice(0,10)}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          
+          Swal.fire({
+            title: 'Pop-up Diblokir!',
+            text: 'PDF telah didownload secara otomatis karena browser memblokir pop-up.',
+            icon: 'info',
+            confirmButtonText: 'OK'
+          });
+        }
+        
+      } else {
+        throw new Error('Failed to generate PDF');
+      }
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      
+      Swal.fire({
+        title: 'Error!',
+        text: 'Gagal generate PDF dengan charts. Coba dengan versi teks saja.',
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonText: 'PDF Teks Saja',
+        cancelButtonText: 'Cancel'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Fallback to text-only PDF
+          const cetakURL = `cetak_laporan.php?periode=${selectedPeriode}`;
+          window.open(cetakURL, '_blank');
+        }
+      });
+    } finally {
+      // Reset button state
+      setTimeout(() => {
+        button.disabled = false;
+        button.innerHTML = originalHTML;
+      }, 1000);
     }
   }
 

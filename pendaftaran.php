@@ -608,7 +608,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                         
                         <!-- Submit Button -->
                         <div class="text-center">
-                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <a href="index.php" class="btn btn-kembali px-3">
+                            Kembali
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-3">
                                 <i class="bi bi-send me-2"></i>
                                 Daftar ke <?= $gelombangAktif['nama_gelombang'] ?>
                             </button>

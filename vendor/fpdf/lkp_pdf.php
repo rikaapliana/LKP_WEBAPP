@@ -191,14 +191,15 @@ class LKP_PDF extends FPDF
         $this->Ln(10);
     }
     
-    // Footer halaman - sesuai format existing
+    // Footer halaman - sesuai format existing dengan perbaikan untuk landscape
     function Footer()
     {
         $this->SetY(-25);
         
-        // Garis horizontal
+        // Garis horizontal - sesuaikan panjang dengan orientation
         $this->SetLineWidth(0.3);
-        $this->Line(10, $this->GetY(), 200, $this->GetY());
+        $lineEndX = $this->is_landscape ? 287 : 200; // Landscape lebih panjang
+        $this->Line(10, $this->GetY(), $lineEndX, $this->GetY());
         
         $this->Ln(3);
         
@@ -206,14 +207,9 @@ class LKP_PDF extends FPDF
         $this->SetFont('Arial', 'B', 8);
         $this->Cell(0, 4, 'Catatan:', 0, 1, 'L');
         $this->SetFont('Arial', '', 8);
+        $this->Cell(0, 3, 'Laporan ini dicetak secara otomatis dari sistem informasi LKP Pradata Komputer', 0, 1, 'L');
+
         
-        // JARAK 5MM untuk Catatan di Footer:
-        $this->Cell(5, 3, '1.', 0, 0, 'L');   // 5mm = jarak rapat
-        $this->Cell(0, 3, ' Laporan ini dicetak secara otomatis dari sistem informasi LKP Pradata Komputer', 0, 1, 'L');
-        $this->Cell(5, 3, '2.', 0, 0, 'L');
-        $this->Cell(0, 3, ' Total record yang ditampilkan: ' . $this->total_records . ' siswa', 0, 1, 'L');
-        $this->Cell(5, 3, '3.', 0, 0, 'L');
-        $this->Cell(0, 3, ' Keterangan: L = Laki-laki, P = Perempuan', 0, 1, 'L');
         
         // Info halaman di kanan bawah
         $this->SetY(-8);
@@ -395,7 +391,7 @@ class LKP_PDF extends FPDF
         }
     }
     
-    // Tanda tangan - dengan proteksi agar tidak terpisah halaman
+    // Tanda tangan - dengan proteksi agar tidak terpisah halaman dan posisi sesuai orientation
     public function addSignature()
     {
         // Cek apakah signature muat di halaman ini (butuh ~35mm)
@@ -411,21 +407,23 @@ class LKP_PDF extends FPDF
         
         $this->Ln(10);
         
-        // Posisi kanan
-        $this->SetX(140);
+        // Posisi signature - sesuaikan dengan orientation
+        $signatureX = $this->is_landscape ? 200 : 140; // Landscape lebih ke kanan
+        
+        $this->SetX($signatureX);
         $this->SetFont('Arial', '', 10);
         $this->Cell(0, 5, 'Tabalong, ' . $this->formatTanggalIndonesia(), 0, 1, 'L');
         
-        $this->SetX(140);
+        $this->SetX($signatureX);
         $this->Cell(0, 5, 'Mengetahui,', 0, 1, 'L');
         
         $this->Ln(15); // Space untuk tanda tangan
         
-        $this->SetX(140);
+        $this->SetX($signatureX);
         $this->SetFont('Arial', 'B', 10);
         $this->Cell(0, 5, 'Awiek Hadi Widodo', 0, 1, 'L');
         
-        $this->SetX(140);
+        $this->SetX($signatureX);
         $this->SetFont('Arial', '', 10);
         $this->Cell(0, 5, 'Direktur', 0, 1, 'L');
     }
@@ -446,12 +444,18 @@ class LKP_PDF extends FPDF
     }
 }
 
-// Shortcut functions untuk berbagai jenis laporan
+// Tambahkan method ini di class LKP_ReportFactory (bagian paling bawah file):
+
 class LKP_ReportFactory 
 {
     // Laporan Siswa (7 kolom landscape, 6 kolom portrait - auto pilih)
     public static function createSiswaReport() {
         return LKP_PDF::createAuto(7); // Landscape untuk 7 kolom
+    }
+
+    // Laporan Instruktur (6 kolom - auto portrait)  
+    public static function createInstrukturReport() {
+        return LKP_PDF::createAuto(6);
     }
     
     // Laporan Pendaftar (6 kolom - auto portrait)  
@@ -459,9 +463,22 @@ class LKP_ReportFactory
         return LKP_PDF::createAuto(6);
     }
     
-    // Laporan Nilai (12+ kolom - auto landscape)
+     public static function createKelasReport() {
+        return LKP_PDF::createAuto(6); // 6 kolom = Portrait otomatis
+    }
+    
+    public static function createJadwalReport() {
+        return LKP_PDF::createAuto(7); // 7 kolom tapi tetap portrait karena kolom sempit
+    }
+    
+    // ✅ BARU: Laporan Nilai (9 kolom - auto landscape)
     public static function createNilaiReport() {
-        return LKP_PDF::createAuto(12);
+        return LKP_PDF::createAuto(9); // 9 kolom = Landscape otomatis
+    }
+    
+    // ✅ BARU: Laporan Analisis Evaluasi (landscape untuk charts)
+    public static function createAnalisisEvaluasiReport() {
+        return new LKP_PDF('L', 'mm', 'A4'); // Force landscape untuk charts
     }
     
     // Laporan Evaluasi (5 kolom - auto portrait)

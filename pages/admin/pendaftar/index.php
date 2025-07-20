@@ -82,6 +82,60 @@ function buildUrlWithFilters($page) {
   <link rel="stylesheet" href="../../../assets/css/bootstrap-icons.css" />
   <link rel="stylesheet" href="../../../assets/css/fonts.css" />
   <link rel="stylesheet" href="../../../assets/css/styles.css" />
+  
+  <!-- SweetAlert2 for better alerts -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <style>
+    /* Style untuk button cetak */
+    .btn-cetak-pdf {
+      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+      border: none;
+      color: white;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
+    }
+    
+    .btn-cetak-pdf:hover {
+      background: linear-gradient(135deg, #c82333 0%, #b21e2f 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+      color: white;
+    }
+    
+    .btn-cetak-pdf:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .btn-cetak-pdf .fa-spinner {
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Responsive button group */
+    .button-group-header {
+      gap: 8px;
+    }
+    
+    @media (max-width: 768px) {
+      .button-group-header {
+        flex-direction: column;
+        width: 100%;
+      }
+      
+      .button-group-header .btn {
+        width: 100%;
+        margin-bottom: 5px;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -231,6 +285,19 @@ function buildUrlWithFilters($page) {
                   <i class="bi bi-pencil-square me-2"></i>Kelola Data Pendaftar
                 </h5>
               </div>
+              <div class="col-md-6 text-md-end">
+                <!-- UPDATED: Button Group dengan Cetak PDF -->
+                <div class="d-flex button-group-header justify-content-md-end">                 
+                  <!-- Button Cetak PDF -->
+                  <button type="button" 
+                          class="btn btn-cetak-soft" 
+                          onclick="cetakLaporanPDF()" 
+                          id="btnCetakPDF"
+                          title="Cetak laporan data pendaftar dalam format PDF">
+                    <i class="bi bi-printer me-2"></i>Cetak Data
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -320,7 +387,7 @@ function buildUrlWithFilters($page) {
                     </button>
                     
                     <!-- Filter Dropdown -->
-                    <div class="dropdown-menu dropdown-menu-end shadow p-3" style="min-width: 300px;">
+                    <div class="dropdown-menu dropdown-menu-end shadow p-3" style="min-width: 300px;" id="filterDropdown">
                       <h6 class="mb-3 fw-bold">
                         <i class="bi bi-funnel me-2"></i>Filter Data
                       </h6>
@@ -345,7 +412,7 @@ function buildUrlWithFilters($page) {
                           if ($gelombangResult && mysqli_num_rows($gelombangResult) > 0) {
                             mysqli_data_seek($gelombangResult, 0);
                             while($gelombang = mysqli_fetch_assoc($gelombangResult)): ?>
-                              <option value="<?= $gelombang['id_gelombang'] ?>">
+                              <option value="<?= htmlspecialchars($gelombang['nama_gelombang']) ?>">
                                 <?= htmlspecialchars($gelombang['nama_gelombang']) ?> 
                                 (<?= htmlspecialchars($gelombang['tahun']) ?>)
                               </option>
@@ -488,11 +555,11 @@ function buildUrlWithFilters($page) {
                       <!-- Gelombang -->
                       <td class="align-middle text-nowrap">
                         <?php if($pendaftar['nama_gelombang']): ?>
-                          <div data-gelombang-id="<?= $pendaftar['id_gelombang'] ?>">
+                          <div data-gelombang-nama="<?= htmlspecialchars($pendaftar['nama_gelombang']) ?>">
                             <?= htmlspecialchars($pendaftar['nama_gelombang']) ?>
                           </div>
                         <?php else: ?>
-                          <span class="text-muted" data-gelombang-id="">
+                          <span class="text-muted" data-gelombang-nama="">
                             <i class="bi bi-dash-circle"></i> Tidak ada
                           </span>
                         <?php endif; ?>
@@ -1009,6 +1076,68 @@ function buildUrlWithFilters($page) {
   <script src="../../../assets/js/scripts.js"></script>
 
   <script>
+  // Fungsi Cetak PDF - BARU
+  function cetakLaporanPDF() {
+    const button = document.getElementById('btnCetakPDF');
+    const originalHTML = button.innerHTML;
+    
+    // Set loading state
+    button.disabled = true;
+    button.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Generating PDF...';
+    
+    // Ambil filter yang sedang aktif dari dropdown
+    const filterStatus = document.getElementById('filterStatus')?.value || '';
+    const filterGelombang = document.getElementById('filterGelombang')?.value || '';
+    const filterJam = document.getElementById('filterJam')?.value || '';
+    const filterJK = document.getElementById('filterJK')?.value || '';
+    const filterPendidikan = document.getElementById('filterPendidikan')?.value || '';
+    const searchTerm = document.getElementById('searchInput')?.value || '';
+    
+    // Build URL parameter untuk cetak laporan
+    const params = new URLSearchParams();
+    
+    // Tambahkan filter yang aktif
+    if (filterStatus) params.append('status', filterStatus);
+    if (filterGelombang) params.append('gelombang', filterGelombang);
+    if (filterJam) params.append('jam_pilihan', filterJam);
+    if (filterJK) params.append('jk', filterJK);
+    if (filterPendidikan) params.append('pendidikan', filterPendidikan);
+    if (searchTerm) params.append('search', searchTerm);
+    
+    // Build URL untuk cetak laporan
+    let cetakURL = 'cetak_laporan.php';
+    if (params.toString()) {
+      cetakURL += '?' + params.toString();
+    }
+    
+    // Buka PDF di tab baru
+    const newWindow = window.open(cetakURL, '_blank');
+    
+    // Reset button state setelah delay
+    setTimeout(() => {
+      button.disabled = false;
+      button.innerHTML = originalHTML;
+    }, 2000);
+    
+    // Handle jika popup diblokir
+    if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+      button.disabled = false;
+      button.innerHTML = originalHTML;
+      
+      // Show alert dengan link manual menggunakan SweetAlert2
+      Swal.fire({
+        title: 'Pop-up Diblokir!',
+        html: `Browser memblokir pop-up. Klik tombol di bawah untuk membuka PDF secara manual:<br><br>
+               <a href="${cetakURL}" target="_blank" class="btn btn-danger">
+               <i class="bi bi-file-earmark-pdf"></i> Buka PDF Manual</a>`,
+        icon: 'warning',
+        showConfirmButton: false,
+        showCloseButton: true,
+        allowOutsideClick: true
+      });
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', function() {
     const table = document.getElementById('pendaftarTable');
     if (!table) return;
@@ -1020,6 +1149,17 @@ function buildUrlWithFilters($page) {
     
     const originalOrder = [...rows];
     let activeFilters = 0;
+
+    // Cek apakah ada data untuk enable/disable button cetak
+    const btnCetakPDF = document.getElementById('btnCetakPDF');
+    if (btnCetakPDF) {
+      const hasData = rows.length > 0;
+      if (!hasData) {
+        btnCetakPDF.disabled = true;
+        btnCetakPDF.innerHTML = '<i class="bi bi-file-earmark-pdf me-2"></i>Tidak Ada Data';
+        btnCetakPDF.title = 'Tidak ada data pendaftar untuk dicetak';
+      }
+    }
 
     // Force dropdown positioning
     function forceDropdownPositioning() {
@@ -1106,10 +1246,8 @@ function buildUrlWithFilters($page) {
                 }
               };
               
-              const aDateCell = a.cells[5]?.querySelector('small');
-              const bDateCell = b.cells[5]?.querySelector('small');
-              const aDate = parseDate((aDateCell?.textContent || '').trim());
-              const bDate = parseDate((bDateCell?.textContent || '').trim());
+              const aDate = parseDate((a.cells[5]?.textContent || '').trim());
+              const bDate = parseDate((b.cells[5]?.textContent || '').trim());
               return order === 'asc' ? aDate - bDate : bDate - aDate;
             });
             break;
@@ -1197,8 +1335,8 @@ function buildUrlWithFilters($page) {
           const tempat = (row.cells[4]?.textContent || '').toLowerCase();
           
           // Ambil data gelombang dari kolom ke-3 (index 3)
-          const gelombangBadge = row.cells[3]?.querySelector('.badge') || row.cells[3]?.querySelector('[data-gelombang-id]');
-          const gelombangId = gelombangBadge ? gelombangBadge.dataset.gelombangId : '';
+          const gelombangElement = row.cells[3]?.querySelector('[data-gelombang-nama]');
+          const gelombang = gelombangElement ? gelombangElement.dataset.gelombangNama : '';
           
           const statusElement = row.cells[16]?.querySelector('.badge');
           let status = '';
@@ -1229,7 +1367,7 @@ function buildUrlWithFilters($page) {
           }
           
           if (statusFilter && status !== statusFilter) showRow = false;
-          if (gelombangFilter && gelombangId !== gelombangFilter) showRow = false;
+          if (gelombangFilter && gelombang !== gelombangFilter) showRow = false;
           if (jamFilter && jam !== jamFilter) showRow = false;
           if (jkFilter && jk !== jkFilter) showRow = false;
           if (pendidikanFilter && pendidikan !== pendidikanFilter) showRow = false;
@@ -1245,6 +1383,19 @@ function buildUrlWithFilters($page) {
       });
       
       updateRowNumbers();
+      
+      // Update button cetak berdasarkan hasil filter
+      if (btnCetakPDF && rows.length > 0) {
+        if (visibleCount > 0) {
+          btnCetakPDF.disabled = false;
+          btnCetakPDF.innerHTML = '<i class="bi bi-file-earmark-pdf me-2"></i>Cetak PDF';
+          btnCetakPDF.title = `Cetak laporan ${visibleCount} data pendaftar`;
+        } else {
+          btnCetakPDF.disabled = true;
+          btnCetakPDF.innerHTML = '<i class="bi bi-file-earmark-pdf me-2"></i>Tidak Ada Data';
+          btnCetakPDF.title = 'Tidak ada data yang sesuai filter';
+        }
+      }
     }
     
     function updateFilterBadge() {
@@ -1298,7 +1449,7 @@ function buildUrlWithFilters($page) {
       });
     }
     
-    const filterDropdown = document.querySelector('.dropdown-menu.p-3');
+    const filterDropdown = document.getElementById('filterDropdown');
     if (filterDropdown) {
       filterDropdown.addEventListener('click', function(e) {
         e.stopPropagation();

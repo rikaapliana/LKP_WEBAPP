@@ -62,6 +62,13 @@ $instrukturResult = mysqli_query($conn, $instrukturQuery);
 
 // Untuk dropdown status gelombang
 $statusOptions = ['aktif', 'selesai', 'dibuka'];
+
+// Function untuk build URL dengan filter
+function buildUrlWithFilters($page) {
+    $params = [];
+    if ($page > 1) $params['page'] = $page;
+    return 'index.php' . (!empty($params) ? '?' . http_build_query($params) : '');
+}
 ?>
 
 <!DOCTYPE html>
@@ -74,8 +81,8 @@ $statusOptions = ['aktif', 'selesai', 'dibuka'];
   <link rel="stylesheet" href="../../../assets/css/bootstrap.min.css" />
   <link rel="stylesheet" href="../../../assets/css/bootstrap-icons.css" />
   <link rel="stylesheet" href="../../../assets/css/fonts.css" />
-  <link rel="stylesheet" href="../../../assets/css/styles.css" />
-</head>
+  <link rel="stylesheet" href="../../../assets/css/styles.css" /> 
+ </head>
 
 <body>
   <div class="d-flex">
@@ -153,11 +160,19 @@ $statusOptions = ['aktif', 'selesai', 'dibuka'];
                   <i class="bi bi-pencil-square me-2"></i>Kelola Data Kelas
                 </h5>
               </div>
-              <div class="col-md-6 text-md-end">
-                <a href="tambah.php" class="btn btn-tambah-soft">
-                  <i class="bi bi-plus-circle"></i>
-                  Tambah Data
-                </a>
+              <div class="col-md-6">
+                <div class="d-flex button-group-header justify-content-md-end gap-2">                 
+                  <a href="tambah.php" class="btn btn-tambah-soft">
+                    <i class="bi bi-plus-circle me-2"></i>Tambah Data
+                  </a>
+                  <button type="button" 
+                          class="btn btn-cetak-soft" 
+                          onclick="cetakLaporanPDF()" 
+                          id="btnCetakPDF"
+                          title="Cetak laporan data kelas">
+                    <i class="bi bi-printer me-2"></i>Cetak Data
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -599,6 +614,10 @@ $statusOptions = ['aktif', 'selesai', 'dibuka'];
             </div>
           </div>
           <?php endif; ?>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Scripts - Offline -->
   <script src="../../../assets/js/bootstrap.bundle.min.js"></script>
@@ -727,7 +746,6 @@ $statusOptions = ['aktif', 'selesai', 'dibuka'];
     const searchInput = document.getElementById('searchInput');
     const filterGelombang = document.getElementById('filterGelombang');
     const filterInstruktur = document.getElementById('filterInstruktur');
-    const filterStatus = document.getElementById('filterStatus');
     const filterKapasitas = document.getElementById('filterKapasitas');
     const applyFilterBtn = document.getElementById('applyFilter');
     const resetFilterBtn = document.getElementById('resetFilter');
@@ -747,7 +765,6 @@ $statusOptions = ['aktif', 'selesai', 'dibuka'];
       const searchTerm = (searchInput?.value || '').toLowerCase().trim();
       const gelombangFilter = filterGelombang?.value || '';
       const instrukturFilter = filterInstruktur?.value || '';
-      const statusFilter = filterStatus?.value || '';
       const kapasitasFilter = filterKapasitas?.value || '';
       
       let visibleCount = 0;
@@ -755,7 +772,6 @@ $statusOptions = ['aktif', 'selesai', 'dibuka'];
       
       if (gelombangFilter) activeFilters++;
       if (instrukturFilter) activeFilters++;
-      if (statusFilter) activeFilters++;
       if (kapasitasFilter) activeFilters++;
       
       updateFilterBadge();
@@ -806,6 +822,7 @@ $statusOptions = ['aktif', 'selesai', 'dibuka'];
       });
       
       updateRowNumbers();
+      updateCetakButtonState(); // Update button cetak
     }
     
     function updateFilterBadge() {
@@ -852,7 +869,6 @@ $statusOptions = ['aktif', 'selesai', 'dibuka'];
         if (searchInput) searchInput.value = '';
         if (filterGelombang) filterGelombang.value = '';
         if (filterInstruktur) filterInstruktur.value = '';
-        if (filterStatus) filterStatus.value = '';
         if (filterKapasitas) filterKapasitas.value = '';
         applyFilters();
       });
@@ -918,6 +934,61 @@ $statusOptions = ['aktif', 'selesai', 'dibuka'];
     window.addEventListener('resize', forceDropdownPositioning);
     window.addEventListener('scroll', forceDropdownPositioning);
   });
+
+  // Fungsi cetak laporan PDF dengan filter
+  function cetakLaporanPDF() {
+    const btnCetak = document.getElementById('btnCetakPDF');
+    
+    // Disable button dan ubah text
+    btnCetak.disabled = true;
+    btnCetak.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Memproses...';
+    
+    // Ambil filter yang aktif
+    const filterGelombang = document.getElementById('filterGelombang')?.value || '';
+    const filterInstruktur = document.getElementById('filterInstruktur')?.value || '';
+    const filterKapasitas = document.getElementById('filterKapasitas')?.value || '';
+    const searchTerm = document.getElementById('searchInput')?.value || '';
+    
+    // Build URL dengan parameter filter
+    let url = 'cetak_laporan.php?';
+    const params = [];
+    
+    if (filterGelombang) params.push('gelombang=' + encodeURIComponent(filterGelombang));
+    if (filterInstruktur) params.push('instruktur=' + encodeURIComponent(filterInstruktur)); 
+    if (filterKapasitas) params.push('kapasitas=' + encodeURIComponent(filterKapasitas));
+    if (searchTerm) params.push('search=' + encodeURIComponent(searchTerm));
+    
+    url += params.join('&');
+    
+    // Buka PDF di tab baru
+    const pdfWindow = window.open(url, '_blank');
+    
+    // Reset button setelah delay
+    setTimeout(() => {
+      btnCetak.disabled = false;
+      btnCetak.innerHTML = '<i class="bi bi-printer me-2"></i>Cetak Data';
+      
+      // Jika window tidak terbuka (popup blocker), beri notifikasi
+      if (!pdfWindow || pdfWindow.closed || typeof pdfWindow.closed == 'undefined') {
+        alert('Popup diblokir! Silakan izinkan popup untuk mengunduh laporan PDF.');
+      }
+    }, 2000);
+  }
+
+  // Update button state berdasarkan data
+  function updateCetakButtonState() {
+    const btnCetak = document.getElementById('btnCetakPDF');
+    const tableRows = document.querySelectorAll('#kelasTable tbody tr:not(.empty-state)');
+    const visibleRows = Array.from(tableRows).filter(row => row.style.display !== 'none');
+    
+    if (visibleRows.length === 0) {
+      btnCetak.disabled = true;
+      btnCetak.title = 'Tidak ada data untuk dicetak';
+    } else {
+      btnCetak.disabled = false;
+      btnCetak.title = `Cetak ${visibleRows.length} data kelas`;
+    }
+  }
 
   // Fungsi konfirmasi hapus
   function confirmDelete(id, namaKelas) {
