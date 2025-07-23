@@ -310,263 +310,275 @@ try {
     
     $pdf->AddPage();
     
-    // Section 1: Summary Statistics
-    $pdf->SetFont('Arial', 'B', 12);
-    $pdf->Cell(0, 8, 'RINGKASAN STATISTIK EVALUASI', 0, 1, 'L');
-    $pdf->SetFont('Arial', '', 10);
-    
-    // Create summary table
-    $summaryData = [
-        ['Metrik', 'Nilai', 'Keterangan'],
-        ['Total Siswa Aktif', number_format($totalSiswaAktif), 'Siswa terdaftar dalam gelombang'],
-        ['Evaluasi Selesai', number_format($totalEvaluasiSelesai), 'Siswa yang menyelesaikan evaluasi'],
-        ['Completion Rate', $completionRate . '%', 'Tingkat penyelesaian evaluasi'],
-        ['Rata-rata Rating', number_format($avgRating, 1) . '/5', 'Rating keseluruhan dari semua aspek'],
-        ['Total Pertanyaan', count($pertanyaanData), 'Jumlah pertanyaan dalam evaluasi'],
-        ['Total Respon', count($jawabanData), 'Total jawaban yang terkumpul']
-    ];
-    
-    $pdf->createTable(
-        array_shift($summaryData), // Headers
-        $summaryData,              // Data
-        [60, 40, 140],            // Column widths
-        [
-            'header_bg' => [52, 152, 219],
-            'font_size' => 9,
-            'cell_height' => 6
-        ]
-    );
-    
-    $pdf->Ln(10);
-    
-    // Section 2: Rating Analysis dengan Chart
-    if (!empty($ratingData)) {
-        $pdf->SetFont('Arial', 'B', 12);
-        $pdf->Cell(0, 8, 'ANALISIS RATING PER ASPEK', 0, 1, 'L');
-        
-        // Add Rating Chart jika ada
-        if (isset($chartImages['ratingChart'])) {
-            $pdf->Ln(5);
-            addChartToPDF($pdf, $chartImages['ratingChart'], 'Rating Overview per Aspek', 200, 100);
-            $pdf->Ln(10);
-        }
-        
-        $pdf->SetFont('Arial', '', 9);
-        
-        $ratingTableData = [
-            ['Aspek Dinilai', 'Rata-rata', 'Responden', 'Min-Max', 'Kategori']
+    // SECTION 1: SUMMARY STATISTICS
+    addSectionWithTable($pdf, 'RINGKASAN STATISTIK EVALUASI', function() use ($pdf, $totalSiswaAktif, $totalEvaluasiSelesai, $completionRate, $avgRating, $pertanyaanData, $jawabanData) {
+        $summaryData = [
+            ['Metrik', 'Nilai', 'Keterangan'],
+            ['Total Siswa Aktif', number_format($totalSiswaAktif), 'Siswa terdaftar dalam gelombang'],
+            ['Evaluasi Selesai', number_format($totalEvaluasiSelesai), 'Siswa yang menyelesaikan evaluasi'],
+            ['Completion Rate', $completionRate . '%', 'Tingkat penyelesaian evaluasi'],
+            ['Rata-rata Rating', number_format($avgRating, 1) . '/5', 'Rating keseluruhan dari semua aspek'],
+            ['Total Pertanyaan', count($pertanyaanData), 'Jumlah pertanyaan dalam evaluasi'],
+            ['Total Respon', count($jawabanData), 'Total jawaban yang terkumpul']
         ];
         
-        foreach ($ratingData as $rating) {
-            $kategori = '';
-            if ($rating['average'] >= 4.5) $kategori = 'Sangat Baik';
-            elseif ($rating['average'] >= 4.0) $kategori = 'Baik';
-            elseif ($rating['average'] >= 3.5) $kategori = 'Cukup';
-            elseif ($rating['average'] >= 3.0) $kategori = 'Kurang';
-            else $kategori = 'Sangat Kurang';
-            
-            $ratingTableData[] = [
-                $rating['aspect'],
-                number_format($rating['average'], 1) . '/5',
-                $rating['count'] . ' orang',
-                $rating['min'] . '-' . $rating['max'],
-                $kategori
-            ];
-        }
-        
         $pdf->createTable(
-            array_shift($ratingTableData),
-            $ratingTableData,
-            [80, 25, 30, 25, 35],
+            array_shift($summaryData), // Headers
+            $summaryData,              // Data
+            [60, 40, 140],            // Column widths
             [
-                'header_bg' => [46, 125, 50],
-                'font_size' => 8,
+                'header_bg' => [52, 152, 219],
+                'font_size' => 9,
                 'cell_height' => 6
             ]
         );
-        
-        $pdf->Ln(10);
-    }
+    });
     
-    // Section 3: Completion Rate dengan Chart
+    // SECTION 2: COMPLETION RATE WITH CHART
     if (isset($chartImages['completionChart'])) {
-        $pdf->SetFont('Arial', 'B', 12);
-        $pdf->Cell(0, 8, 'TINGKAT PENYELESAIAN EVALUASI', 0, 1, 'L');
-        $pdf->Ln(5);
-        addChartToPDF($pdf, $chartImages['completionChart'], 'Completion Rate', 120, 80);
-        $pdf->Ln(10);
-    }
-    
-    // Section 4: Class Performance dengan Chart
-    if (!empty($classAverages)) {
-        $pdf->SetFont('Arial', 'B', 12);
-        $pdf->Cell(0, 8, 'PERFORMA PER KELAS', 0, 1, 'L');
-        
-        // Add Class Performance Chart jika ada
-        if (isset($chartImages['classChart'])) {
-            $pdf->Ln(5);
-            addChartToPDF($pdf, $chartImages['classChart'], 'Performa per Kelas', 180, 90);
-            $pdf->Ln(10);
-        }
-        
-        $pdf->SetFont('Arial', '', 9);
-        
-        $classTableData = [
-            ['Ranking', 'Nama Kelas', 'Rata-rata Rating', 'Jumlah Respon', 'Status']
-        ];
-        
-        $rank = 1;
-        foreach ($classAverages as $class) {
+        addSectionWithChart($pdf, 'TINGKAT PENYELESAIAN EVALUASI', $chartImages['completionChart'], 'Tingkat Penyelesaian Evaluasi', 120, 80, function() use ($pdf, $completionRate, $totalEvaluasiSelesai, $totalSiswaAktif) {
+            $pdf->SetFont('Arial', '', 9);
+            $pdf->Cell(0, 6, "Dari total {$totalSiswaAktif} siswa aktif, {$totalEvaluasiSelesai} siswa ({$completionRate}%) telah menyelesaikan evaluasi.", 0, 1, 'L');
+            
             $status = '';
-            if ($class['average'] >= 4.0) $status = 'Excellent';
-            elseif ($class['average'] >= 3.5) $status = 'Good';
-            elseif ($class['average'] >= 3.0) $status = 'Average';
-            else $status = 'Needs Improvement';
-            
-            $classTableData[] = [
-                $rank++,
-                $class['kelas'],
-                number_format($class['average'], 1) . '/5',
-                $class['count'] . ' respon',
-                $status
-            ];
-        }
-        
-        $pdf->createTable(
-            array_shift($classTableData),
-            $classTableData,
-            [25, 60, 35, 35, 45],
-            [
-                'header_bg' => [255, 152, 0],
-                'font_size' => 8,
-                'cell_height' => 6
-            ]
-        );
-        
-        $pdf->Ln(10);
-    }
-    
-    // Section 5: Multiple Choice Analysis dengan Chart
-    if (!empty($multipleChoiceData)) {
-        $pdf->SetFont('Arial', 'B', 12);
-        $pdf->Cell(0, 8, 'ANALISIS JAWABAN PILIHAN GANDA', 0, 1, 'L');
-        
-        // Add Multiple Choice Chart jika ada
-        if (isset($chartImages['multipleChoiceChart'])) {
-            $pdf->Ln(5);
-            addChartToPDF($pdf, $chartImages['multipleChoiceChart'], 'Distribusi Jawaban Pilihan Ganda', 120, 80);
-            $pdf->Ln(10);
-        }
-        
-        $pdf->SetFont('Arial', '', 9);
-        
-        foreach ($multipleChoiceData as $index => $mcData) {
-            if ($index > 0) $pdf->Ln(5); // Space between questions
+            if ($completionRate >= 90) $status = 'Sangat Baik';
+            elseif ($completionRate >= 80) $status = 'Baik';
+            elseif ($completionRate >= 70) $status = 'Cukup';
+            else $status = 'Perlu Peningkatan';
             
             $pdf->SetFont('Arial', 'B', 9);
-            $pdf->Cell(0, 6, 'Aspek: ' . $mcData['aspect'], 0, 1, 'L');
-            $pdf->SetFont('Arial', '', 8);
-            $pdf->Cell(0, 5, 'Total Respon: ' . $mcData['total_responses'] . ' siswa', 0, 1, 'L');
-            
-            $mcTableData = [
-                ['Pilihan Jawaban', 'Jumlah', 'Persentase']
-            ];
-            
-            foreach ($mcData['distribution'] as $choice => $data) {
-                $mcTableData[] = [
-                    $choice,
-                    $data['count'] . ' orang',
-                    $data['percentage'] . '%'
+            $pdf->Cell(30, 6, 'Status: ', 0, 0, 'L');
+            $pdf->SetFont('Arial', '', 9);
+            $pdf->Cell(0, 6, $status, 0, 1, 'L');
+        });
+    }
+    
+    // SECTION 3: RATING ANALYSIS WITH CHART
+    if (!empty($ratingData)) {
+        addSectionWithChart($pdf, 'ANALISIS RATING PER ASPEK', 
+            isset($chartImages['ratingChart']) ? $chartImages['ratingChart'] : null, 
+            'Rating Overview per Aspek', 200, 100, 
+            function() use ($pdf, $ratingData) {
+                $ratingTableData = [
+                    ['Aspek Dinilai', 'Rata-rata', 'Responden', 'Min-Max', 'Kategori']
                 ];
+                
+                foreach ($ratingData as $rating) {
+                    $kategori = '';
+                    if ($rating['average'] >= 4.5) $kategori = 'Sangat Baik';
+                    elseif ($rating['average'] >= 4.0) $kategori = 'Baik';
+                    elseif ($rating['average'] >= 3.5) $kategori = 'Cukup';
+                    elseif ($rating['average'] >= 3.0) $kategori = 'Kurang';
+                    else $kategori = 'Sangat Kurang';
+                    
+                    $ratingTableData[] = [
+                        $rating['aspect'],
+                        number_format($rating['average'], 1) . '/5',
+                        $rating['count'] . ' orang',
+                        $rating['min'] . '-' . $rating['max'],
+                        $kategori
+                    ];
+                }
+                
+                $pdf->createTable(
+                    array_shift($ratingTableData),
+                    $ratingTableData,
+                    [80, 25, 30, 25, 35],
+                    [
+                        'header_bg' => [46, 125, 50],
+                        'font_size' => 8,
+                        'cell_height' => 6
+                    ]
+                );
             }
-            
-            $pdf->createTable(
-                array_shift($mcTableData),
-                $mcTableData,
-                [120, 30, 30],
-                [
-                    'header_bg' => [155, 89, 182],
-                    'font_size' => 8,
-                    'cell_height' => 5
-                ]
-            );
-        }
-        
-        $pdf->Ln(10);
+        );
     }
     
-    // Section 6: Key Insights
-    if (!empty($insights)) {
-        $pdf->SetFont('Arial', 'B', 12);
-        $pdf->Cell(0, 8, 'KEY INSIGHTS & REKOMENDASI', 0, 1, 'L');
-        $pdf->SetFont('Arial', '', 9);
-        
-        $counter = 1;
-        foreach ($insights as $insight) {
-            $pdf->Cell(8, 6, $counter . '.', 0, 0, 'L');
-            $pdf->Cell(0, 6, $insight, 0, 1, 'L');
-            $counter++;
-        }
-        
-        $pdf->Ln(10);
+    // SECTION 4: CLASS PERFORMANCE WITH CHART
+    if (!empty($classAverages)) {
+        addSectionWithChart($pdf, 'PERFORMA PER KELAS', 
+            isset($chartImages['classChart']) ? $chartImages['classChart'] : null, 
+            'Performa per Kelas', 180, 90, 
+            function() use ($pdf, $classAverages) {
+                $classTableData = [
+                    ['Ranking', 'Nama Kelas', 'Rata-rata Rating', 'Jumlah Respon', 'Status']
+                ];
+                
+                $rank = 1;
+                foreach ($classAverages as $class) {
+                    $status = '';
+                    if ($class['average'] >= 4.0) $status = 'Excellent';
+                    elseif ($class['average'] >= 3.5) $status = 'Good';
+                    elseif ($class['average'] >= 3.0) $status = 'Average';
+                    else $status = 'Needs Improvement';
+                    
+                    $classTableData[] = [
+                        $rank++,
+                        $class['kelas'],
+                        number_format($class['average'], 1) . '/5',
+                        $class['count'] . ' respon',
+                        $status
+                    ];
+                }
+                
+                $pdf->createTable(
+                    array_shift($classTableData),
+                    $classTableData,
+                    [25, 60, 35, 35, 45],
+                    [
+                        'header_bg' => [255, 152, 0],
+                        'font_size' => 8,
+                        'cell_height' => 6
+                    ]
+                );
+            }
+        );
     }
     
-    // Section 7: Sample Feedback (jika ada)
-    if (!empty($feedbackData)) {
-        $pdf->SetFont('Arial', 'B', 12);
-        $pdf->Cell(0, 8, 'SAMPLE FEEDBACK SISWA', 0, 1, 'L');
-        
-        foreach ($feedbackData as $index => $feedback) {
-            if ($index > 0) $pdf->Ln(5);
-            
-            $pdf->SetFont('Arial', 'B', 9);
-            $pdf->Cell(0, 6, 'Aspek: ' . $feedback['aspect'] . ' (' . $feedback['count'] . ' respon)', 0, 1, 'L');
-            $pdf->SetFont('Arial', '', 8);
-            
-            // Show max 3 sample responses per aspect
-            $sampleResponses = array_slice($feedback['responses'], 0, 3);
-            $responseCounter = 1;
-            
-            foreach ($sampleResponses as $response) {
-                // Word wrap for long responses
-                $maxWidth = 250; // mm
-                $responseText = '"' . truncateText($response, 200) . '"';
-                
-                $pdf->Cell(8, 5, $responseCounter . '.', 0, 0, 'L');
-                
-                // Simple word wrap
-                $words = explode(' ', $responseText);
-                $line = '';
-                $lineHeight = 5;
-                
-                foreach ($words as $word) {
-                    $testLine = $line . $word . ' ';
-                    if ($pdf->GetStringWidth($testLine) > ($maxWidth - 20)) {
-                        if (!empty($line)) {
-                            $pdf->Cell(0, $lineHeight, trim($line), 0, 1, 'L');
-                            $pdf->Cell(8, 0, '', 0, 0, 'L'); // Indent continuation
-                        }
-                        $line = $word . ' ';
-                    } else {
-                        $line = $testLine;
+    // SECTION 5: MULTIPLE CHOICE ANALYSIS WITH CHART
+    if (!empty($multipleChoiceData)) {
+        addSectionWithChart($pdf, 'ANALISIS JAWABAN PILIHAN GANDA', 
+            isset($chartImages['multipleChoiceChart']) ? $chartImages['multipleChoiceChart'] : null, 
+            'Distribusi Jawaban Pilihan Ganda', 120, 80, 
+            function() use ($pdf, $multipleChoiceData) {
+                foreach ($multipleChoiceData as $index => $mcData) {
+                    if ($index > 0) $pdf->Ln(8); // Space between questions
+                    
+                    $pdf->SetFont('Arial', 'B', 9);
+                    $pdf->Cell(0, 6, 'Aspek: ' . $mcData['aspect'], 0, 1, 'L');
+                    $pdf->SetFont('Arial', '', 8);
+                    $pdf->Cell(0, 5, 'Total Respon: ' . $mcData['total_responses'] . ' siswa', 0, 1, 'L');
+                    $pdf->Ln(2);
+                    
+                    $mcTableData = [
+                        ['Pilihan Jawaban', 'Jumlah', 'Persentase']
+                    ];
+                    
+                    foreach ($mcData['distribution'] as $choice => $data) {
+                        $mcTableData[] = [
+                            $choice,
+                            $data['count'] . ' orang',
+                            $data['percentage'] . '%'
+                        ];
                     }
+                    
+                    $pdf->createTable(
+                        array_shift($mcTableData),
+                        $mcTableData,
+                        [120, 30, 30],
+                        [
+                            'header_bg' => [155, 89, 182],
+                            'font_size' => 8,
+                            'cell_height' => 5
+                        ]
+                    );
+                }
+            }
+        );
+    }
+    
+    // SECTION 6: KEY INSIGHTS
+    if (!empty($insights)) {
+        addSectionWithTable($pdf, 'KEY INSIGHTS & REKOMENDASI', function() use ($pdf, $insights) {
+            $pdf->SetFont('Arial', '', 9);
+            $counter = 1;
+            foreach ($insights as $insight) {
+                $pdf->Cell(8, 6, $counter . '.', 0, 0, 'L');
+                
+                // Word wrap untuk insight yang panjang
+                $maxWidth = 230;
+                if ($pdf->GetStringWidth($insight) > $maxWidth) {
+                    $words = explode(' ', $insight);
+                    $line = '';
+                    $firstLine = true;
+                    
+                    foreach ($words as $word) {
+                        $testLine = $line . $word . ' ';
+                        if ($pdf->GetStringWidth($testLine) > $maxWidth) {
+                            if (!empty($line)) {
+                                $pdf->Cell(0, 6, trim($line), 0, 1, 'L');
+                                if ($firstLine) {
+                                    $pdf->Cell(8, 0, '', 0, 0, 'L'); // Indent
+                                    $firstLine = false;
+                                }
+                            }
+                            $line = $word . ' ';
+                        } else {
+                            $line = $testLine;
+                        }
+                    }
+                    
+                    if (!empty($line)) {
+                        $pdf->Cell(0, 6, trim($line), 0, 1, 'L');
+                    }
+                } else {
+                    $pdf->Cell(0, 6, $insight, 0, 1, 'L');
                 }
                 
-                if (!empty($line)) {
-                    $pdf->Cell(0, $lineHeight, trim($line), 0, 1, 'L');
-                }
-                
-                $responseCounter++;
+                $counter++;
                 $pdf->Ln(2);
             }
-            
-            if (count($feedback['responses']) > 3) {
-                $pdf->SetFont('Arial', 'I', 8);
-                $pdf->Cell(8, 4, '', 0, 0, 'L');
-                $pdf->Cell(0, 4, '... dan ' . (count($feedback['responses']) - 3) . ' feedback lainnya', 0, 1, 'L');
+        });
+    }
+    
+    // SECTION 7: SAMPLE FEEDBACK
+    if (!empty($feedbackData)) {
+        addSectionWithTable($pdf, 'SAMPLE FEEDBACK SISWA', function() use ($pdf, $feedbackData) {
+            foreach ($feedbackData as $index => $feedback) {
+                if ($index > 0) $pdf->Ln(8);
+                
+                $pdf->SetFont('Arial', 'B', 9);
+                $pdf->Cell(0, 6, 'Aspek: ' . $feedback['aspect'] . ' (' . $feedback['count'] . ' respon)', 0, 1, 'L');
                 $pdf->SetFont('Arial', '', 8);
+                $pdf->Ln(2);
+                
+                // Show max 3 sample responses per aspect
+                $sampleResponses = array_slice($feedback['responses'], 0, 3);
+                $responseCounter = 1;
+                
+                foreach ($sampleResponses as $response) {
+                    $responseText = '"' . truncateText($response, 200) . '"';
+                    
+                    $pdf->Cell(8, 5, $responseCounter . '.', 0, 0, 'L');
+                    
+                    // Improved word wrap
+                    $maxWidth = 240;
+                    $words = explode(' ', $responseText);
+                    $line = '';
+                    $firstLine = true;
+                    
+                    foreach ($words as $word) {
+                        $testLine = $line . $word . ' ';
+                        if ($pdf->GetStringWidth($testLine) > $maxWidth) {
+                            if (!empty($line)) {
+                                $pdf->Cell(0, 5, trim($line), 0, 1, 'L');
+                                if ($firstLine) {
+                                    $pdf->Cell(8, 0, '', 0, 0, 'L'); // Indent
+                                    $firstLine = false;
+                                }
+                            }
+                            $line = $word . ' ';
+                        } else {
+                            $line = $testLine;
+                        }
+                    }
+                    
+                    if (!empty($line)) {
+                        $pdf->Cell(0, 5, trim($line), 0, 1, 'L');
+                    }
+                    
+                    $responseCounter++;
+                    $pdf->Ln(3);
+                }
+                
+                if (count($feedback['responses']) > 3) {
+                    $pdf->SetFont('Arial', 'I', 8);
+                    $pdf->Cell(8, 4, '', 0, 0, 'L');
+                    $pdf->Cell(0, 4, '... dan ' . (count($feedback['responses']) - 3) . ' feedback lainnya', 0, 1, 'L');
+                    $pdf->SetFont('Arial', '', 8);
+                }
             }
-        }
+        });
     }
     
     // Add signature
@@ -665,10 +677,75 @@ try {
 // Close database connection
 mysqli_close($conn);
 
-// Helper function untuk menambahkan chart ke PDF
+// HELPER FUNCTIONS FOR IMPROVED LAYOUT
+function addSectionWithChart($pdf, $sectionTitle, $chartImage, $chartTitle, $chartWidth, $chartHeight, $additionalContent = null) {
+    // Calculate required space
+    $titleHeight = 8;
+    $chartTitleHeight = 6;
+    $spacing = 8;
+    $totalChartSpace = $chartHeight + $chartTitleHeight + $spacing;
+    $additionalSpace = $additionalContent ? 50 : 0; // Estimate for additional content
+    
+    $totalRequired = $titleHeight + $totalChartSpace + $additionalSpace + 10; // Extra margin
+    
+    // Check if we need a new page
+    if (!checkSpaceAvailable($pdf, $totalRequired)) {
+        $pdf->AddPage();
+    }
+    
+    // Add section title
+    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->Cell(0, $titleHeight, $sectionTitle, 0, 1, 'L');
+    $pdf->Ln(3);
+    
+    // Add chart if available
+    if ($chartImage) {
+        addChartToPDF($pdf, $chartImage, $chartTitle, $chartWidth, $chartHeight);
+        $pdf->Ln(5);
+    }
+    
+    // Add additional content
+    if ($additionalContent && is_callable($additionalContent)) {
+        $additionalContent();
+    }
+    
+    $pdf->Ln(10); // Section spacing
+}
+
+function addSectionWithTable($pdf, $sectionTitle, $tableContent) {
+    // Estimate space needed (more conservative)
+    $estimatedHeight = 60; // Base estimate for table
+    
+    if (!checkSpaceAvailable($pdf, $estimatedHeight)) {
+        $pdf->AddPage();
+    }
+    
+    // Add section title
+    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->Cell(0, 8, $sectionTitle, 0, 1, 'L');
+    $pdf->Ln(2);
+    
+    // Add table content
+    if ($tableContent && is_callable($tableContent)) {
+        $tableContent();
+    }
+    
+    $pdf->Ln(10); // Section spacing
+}
+
+function checkSpaceAvailable($pdf, $requiredHeight) {
+    $currentY = $pdf->GetY();
+    $pageHeight = $pdf->GetPageHeight();
+    $bottomMargin = 25;
+    $availableSpace = $pageHeight - $currentY - $bottomMargin;
+    
+    return $availableSpace >= $requiredHeight;
+}
+
+// Improved chart addition function
 function addChartToPDF($pdf, $base64Image, $title, $width = 180, $height = 90) {
     try {
-        // Remove base64 prefix jika ada
+        // Remove base64 prefix if exists
         if (strpos($base64Image, ',') !== false) {
             $base64Image = explode(',', $base64Image)[1];
         }
@@ -684,19 +761,10 @@ function addChartToPDF($pdf, $base64Image, $title, $width = 180, $height = 90) {
         $tempFile = tempnam(sys_get_temp_dir(), 'chart_') . '.png';
         file_put_contents($tempFile, $imageData);
         
-        // Check if we need to add new page for chart
-        $currentY = $pdf->GetY();
-        $pageHeight = $pdf->GetPageHeight();
-        $bottomMargin = 25;
-        
-        if (($currentY + $height + 20) > ($pageHeight - $bottomMargin)) {
-            $pdf->AddPage();
-        }
-        
         // Add chart title
         $pdf->SetFont('Arial', 'I', 9);
         $pdf->Cell(0, 6, $title, 0, 1, 'C');
-        $pdf->Ln(3);
+        $pdf->Ln(2);
         
         // Calculate position to center the image
         $pageWidth = $pdf->GetPageWidth();

@@ -424,7 +424,7 @@ function buildUrlWithFilters($page) {
                       
                       
                       <!-- Aksi -->
-                      <td class="text-center align-middle">
+                      <td class="align-middle">
                         <div class="btn-group btn-group-sm" role="group">
                           <a href="detail.php?id=<?= $kelas['id_kelas'] ?>" 
                              class="btn btn-action btn-view btn-sm" 

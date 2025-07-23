@@ -52,74 +52,107 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
     if (mysqli_num_rows($cekNIK) > 0) {
         $error = "NIK sudah terdaftar di gelombang ini!";
     } else {
-        // Handle file upload
+        // Handle file upload sesuai struktur siswa
         $pas_foto = '';
         $ktp = '';
         $kk = '';
         $ijazah = '';
         
-        $upload_dir = 'uploads/pendaftar/';
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0777, true);
+        // Definisikan folder upload sesuai struktur siswa
+        $upload_folders = [
+            'pas_foto' => 'uploads/pas_foto/',
+            'ktp' => 'uploads/ktp/',
+            'kk' => 'uploads/kk/',
+            'ijazah' => 'uploads/ijazah/'
+        ];
+        
+        // Buat folder jika belum ada
+        foreach ($upload_folders as $folder) {
+            if (!is_dir($folder)) {
+                mkdir($folder, 0777, true);
+            }
         }
         
-        $allowed_types = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+        // Definisikan allowed types sesuai dengan sistem siswa
+        $allowed_document_types = ['application/pdf']; // Hanya PDF untuk dokumen resmi
+        $allowed_image_types = ['image/jpeg', 'image/png', 'image/jpg']; // Gambar untuk pas foto
         $max_size = 5 * 1024 * 1024; // 5MB
         
-        // Upload pas foto
+        // Upload pas foto (HANYA GAMBAR)
         if (isset($_FILES['pas_foto']) && $_FILES['pas_foto']['error'] == 0) {
             $file_tmp = $_FILES['pas_foto']['tmp_name'];
             $file_type = $_FILES['pas_foto']['type'];
             $file_size = $_FILES['pas_foto']['size'];
             
-            if (in_array($file_type, $allowed_types) && $file_size <= $max_size) {
-                $pas_foto = time() . '_pas_foto_' . uniqid() . '.' . pathinfo($_FILES['pas_foto']['name'], PATHINFO_EXTENSION);
-                move_uploaded_file($file_tmp, $upload_dir . $pas_foto);
+            if (in_array($file_type, $allowed_image_types) && $file_size <= $max_size) {
+                $extension = strtolower(pathinfo($_FILES['pas_foto']['name'], PATHINFO_EXTENSION));
+                $pas_foto = time() . '_' . $nik . '_pasfoto.' . $extension;
+                
+                if (!move_uploaded_file($file_tmp, $upload_folders['pas_foto'] . $pas_foto)) {
+                    $error = "Gagal mengupload pas foto!";
+                }
             } else {
-                $error = "File pas foto tidak valid atau terlalu besar!";
+                $error = "Pas foto harus berupa gambar JPG/PNG maksimal 5MB!";
             }
+        } else {
+            $error = "Pas foto wajib diupload!";
         }
         
-        // Upload KTP
-        if (isset($_FILES['ktp']) && $_FILES['ktp']['error'] == 0) {
+        // Upload KTP (HANYA PDF)
+        if (!isset($error) && isset($_FILES['ktp']) && $_FILES['ktp']['error'] == 0) {
             $file_tmp = $_FILES['ktp']['tmp_name'];
             $file_type = $_FILES['ktp']['type'];
             $file_size = $_FILES['ktp']['size'];
             
-            if (in_array($file_type, $allowed_types) && $file_size <= $max_size) {
-                $ktp = time() . '_ktp_' . uniqid() . '.' . pathinfo($_FILES['ktp']['name'], PATHINFO_EXTENSION);
-                move_uploaded_file($file_tmp, $upload_dir . $ktp);
+            if (in_array($file_type, $allowed_document_types) && $file_size <= $max_size) {
+                $ktp = time() . '_' . $nik . '_ktp.pdf';
+                
+                if (!move_uploaded_file($file_tmp, $upload_folders['ktp'] . $ktp)) {
+                    $error = "Gagal mengupload KTP!";
+                }
             } else {
-                $error = "File KTP tidak valid atau terlalu besar!";
+                $error = "KTP harus berupa file PDF maksimal 5MB!";
             }
+        } else if (!isset($error)) {
+            $error = "KTP wajib diupload dalam format PDF!";
         }
         
-        // Upload KK
-        if (isset($_FILES['kk']) && $_FILES['kk']['error'] == 0) {
+        // Upload KK (HANYA PDF)
+        if (!isset($error) && isset($_FILES['kk']) && $_FILES['kk']['error'] == 0) {
             $file_tmp = $_FILES['kk']['tmp_name'];
             $file_type = $_FILES['kk']['type'];
             $file_size = $_FILES['kk']['size'];
             
-            if (in_array($file_type, $allowed_types) && $file_size <= $max_size) {
-                $kk = time() . '_kk_' . uniqid() . '.' . pathinfo($_FILES['kk']['name'], PATHINFO_EXTENSION);
-                move_uploaded_file($file_tmp, $upload_dir . $kk);
+            if (in_array($file_type, $allowed_document_types) && $file_size <= $max_size) {
+                $kk = time() . '_' . $nik . '_kk.pdf';
+                
+                if (!move_uploaded_file($file_tmp, $upload_folders['kk'] . $kk)) {
+                    $error = "Gagal mengupload Kartu Keluarga!";
+                }
             } else {
-                $error = "File KK tidak valid atau terlalu besar!";
+                $error = "Kartu Keluarga harus berupa file PDF maksimal 5MB!";
             }
+        } else if (!isset($error)) {
+            $error = "Kartu Keluarga wajib diupload dalam format PDF!";
         }
         
-        // Upload Ijazah
-        if (isset($_FILES['ijazah']) && $_FILES['ijazah']['error'] == 0) {
+        // Upload Ijazah (HANYA PDF)
+        if (!isset($error) && isset($_FILES['ijazah']) && $_FILES['ijazah']['error'] == 0) {
             $file_tmp = $_FILES['ijazah']['tmp_name'];
             $file_type = $_FILES['ijazah']['type'];
             $file_size = $_FILES['ijazah']['size'];
             
-            if (in_array($file_type, $allowed_types) && $file_size <= $max_size) {
-                $ijazah = time() . '_ijazah_' . uniqid() . '.' . pathinfo($_FILES['ijazah']['name'], PATHINFO_EXTENSION);
-                move_uploaded_file($file_tmp, $upload_dir . $ijazah);
+            if (in_array($file_type, $allowed_document_types) && $file_size <= $max_size) {
+                $ijazah = time() . '_' . $nik . '_ijazah.pdf';
+                
+                if (!move_uploaded_file($file_tmp, $upload_folders['ijazah'] . $ijazah)) {
+                    $error = "Gagal mengupload Ijazah!";
+                }
             } else {
-                $error = "File ijazah tidak valid atau terlalu besar!";
+                $error = "Ijazah harus berupa file PDF maksimal 5MB!";
             }
+        } else if (!isset($error)) {
+            $error = "Ijazah wajib diupload dalam format PDF!";
         }
         
         // Insert ke database jika tidak ada error
@@ -143,6 +176,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                 unset($_POST);
             } else {
                 $error = "Terjadi kesalahan: " . mysqli_error($conn);
+                
+                // Hapus file yang sudah diupload jika database gagal
+                if ($pas_foto && file_exists($upload_folders['pas_foto'] . $pas_foto)) {
+                    unlink($upload_folders['pas_foto'] . $pas_foto);
+                }
+                if ($ktp && file_exists($upload_folders['ktp'] . $ktp)) {
+                    unlink($upload_folders['ktp'] . $ktp);
+                }
+                if ($kk && file_exists($upload_folders['kk'] . $kk)) {
+                    unlink($upload_folders['kk'] . $kk);
+                }
+                if ($ijazah && file_exists($upload_folders['ijazah'] . $ijazah)) {
+                    unlink($upload_folders['ijazah'] . $ijazah);
+                }
             }
         }
     }
@@ -532,6 +579,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                         <div class="form-section">
                             <h5><i class="bi bi-file-earmark-arrow-up me-2"></i>Upload Dokumen</h5>
                             
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Penting:</strong> 
+                                <ul class="mb-0 mt-2">
+                                    <li>Pas foto: Format gambar JPG/PNG</li>
+                                    <li>KTP, Kartu Keluarga, Ijazah: <strong>Harus format PDF</strong></li>
+                                    <li>Semua file maksimal 5MB</li>
+                                </ul>
+                            </div>
+                            
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
@@ -541,7 +598,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                                    accept="image/jpeg,image/png,image/jpg" required>
                                             <div class="mt-2">
                                                 <i class="bi bi-camera display-6 text-muted"></i>
-                                                <p class="mb-0">Format: JPG, PNG (Max: 5MB)</p>
+                                                <p class="mb-0"><strong>Format: JPG, PNG</strong></p>
+                                                <small class="text-muted">Maksimal 5MB</small>
                                             </div>
                                         </div>
                                     </div>
@@ -552,10 +610,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                         <label class="form-label">KTP <span class="text-danger">*</span></label>
                                         <div class="file-upload">
                                             <input type="file" name="ktp" class="form-control" 
-                                                   accept="image/jpeg,image/png,image/jpg,application/pdf" required>
+                                                   accept="application/pdf" required>
                                             <div class="mt-2">
-                                                <i class="bi bi-card-text display-6 text-muted"></i>
-                                                <p class="mb-0">Format: JPG, PNG, PDF (Max: 5MB)</p>
+                                                <i class="bi bi-file-pdf display-6 text-danger"></i>
+                                                <p class="mb-0"><strong>Format: PDF</strong></p>
+                                                <small class="text-muted">Maksimal 5MB</small>
                                             </div>
                                         </div>
                                     </div>
@@ -568,10 +627,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                         <label class="form-label">Kartu Keluarga <span class="text-danger">*</span></label>
                                         <div class="file-upload">
                                             <input type="file" name="kk" class="form-control" 
-                                                   accept="image/jpeg,image/png,image/jpg,application/pdf" required>
+                                                   accept="application/pdf" required>
                                             <div class="mt-2">
-                                                <i class="bi bi-people display-6 text-muted"></i>
-                                                <p class="mb-0">Format: JPG, PNG, PDF (Max: 5MB)</p>
+                                                <i class="bi bi-file-pdf display-6 text-danger"></i>
+                                                <p class="mb-0"><strong>Format: PDF</strong></p>
+                                                <small class="text-muted">Maksimal 5MB</small>
                                             </div>
                                         </div>
                                     </div>
@@ -582,10 +642,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                         <label class="form-label">Ijazah Terakhir <span class="text-danger">*</span></label>
                                         <div class="file-upload">
                                             <input type="file" name="ijazah" class="form-control" 
-                                                   accept="image/jpeg,image/png,image/jpg,application/pdf" required>
+                                                   accept="application/pdf" required>
                                             <div class="mt-2">
-                                                <i class="bi bi-award display-6 text-muted"></i>
-                                                <p class="mb-0">Format: JPG, PNG, PDF (Max: 5MB)</p>
+                                                <i class="bi bi-file-pdf display-6 text-danger"></i>
+                                                <p class="mb-0"><strong>Format: PDF</strong></p>
+                                                <small class="text-muted">Maksimal 5MB</small>
                                             </div>
                                         </div>
                                     </div>

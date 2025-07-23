@@ -99,3 +99,5 @@ IP: ::1
 2025-07-17 16:55:05 - Email welcome berhasil dikirim ke: rikaapliana0@gmail.com (Username: rikiramadh_2025_1)
 2025-07-17 17:10:21 - Email welcome berhasil dikirim ke: rikaapliana0@gmail.com (Username: rikiramadh_2025_2)
 2025-07-18 10:28:58 - Email welcome berhasil dikirim ke: almanidazahra@gmail.com (Username: almanidaza_2025)
+2025-07-22 09:15:54 - Email verifikasi dikirim ke: rikaapliana02@gmail.com - Status: Gagal
+2025-07-22 09:16:47 - Email welcome berhasil dikirim ke: rikaapliana02@gmail.com (Username: muhammadfa_2025)

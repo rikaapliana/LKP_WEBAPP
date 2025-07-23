@@ -317,6 +317,21 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
 
         <!-- Statistik Cards - Row 1: Data Akademik Utama -->
         <div class="row g-3 g-md-4 mb-4">
+         <div class="col-6 col-lg-3">
+            <a href="pendaftar/" class="text-decoration-none">
+              <div class="card stats-card stats-card-clickable">
+                <div class="card-body text-center p-3">
+                  <div class="stats-icon stats-success text-white mb-2">
+                    <i class="bi bi-person-plus-fill"></i>
+                  </div>
+                  <h4 class="fw-bold mb-1"><?= number_format($jumlahPendaftar) ?></h4>
+                  <p class="text-muted mb-0 small">Total Pendaftar</p>
+                  <small class="text-warning"><i class="bi bi-clock"></i> <?= $pendaftarBelumVerifikasi ?> belum verifikasi</small>
+                </div>
+              </div>
+            </a>
+          </div>
+
           <div class="col-6 col-lg-3">
             <a href="siswa/" class="text-decoration-none">
               <div class="card stats-card stats-card-clickable">
@@ -331,22 +346,7 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
               </div>
             </a>
           </div>
-          
-          <div class="col-6 col-lg-3">
-            <a href="pendaftar/" class="text-decoration-none">
-              <div class="card stats-card stats-card-clickable">
-                <div class="card-body text-center p-3">
-                  <div class="stats-icon stats-success text-white mb-2">
-                    <i class="bi bi-person-plus-fill"></i>
-                  </div>
-                  <h4 class="fw-bold mb-1"><?= number_format($jumlahPendaftar) ?></h4>
-                  <p class="text-muted mb-0 small">Total Pendaftar</p>
-                  <small class="text-warning"><i class="bi bi-clock"></i> <?= $pendaftarBelumVerifikasi ?> belum verifikasi</small>
-                </div>
-              </div>
-            </a>
-          </div>
-          
+      
           <div class="col-6 col-lg-3">
             <a href="kelas/" class="text-decoration-none">
               <div class="card stats-card stats-card-clickable">
@@ -380,21 +380,7 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
 
         <!-- Statistik Cards - Row 2: Manajemen & Sistem -->
         <div class="row g-3 g-md-4 mb-4">
-          <div class="col-6 col-lg-3">
-            <a href="analisis-evaluasi/" class="text-decoration-none">
-              <div class="card stats-card stats-card-clickable">
-                <div class="card-body text-center p-3">
-                  <div class="stats-icon bg-info text-white mb-2">
-                    <i class="bi bi-graph-up"></i>
-                  </div>
-                  <h4 class="fw-bold mb-1"><?= $avgNilai ?></h4>
-                  <p class="text-muted mb-0 small">Rata-rata Nilai</p>
-                  <small class="text-primary"><i class="bi bi-bar-chart"></i> Hasil evaluasi</small>
-                </div>
-              </div>
-            </a>
-          </div>
-          
+      
           <div class="col-6 col-lg-3">
             <a href="pengaturan/gelombang/" class="text-decoration-none">
               <div class="card stats-card stats-card-clickable">
@@ -404,7 +390,7 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
                   </div>
                   <h4 class="fw-bold mb-1"><?= ($gelombangAktif + $gelombangDibuka) ?></h4>
                   <p class="text-muted mb-0 small">Gelombang Aktif</p>
-                  <small class="text-success"><i class="bi bi-play-circle"></i> <?= $gelombangAktif ?> aktif, <?= $gelombangDibuka ?> dibuka</small>
+                  <small class="text-success"><i class="bi bi-play-circle"></i> <?= $gelombangAktif ?> Gelombang aktif</small>
                 </div>
               </div>
             </a>
@@ -445,6 +431,21 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
             </div>
           </a>
         </div>
+
+        <div class="col-6 col-lg-3">
+            <a href="analisis-evaluasi/" class="text-decoration-none">
+              <div class="card stats-card stats-card-clickable">
+                <div class="card-body text-center p-3">
+                  <div class="stats-icon bg-info text-white mb-2">
+                    <i class="bi bi-graph-up"></i>
+                  </div>
+                  <h4 class="fw-bold mb-1"><?= $avgNilai ?></h4>
+                  <p class="text-muted mb-0 small">Analisis Hasil Evaluasi</p>
+                  <small class="text-primary"><i class="bi bi-bar-chart"></i> Hasil evaluasi</small>
+                </div>
+              </div>
+            </a>
+          </div>
         </div>
         
         <!-- Content Cards Row -->

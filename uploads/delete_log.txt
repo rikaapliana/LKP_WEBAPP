@@ -1,1 +1,2 @@
 [2025-07-16 08:02:55] Admin: Unknown Admin | Hapus pendaftar: Dedi Kurniawan (NIK: 3471013112000005) - Status: Terverifikasi
+[2025-07-23 04:18:49] Admin: Unknown Admin | Hapus pendaftar: Siti Nurhaliza (NIK: 3273024205920002) - Status: Terverifikasi

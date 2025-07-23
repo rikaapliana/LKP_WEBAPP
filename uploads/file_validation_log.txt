@@ -1,0 +1,4 @@
+[2025-07-22 09:16:41] File validation untuk Muhammad Fadilah (NIK: 6309077107050900):
+  - Valid files: pas_foto: 1753167311_6309077107050900_pasfoto.jpg, ktp: 1753167311_6309077107050900_ktp.pdf, kk: 1753167311_6309077107050900_kk.pdf, ijazah: 1753167311_6309077107050900_ijazah.pdf
+  - Status: Files sudah berada di folder yang tepat, tidak perlu copy
+

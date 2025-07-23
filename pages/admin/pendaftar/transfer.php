@@ -139,8 +139,8 @@ try {
         throw new Exception('Gagal mengupdate status pendaftar: ' . mysqli_error($conn));
     }
     
-    // 8. Copy file dari folder pendaftar ke folder siswa (jika diperlukan)
-    copyPendaftarFiles($pendaftar);
+    // 8. Validasi file yang sudah ada (tidak perlu copy karena sudah satu folder)
+    $fileValidation = validatePendaftarFiles($pendaftar);
     
     // Commit transaksi
     mysqli_commit($conn);
@@ -150,7 +150,7 @@ try {
     
     // 10. Log aktivitas
     $logMessage = "Transfer berhasil: {$pendaftar['nama_pendaftar']} (NIK: {$pendaftar['nik']}) -> Kelas: {$kelas['nama_kelas']} | Username: {$username}";
-    logTransferActivity($logMessage, $emailSent);
+    logTransferActivity($logMessage, $emailSent, $fileValidation);
     
     if ($emailSent) {
         $_SESSION['success'] = "Transfer berhasil! {$pendaftar['nama_pendaftar']} telah menjadi siswa aktif di kelas {$kelas['nama_kelas']}. Email credentials telah dikirim ke {$pendaftar['email']}.";
@@ -236,31 +236,51 @@ function generatePassword() {
 }
 
 /**
- * Copy files dari folder pendaftar ke folder siswa
+ * PERBAIKAN: Validasi file yang sudah ada (tidak perlu copy lagi)
  */
-function copyPendaftarFiles($pendaftar) {
+function validatePendaftarFiles($pendaftar) {
+    // File sudah berada di folder yang tepat dari awal, hanya validasi
     $fileFields = ['pas_foto', 'ktp', 'kk', 'ijazah'];
-    $folderMap = [
-        'pas_foto' => ['pas_foto_pendaftar', 'pas_foto'],
-        'ktp' => ['ktp_pendaftar', 'ktp'],
-        'kk' => ['kk_pendaftar', 'kk'],
-        'ijazah' => ['ijazah_pendaftar', 'ijazah']
-    ];
+    $missingFiles = [];
+    $validFiles = [];
     
     foreach ($fileFields as $field) {
         if (!empty($pendaftar[$field])) {
-            $sourceFolder = $folderMap[$field][0];
-            $targetFolder = $folderMap[$field][1];
+            $filePath = "../../../uploads/{$field}/{$pendaftar[$field]}";
             
-            $sourcePath = "../../../uploads/{$sourceFolder}/{$pendaftar[$field]}";
-            $targetPath = "../../../uploads/{$targetFolder}/{$pendaftar[$field]}";
-            
-            // Copy file jika source ada dan target folder exists
-            if (file_exists($sourcePath) && is_dir("../../../uploads/{$targetFolder}")) {
-                copy($sourcePath, $targetPath);
+            if (file_exists($filePath)) {
+                $validFiles[] = $field . ': ' . $pendaftar[$field];
+            } else {
+                $missingFiles[] = $field . ': ' . $pendaftar[$field];
             }
+        } else {
+            $missingFiles[] = $field . ': (kosong)';
         }
     }
+    
+    // Log hasil validasi
+    $timestamp = date('Y-m-d H:i:s');
+    $logEntry = "[{$timestamp}] File validation untuk {$pendaftar['nama_pendaftar']} (NIK: {$pendaftar['nik']}):\n";
+    
+    if (!empty($validFiles)) {
+        $logEntry .= "  - Valid files: " . implode(', ', $validFiles) . "\n";
+    }
+    
+    if (!empty($missingFiles)) {
+        $logEntry .= "  - Missing files: " . implode(', ', $missingFiles) . "\n";
+    }
+    
+    $logEntry .= "  - Status: Files sudah berada di folder yang tepat, tidak perlu copy\n\n";
+    
+    // Simpan log
+    file_put_contents('../../../uploads/file_validation_log.txt', $logEntry, FILE_APPEND | LOCK_EX);
+    
+    // Return info untuk log aktivitas
+    return [
+        'valid_count' => count($validFiles),
+        'missing_count' => count($missingFiles),
+        'status' => empty($missingFiles) ? 'all_files_valid' : 'some_files_missing'
+    ];
 }
 
 /**
@@ -481,7 +501,7 @@ function generateWelcomeEmailHTML($pendaftar, $username, $password, $kelas) {
         <div class='container'>
             <div class='header'>
                 <h1>🎉 Selamat Datang!</h1>
-                <p> LKP PRADATA KOMPUTER TABALONG </p>
+                <p>LKP PRADATA KOMPUTER TABALONG</p>
             </div>
             
             <div class='success-message'>
@@ -491,7 +511,7 @@ function generateWelcomeEmailHTML($pendaftar, $username, $password, $kelas) {
             <div class='content'>
                 <p>Halo <strong>{$pendaftar['nama_pendaftar']}</strong>,</p>
                 
-                <p>Selamat! Kami dengan senang hati menginformasikan bahwa pendaftaran Anda di <strong> LKP PRADATA KOMPUTER TABALONG </strong> telah <strong>DITERIMA</strong> dan Anda resmi menjadi siswa kami.</p>
+                <p>Selamat! Kami dengan senang hati menginformasikan bahwa pendaftaran Anda di <strong>LKP PRADATA KOMPUTER TABALONG</strong> telah <strong>DITERIMA</strong> dan Anda resmi menjadi siswa kami.</p>
                 
                 <table class='info-table'>
                     <tr>
@@ -543,9 +563,10 @@ function generateWelcomeEmailHTML($pendaftar, $username, $password, $kelas) {
                 
                 <div class='contact'>
                     <h3>📞 Butuh Bantuan?</h3>
-                    <p><strong>Email:</strong>awiekpradata@gmail.com</p>
-                    <p><strong>Telepon:</strong> (0526) 2023798 </p>
-                    <p><strong>WhatsApp:</strong> 0822 1359 4215</p>
+                    <p><strong>Email:</strong> " . COMPANY_EMAIL . "</p>
+                    <p><strong>Telepon:</strong> " . COMPANY_PHONE . "</p>
+                    <p><strong>WhatsApp:</strong> " . COMPANY_WHATSAPP . "</p>
+                    <p><strong>Alamat:</strong> " . COMPANY_ADDRESS . "</p>
                 </div>
                 
                 <p>Terima kasih telah mempercayai LKP PRADATA KOMPUTER TABALONG untuk mengembangkan kemampuan komputer Anda. Kami berkomitmen memberikan pelayanan terbaik untuk kesuksesan pembelajaran Anda.</p>
@@ -621,15 +642,16 @@ Email dikirim pada {$currentDate} pukul {$currentTime} WIB
 }
 
 /**
- * Log aktivitas transfer
+ * Log aktivitas transfer dengan info file validation
  */
-function logTransferActivity($message, $emailSent) {
+function logTransferActivity($message, $emailSent, $fileValidation) {
     $logFile = '../../../uploads/transfer_log.txt';
     $adminName = $_SESSION['nama_admin'] ?? 'Unknown Admin';
     $timestamp = date('Y-m-d H:i:s');
     $emailStatus = $emailSent ? 'Email: Sent' : 'Email: Failed';
+    $fileStatus = "Files: {$fileValidation['valid_count']} valid, {$fileValidation['missing_count']} missing";
     
-    $logEntry = "[{$timestamp}] Admin: {$adminName} | {$message} | {$emailStatus}\n";
+    $logEntry = "[{$timestamp}] Admin: {$adminName} | {$message} | {$emailStatus} | {$fileStatus}\n";
     
     file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
 }

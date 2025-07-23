@@ -1,10 +1,18 @@
 <?php
-// File: pages/instruktur/dashboard.php
+session_start();  
+
+// Set timezone Indonesia untuk Kalimantan Selatan (WITA)
+date_default_timezone_set('Asia/Makassar'); // UTC+8 untuk Kalimantan Selatan
 
 require_once '../../includes/auth.php';
 requireInstrukturAuth(); // Hanya instruktur dan admin yang bisa akses
 
 require_once '../../includes/db.php';
+
+$role = $_SESSION['role'] ?? 'instruktur'; 
+$activePage = 'dashboard'; 
+$baseURL = './';
+include '../../includes/db.php'; 
 
 // Ambil data instruktur yang login
 $stmt = $conn->prepare("
@@ -45,6 +53,22 @@ $jadwalStmt = $conn->prepare("
 $jadwalStmt->bind_param("i", $instrukturData['id_instruktur']);
 $jadwalStmt->execute();
 $jadwalResult = $jadwalStmt->get_result();
+
+// Query untuk Quick Action Absensi - Jadwal hari ini
+$quickAbsensiStmt = $conn->prepare("
+    SELECT j.*, k.nama_kelas, g.nama_gelombang,
+           ai.status as status_absensi, ai.waktu as waktu_absen
+    FROM jadwal j
+    JOIN kelas k ON j.id_kelas = k.id_kelas
+    LEFT JOIN gelombang g ON k.id_gelombang = g.id_gelombang
+    LEFT JOIN absensi_instruktur ai ON j.id_jadwal = ai.id_jadwal AND ai.tanggal = CURDATE()
+    WHERE k.id_instruktur = ? AND DATE(j.tanggal) = CURDATE()
+    ORDER BY j.waktu_mulai ASC
+    LIMIT 3
+");
+$quickAbsensiStmt->bind_param("i", $instrukturData['id_instruktur']);
+$quickAbsensiStmt->execute();
+$quickAbsensiResult = $quickAbsensiStmt->get_result();
 
 // Statistik
 $totalSiswa = 0;
@@ -99,6 +123,21 @@ $absensiHariIniStmt = $conn->prepare("
 $absensiHariIniStmt->bind_param("i", $instrukturData['id_instruktur']);
 $absensiHariIniStmt->execute();
 $absensiHariIniResult = $absensiHariIniStmt->get_result();
+
+// Format tanggal dan waktu Indonesia
+$hariIni = date('l, d F Y');
+$jamSekarang = date('H:i');
+$tanggalNotifikasi = date('d/m/Y');
+
+// Translate hari ke bahasa Indonesia
+$hariInggris = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+$hariIndonesia = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+$hariIni = str_replace($hariInggris, $hariIndonesia, $hariIni);
+
+// Translate bulan ke bahasa Indonesia
+$bulanInggris = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+$bulanIndonesia = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+$hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
 ?>
 
 <!DOCTYPE html>
@@ -108,17 +147,9 @@ $absensiHariIniResult = $absensiHariIniStmt->get_result();
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dashboard Instruktur - LKP Pradata Komputer</title>
     <link rel="icon" type="image/png" href="../../assets/img/favicon.png"/>
-    
-    <!-- Offline Bootstrap CSS -->
     <link rel="stylesheet" href="../../assets/css/bootstrap.min.css" />
-    
-    <!-- Offline Bootstrap Icons -->
     <link rel="stylesheet" href="../../assets/css/bootstrap-icons.css" />
-    
-    <!-- Offline Poppins Font -->
     <link rel="stylesheet" href="../../assets/css/fonts.css" />
-    
-    <!-- Custom Styles -->
     <link rel="stylesheet" href="../../assets/css/styles.css" />
 </head>
 
@@ -157,7 +188,7 @@ $absensiHariIniResult = $absensiHariIniStmt->get_result();
                                     <li class="dropdown-header">Notifikasi</li>
                                     <?php if ($jadwalHariIni > 0): ?>
                                     <li>
-                                        <a class="dropdown-item" href="#jadwal">
+                                        <a class="dropdown-item" href="jadwal/">
                                             <i class="bi bi-calendar-check text-info me-2"></i>
                                             <strong><?= $jadwalHariIni ?></strong> jadwal mengajar hari ini
                                         </a>
@@ -165,7 +196,7 @@ $absensiHariIniResult = $absensiHariIniStmt->get_result();
                                     <?php endif; ?>
                                     <?php if ($totalSiswa > 0): ?>
                                     <li>
-                                        <a class="dropdown-item" href="#siswa">
+                                        <a class="dropdown-item" href="siswa/">
                                             <i class="bi bi-people text-success me-2"></i>
                                             <strong><?= $totalSiswa ?></strong> siswa aktif
                                         </a>
@@ -193,8 +224,8 @@ $absensiHariIniResult = $absensiHariIniStmt->get_result();
                                         <i class="bi bi-chevron-down"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profil</a></li>
-                                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Pengaturan</a></li>
+                                        <li><a class="dropdown-item" href="profil/"><i class="bi bi-person me-2"></i>Profil</a></li>
+                                        <li><a class="dropdown-item" href="dashboard.php"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item text-danger" href="../auth/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Keluar</a></li>
                                     </ul>
@@ -214,71 +245,195 @@ $absensiHariIniResult = $absensiHariIniStmt->get_result();
                             <p class="mb-0 opacity-90">Anda sedang login sebagai <strong>Instruktur</strong><br>
                             <strong>LKP Pradata Komputer Kabupaten Tabalong</strong></p>
                         </div>
-                        <div class="col-md-4 text-end d-none d-md-block">
-                            <i class="bi bi-person-workspace fs-1 opacity-75"></i>
+
+                        <!-- Quick Stats in Welcome -->
+                        <div class="row mt-3">
+                            <div class="col-auto">
+                                <small class="opacity-75">
+                                    <?= $hariIni ?>
+                                </small>
+                            </div>
+                            <div class="col-auto">
+                                <small class="opacity-75">
+                                    <?= $jamSekarang ?> WITA 
+                                </small>
+                            </div>
                         </div>
+                    </div>
+                    <div class="col-md-4 text-end ">
+                        <i class="bi bi-person-workspace fs-1 opacity-75"></i>
                     </div>
                 </div>
 
                 <!-- Statistik Cards -->
                 <div class="row g-3 g-md-4 mb-4">
                     <div class="col-6 col-lg-3">
-                        <div class="card stats-card">
-                            <div class="card-body text-center p-4">
-                                <div class="stats-icon stats-primary text-white">
-                                    <i class="bi bi-building-fill"></i>
+                        <a href="kelas/" class="text-decoration-none">
+                            <div class="card stats-card stats-card-clickable">
+                                <div class="card-body text-center p-3">
+                                    <div class="stats-icon stats-primary text-white mb-2">
+                                        <i class="bi bi-building-fill"></i>
+                                    </div>
+                                    <h4 class="fw-bold mb-1"><?= $instrukturData['total_kelas_diampu'] ?? 0 ?></h4>
+                                    <p class="text-muted mb-0 small">Kelas Diampu</p>
+                                    <small class="text-info"><i class="bi bi-book"></i> Total kelas</small>
                                 </div>
-                                <h3 class="fw-bold mb-1"><?= $instrukturData['total_kelas_diampu'] ?? 0 ?></h3>
-                                <p class="text-muted mb-0">Kelas Diampu</p>
-                                <small class="text-info"><i class="bi bi-book"></i> Total kelas</small>
                             </div>
-                        </div>
+                        </a>
+                    </div>
+
+                    <div class="col-6 col-lg-3">
+                        <a href="siswa/" class="text-decoration-none">
+                            <div class="card stats-card stats-card-clickable">
+                                <div class="card-body text-center p-3">
+                                    <div class="stats-icon stats-success text-white mb-2">
+                                        <i class="bi bi-people-fill"></i>
+                                    </div>
+                                    <h4 class="fw-bold mb-1"><?= $totalSiswa ?></h4>
+                                    <p class="text-muted mb-0 small">Total Siswa</p>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Aktif</small>
+                                </div>
+                            </div>
+                        </a>
                     </div>
                     
                     <div class="col-6 col-lg-3">
-                        <div class="card stats-card">
-                            <div class="card-body text-center p-4">
-                                <div class="stats-icon stats-success text-white">
-                                    <i class="bi bi-people-fill"></i>
+                        <a href="materi/" class="text-decoration-none">
+                            <div class="card stats-card stats-card-clickable">
+                                <div class="card-body text-center p-3">
+                                    <div class="stats-icon stats-warning text-white mb-2">
+                                        <i class="bi bi-journal-text"></i>
+                                    </div>
+                                    <h3 class="fw-bold mb-1"><?= $totalMateri ?></h3>
+                                    <p class="text-muted mb-0 small">Materi Dibuat</p>
+                                    <small class="text-warning"><i class="bi bi-file-text"></i> Total materi</small>
                                 </div>
-                                <h3 class="fw-bold mb-1"><?= $totalSiswa ?></h3>
-                                <p class="text-muted mb-0">Total Siswa</p>
-                                <small class="text-success"><i class="bi bi-check-circle"></i> Aktif</small>
                             </div>
-                        </div>
+                        </a>
                     </div>
                     
                     <div class="col-6 col-lg-3">
-                        <div class="card stats-card">
-                            <div class="card-body text-center p-4">
-                                <div class="stats-icon stats-warning text-white">
-                                    <i class="bi bi-journal-text"></i>
+                        <a href="jadwal/" class="text-decoration-none">
+                            <div class="card stats-card stats-card-clickable">
+                                <div class="card-body text-center p-3">
+                                    <div class="stats-icon stats-danger text-white mb-2">
+                                        <i class="bi bi-calendar-check-fill"></i>
+                                    </div>
+                                    <h3 class="fw-bold mb-1"><?= $jadwalHariIni ?></h3>
+                                    <p class="text-muted mb-0 small">Jadwal Hari Ini</p>
+                                    <small class="<?= $jadwalHariIni > 0 ? 'text-info' : 'text-muted' ?>">
+                                        <i class="bi bi-<?= $jadwalHariIni > 0 ? 'clock' : 'calendar-x' ?>"></i> 
+                                        <?= $jadwalHariIni > 0 ? 'Ada jadwal' : 'Tidak ada jadwal' ?>
+                                    </small>
                                 </div>
-                                <h3 class="fw-bold mb-1"><?= $totalMateri ?></h3>
-                                <p class="text-muted mb-0">Materi Dibuat</p>
-                                <small class="text-warning"><i class="bi bi-file-text"></i> Total materi</small>
                             </div>
-                        </div>
+                        </a>
                     </div>
-                    
-                    <div class="col-6 col-lg-3">
-                        <div class="card stats-card">
-                            <div class="card-body text-center p-4">
-                                <div class="stats-icon stats-danger text-white">
-                                    <i class="bi bi-calendar-check-fill"></i>
+                </div>
+
+                <!-- Quick Action Absensi Section -->
+                <?php if ($quickAbsensiResult->num_rows > 0): ?>
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-0 py-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0 text-dark">
+                                        <i class="bi bi-person-check text-primary me-2"></i>
+                                        Absensi Cepat Hari Ini
+                                    </h5>
+                                    <a href="absensi_instruktur/" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-plus-circle me-1"></i>Lihat Semua
+                                    </a>
                                 </div>
-                                <h3 class="fw-bold mb-1"><?= $jadwalHariIni ?></h3>
-                                <p class="text-muted mb-0">Jadwal Hari Ini</p>
-                                <small class="<?= $jadwalHariIni > 0 ? 'text-info' : 'text-muted' ?>">
-                                    <i class="bi bi-<?= $jadwalHariIni > 0 ? 'clock' : 'calendar-x' ?>"></i> 
-                                    <?= $jadwalHariIni > 0 ? 'Ada jadwal' : 'Tidak ada jadwal' ?>
-                                </small>
+                            </div>
+                            <div class="card-body py-2">
+                                <div class="row g-2">
+                                    <?php while ($jadwal = $quickAbsensiResult->fetch_assoc()): ?>
+                                        <?php
+                                        $isAbsen = !empty($jadwal['status_absensi']);
+                                        $jadwalEnd = strtotime($jadwal['tanggal'] . ' ' . $jadwal['waktu_selesai']);
+                                        $currentTime = time();
+                                        $isExpired = $currentTime > $jadwalEnd;
+                                        
+                                        // Status styling
+                                        if ($isAbsen) {
+                                            $badgeClass = 'bg-success';
+                                            $badgeText = 'Sudah Absen';
+                                            $badgeIcon = 'check-circle';
+                                        } elseif ($isExpired) {
+                                            $badgeClass = 'bg-danger';
+                                            $badgeText = 'Terlewat';
+                                            $badgeIcon = 'x-circle';
+                                        } else {
+                                            $badgeClass = 'bg-warning';
+                                            $badgeText = 'Belum Absen';
+                                            $badgeIcon = 'clock';
+                                        }
+                                        ?>
+                                        <div class="col-md-4">
+                                            <div class="card bg-light border-0 h-100">
+                                                <div class="card-body p-3">
+                                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                                        <h6 class="mb-0 fw-bold text-dark">
+                                                            <?= htmlspecialchars($jadwal['nama_kelas']) ?>
+                                                        </h6>
+                                                        <span class="badge <?= $badgeClass ?> px-2 py-1">
+                                                            <i class="bi bi-<?= $badgeIcon ?> me-1"></i>
+                                                            <?= $badgeText ?>
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    <?php if($jadwal['nama_gelombang']): ?>
+                                                        <small class="text-muted d-block mb-2">
+                                                            <?= htmlspecialchars($jadwal['nama_gelombang']) ?>
+                                                        </small>
+                                                    <?php endif; ?>
+                                                    
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <i class="bi bi-clock text-muted me-2"></i>
+                                                        <small class="text-muted">
+                                                            <?= $jadwal['waktu_mulai'] ?> - <?= $jadwal['waktu_selesai'] ?>
+                                                        </small>
+                                                    </div>
+                                                    
+                                                    <?php if ($isAbsen): ?>
+                                                        <div class="d-flex align-items-center text-success">
+                                                            <i class="bi bi-check-circle me-2"></i>
+                                                            <small>
+                                                                Absen: <?= date('H:i', strtotime($jadwal['waktu_absen'])) ?>
+                                                            </small>
+                                                        </div>
+                                                    <?php elseif ($isExpired): ?>
+                                                        <div class="text-center">
+                                                            <small class="text-danger">
+                                                                <i class="bi bi-clock-history me-1"></i>
+                                                                Jadwal sudah berakhir
+                                                            </small>
+                                                        </div>
+                                                    <?php else: ?>
+                                                        <div class="d-grid">
+                                                            <a href="absensi_instruktur/?jadwal=<?= $jadwal['id_jadwal'] ?>" 
+                                                               class="btn btn-primary btn-sm">
+                                                                <i class="bi bi-check-circle me-1"></i>
+                                                                Absen Sekarang
+                                                            </a>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endwhile; ?>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
 
-               
     <!-- Sidebar Overlay -->
     <div class="sidebar-overlay"></div>
     

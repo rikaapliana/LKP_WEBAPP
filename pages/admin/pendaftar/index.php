@@ -619,10 +619,10 @@ function buildUrlWithFilters($page) {
                         </span>
                       </td>
                       
-                      <!-- Foto -->
+                      <!-- PERBAIKAN: Foto - Path sesuai struktur baru -->
                       <td class="text-center align-middle" style="text-align: center !important;">
-                        <?php if($pendaftar['pas_foto'] && file_exists('../../../uploads/pas_foto_pendaftar/'.$pendaftar['pas_foto'])): ?>
-                          <img src="../../../uploads/pas_foto_pendaftar/<?= $pendaftar['pas_foto'] ?>" 
+                        <?php if($pendaftar['pas_foto'] && file_exists('../../../uploads/pas_foto/'.$pendaftar['pas_foto'])): ?>
+                          <img src="../../../uploads/pas_foto/<?= $pendaftar['pas_foto'] ?>" 
                                alt="Foto" 
                                class="rounded photo-preview" 
                                style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #e9ecef; margin: 0 auto; display: block;" 
@@ -635,10 +635,10 @@ function buildUrlWithFilters($page) {
                         <?php endif; ?>
                       </td>
 
-                      <!-- KTP -->
+                      <!-- PERBAIKAN: KTP - Path sesuai struktur baru -->
                       <td class="text-center align-middle" style="text-align: center !important;">
-                        <?php if($pendaftar['ktp'] && file_exists('../../../uploads/ktp_pendaftar/'.$pendaftar['ktp'])): ?>
-                          <a href="../../../uploads/ktp_pendaftar/<?= $pendaftar['ktp'] ?>" 
+                        <?php if($pendaftar['ktp'] && file_exists('../../../uploads/ktp/'.$pendaftar['ktp'])): ?>
+                          <a href="../../../uploads/ktp/<?= $pendaftar['ktp'] ?>" 
                              target="_blank" 
                              class="btn btn-sm btn-outline-danger" 
                              title="Download KTP"
@@ -652,10 +652,10 @@ function buildUrlWithFilters($page) {
                         <?php endif; ?>
                       </td>
                       
-                      <!-- Kartu Keluarga -->
+                      <!-- PERBAIKAN: Kartu Keluarga - Path sesuai struktur baru -->
                       <td class="text-center align-middle" style="text-align: center !important;">
-                        <?php if($pendaftar['kk'] && file_exists('../../../uploads/kk_pendaftar/'.$pendaftar['kk'])): ?>
-                          <a href="../../../uploads/kk_pendaftar/<?= $pendaftar['kk'] ?>" 
+                        <?php if($pendaftar['kk'] && file_exists('../../../uploads/kk/'.$pendaftar['kk'])): ?>
+                          <a href="../../../uploads/kk/<?= $pendaftar['kk'] ?>" 
                              target="_blank" 
                              class="btn btn-sm btn-outline-danger" 
                              title="Download Kartu Keluarga"
@@ -669,11 +669,10 @@ function buildUrlWithFilters($page) {
                         <?php endif; ?>
                       </td>
 
-                      
-                      <!-- Ijazah -->
+                      <!-- PERBAIKAN: Ijazah - Path sesuai struktur baru -->
                       <td class="text-center align-middle" style="text-align: center !important;">
-                        <?php if($pendaftar['ijazah'] && file_exists('../../../uploads/ijazah_pendaftar/'.$pendaftar['ijazah'])): ?>
-                          <a href="../../../uploads/ijazah_pendaftar/<?= $pendaftar['ijazah'] ?>" 
+                        <?php if($pendaftar['ijazah'] && file_exists('../../../uploads/ijazah/'.$pendaftar['ijazah'])): ?>
+                          <a href="../../../uploads/ijazah/<?= $pendaftar['ijazah'] ?>" 
                              target="_blank" 
                              class="btn btn-sm btn-outline-danger" 
                              title="Download Ijazah"
@@ -767,8 +766,8 @@ function buildUrlWithFilters($page) {
                           
                           <div class="modal-body">
                             <div class="text-center mb-3">
-                              <?php if($pendaftar['pas_foto'] && file_exists('../../../uploads/pas_foto_pendaftar/'.$pendaftar['pas_foto'])): ?>
-                                <img src="../../../uploads/pas_foto_pendaftar/<?= $pendaftar['pas_foto'] ?>" 
+                              <?php if($pendaftar['pas_foto'] && file_exists('../../../uploads/pas_foto/'.$pendaftar['pas_foto'])): ?>
+                                <img src="../../../uploads/pas_foto/<?= $pendaftar['pas_foto'] ?>" 
                                      alt="Foto" 
                                      class="rounded-circle mb-2"
                                      style="width: 80px; height: 80px; object-fit: cover;">
@@ -829,8 +828,8 @@ function buildUrlWithFilters($page) {
                             <!-- Info Pendaftar -->
                             <div class="row mb-4">
                               <div class="col-auto">
-                                <?php if($pendaftar['pas_foto'] && file_exists('../../../uploads/pas_foto_pendaftar/'.$pendaftar['pas_foto'])): ?>
-                                  <img src="../../../uploads/pas_foto_pendaftar/<?= $pendaftar['pas_foto'] ?>" 
+                                <?php if($pendaftar['pas_foto'] && file_exists('../../../uploads/pas_foto/'.$pendaftar['pas_foto'])): ?>
+                                  <img src="../../../uploads/pas_foto/<?= $pendaftar['pas_foto'] ?>" 
                                        alt="Foto" 
                                        class="rounded"
                                        style="width: 80px; height: 80px; object-fit: cover;">
@@ -924,8 +923,8 @@ function buildUrlWithFilters($page) {
                             
                             <div class="student-preview">
                               <!-- Foto Pendaftar -->
-                              <?php if($pendaftar['pas_foto'] && file_exists('../../../uploads/pas_foto_pendaftar/'.$pendaftar['pas_foto'])): ?>
-                                <img src="../../../uploads/pas_foto_pendaftar/<?= $pendaftar['pas_foto'] ?>" 
+                              <?php if($pendaftar['pas_foto'] && file_exists('../../../uploads/pas_foto/'.$pendaftar['pas_foto'])): ?>
+                                <img src="../../../uploads/pas_foto/<?= $pendaftar['pas_foto'] ?>" 
                                      alt="Foto Pendaftar" 
                                      class="rounded-circle">
                               <?php else: ?>
@@ -1388,11 +1387,11 @@ function buildUrlWithFilters($page) {
       if (btnCetakPDF && rows.length > 0) {
         if (visibleCount > 0) {
           btnCetakPDF.disabled = false;
-          btnCetakPDF.innerHTML = '<i class="bi bi-file-earmark-pdf me-2"></i>Cetak PDF';
+          btnCetakPDF.innerHTML = '<i class="bi bi-printer me-2"></i>Cetak Data';
           btnCetakPDF.title = `Cetak laporan ${visibleCount} data pendaftar`;
         } else {
           btnCetakPDF.disabled = true;
-          btnCetakPDF.innerHTML = '<i class="bi bi-file-earmark-pdf me-2"></i>Tidak Ada Data';
+          btnCetakPDF.innerHTML = '<i class="bi bi-printer me-2"></i>Tidak Ada Data';
           btnCetakPDF.title = 'Tidak ada data yang sesuai filter';
         }
       }
