@@ -9,7 +9,7 @@ $dataMasterPages = ['instruktur', 'kelas', 'materi'];
 $dataAkademikPages = ['pendaftar', 'siswa', 'jadwal', 'nilai'];
 
 // Halaman yang masuk dalam grup Laporan (digabung)
-$laporanPages = ['laporan-instruktur', 'laporan-kelas', 'laporan-materi', 'laporan-pendaftar', 'laporan-siswa', 'laporan-jadwal', 'laporan-nilai', 'laporan-hasil-evaluasi'];
+$laporanPages = ['laporan-instruktur', 'laporan-kelas', 'laporan-materi', 'laporan-pendaftar', 'laporan-siswa', 'laporan-jadwal', 'laporan-nilai', 'laporan-hasil-evaluasi', 'laporan-rekap'];
 
 // Fungsi pengecekan dengan proteksi duplikat
 if (!function_exists('isGroupSubPage')) {
@@ -217,6 +217,11 @@ $isLaporanActive = isGroupSubPage($activePage, $laporanPages);
                 <li class="nav-item">
                     <a class="nav-link submenu-link <?= ($activePage == 'laporan-hasil-evaluasi') ? 'active' : '' ?>" href="<?= $baseURL ?>analisis-evaluasi/index.php">
                         Laporan Hasil Evaluasi
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link submenu-link <?= ($activePage == 'laporan-rekap') ? 'active' : '' ?>" href="<?= $baseURL ?>rekap-data/cetak_laporan.php">
+                        Laporan Rekap Data
                     </a>
                 </li>
             </ul>

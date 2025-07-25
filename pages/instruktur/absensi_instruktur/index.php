@@ -7,6 +7,9 @@ include '../../../includes/db.php';
 $activePage = 'absensi-instruktur'; 
 $baseURL = '../';
 
+// Set timezone Makassar (WITA)
+date_default_timezone_set('Asia/Makassar');
+
 // Ambil ID instruktur yang sedang login
 $stmt = $conn->prepare("SELECT id_instruktur, nama FROM instruktur WHERE id_user = ?");
 $stmt->bind_param("i", $_SESSION['user_id']);
@@ -58,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         // Determine status otomatis berdasarkan waktu jika status hadir
         $finalStatus = $status;
         $isLate = false;
+        $lateMessage = '';
         
         if ($status == 'hadir') {
             $jadwalStart = strtotime($jadwalData['tanggal'] . ' ' . $jadwalData['waktu_mulai']);
@@ -66,6 +70,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
             
             if ($currentTime > $toleranceTime) {
                 $isLate = true;
+                $lateMinutes = round(($currentTime - $jadwalStart) / 60);
+                $lateMessage = "Terlambat $lateMinutes menit dari jadwal";
+                
+                // Tambahkan keterangan terlambat
+                if (!empty($keterangan)) {
+                    $keterangan = $lateMessage . ". " . $keterangan;
+                } else {
+                    $keterangan = $lateMessage;
+                }
             }
         }
         
@@ -79,6 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                 'status' => $finalStatus,
                 'waktu' => date('H:i', strtotime($waktu)),
                 'is_late' => $isLate,
+                'late_message' => $lateMessage,
                 'message' => 'Absensi berhasil disimpan!'
             ]);
         } else {
@@ -194,7 +208,7 @@ mysqli_data_seek($jadwalResult, 0);
         <?php if (isset($_SESSION['success'])): ?>
           <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="bi bi-check-circle me-2"></i>
-            <?= $_SESSION['success'] ?>
+            <?= htmlspecialchars($_SESSION['success']) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
           </div>
           <?php unset($_SESSION['success']); ?>
@@ -203,7 +217,7 @@ mysqli_data_seek($jadwalResult, 0);
         <?php if (isset($_SESSION['error'])): ?>
           <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <i class="bi bi-exclamation-triangle me-2"></i>
-            <?= $_SESSION['error'] ?>
+            <?= htmlspecialchars($_SESSION['error']) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
           </div>
           <?php unset($_SESSION['error']); ?>
@@ -250,6 +264,7 @@ mysqli_data_seek($jadwalResult, 0);
                   $statusClass = 'secondary';
                   $statusText = 'Belum Absen';
                   $statusIcon = 'clock';
+                  $isLate = false;
                   
                   // Cek apakah sudah lewat jadwal
                   $jadwalEnd = strtotime($jadwal['tanggal'] . ' ' . $jadwal['waktu_selesai']);
@@ -263,15 +278,24 @@ mysqli_data_seek($jadwalResult, 0);
                         $statusText = 'Hadir';
                         $statusIcon = 'check-circle';
                         
-                        // Cek keterlambatan
-                        $jadwalStart = strtotime($jadwal['tanggal'] . ' ' . $jadwal['waktu_mulai']);
-                        $absenTime = strtotime($jadwal['waktu_absen']);
-                        $toleranceTime = $jadwalStart + (30 * 60);
-                        
-                        if ($absenTime > $toleranceTime) {
+                        // Cek keterlambatan dari keterangan atau hitung ulang
+                        if (strpos($jadwal['keterangan'], 'Terlambat') !== false) {
                           $statusText = 'Hadir (Terlambat)';
                           $statusClass = 'warning';
                           $statusIcon = 'exclamation-triangle';
+                          $isLate = true;
+                        } else {
+                          // Double check dari waktu
+                          $jadwalStart = strtotime($jadwal['tanggal'] . ' ' . $jadwal['waktu_mulai']);
+                          $absenTime = strtotime($jadwal['waktu_absen']);
+                          $toleranceTime = $jadwalStart + (30 * 60);
+                          
+                          if ($absenTime > $toleranceTime) {
+                            $statusText = 'Hadir (Terlambat)';
+                            $statusClass = 'warning';
+                            $statusIcon = 'exclamation-triangle';
+                            $isLate = true;
+                          }
                         }
                         break;
                       case 'izin':
@@ -298,7 +322,7 @@ mysqli_data_seek($jadwalResult, 0);
                   ?>
                   
                   <div class="col-lg-6">
-                    <div class="card h-100">
+                    <div class="card h-100 <?= $isLate ? 'border-warning' : '' ?>">
                       <div class="card-header bg-light">
                         <div class="d-flex justify-content-between align-items-start">
                           <div>
@@ -327,9 +351,12 @@ mysqli_data_seek($jadwalResult, 0);
                           
                           <?php if ($isAbsen): ?>
                             <div class="d-flex align-items-center mb-2">
-                              <i class="bi bi-check-circle me-2 text-success"></i>
+                              <i class="bi bi-check-circle me-2 <?= $isLate ? 'text-warning' : 'text-success' ?>"></i>
                               <small class="text-muted">
                                 Absen: <?= date('H:i', strtotime($jadwal['waktu_absen'])) ?>
+                                <?php if ($isLate): ?>
+                                  <span class="badge bg-warning text-dark ms-1">TERLAMBAT</span>
+                                <?php endif; ?>
                               </small>
                             </div>
                             
@@ -365,7 +392,7 @@ mysqli_data_seek($jadwalResult, 0);
                           </div>
                         <?php else: ?>
                           <div class="text-center">
-                            <small class="text-success">
+                            <small class="<?= $isLate ? 'text-warning' : 'text-success' ?>">
                               <i class="bi bi-check-all me-1"></i>
                               Absensi sudah tercatat
                             </small>
@@ -538,15 +565,18 @@ mysqli_data_seek($jadwalResult, 0);
         
         // Show success message
         let message = data.message;
-        if (data.is_late) {
-          message += ' (Anda terlambat dari jadwal yang ditentukan)';
+        let icon = 'success';
+        
+        if (data.is_late && data.late_message) {
+          message += ' (' + data.late_message + ')';
+          icon = 'warning';
         }
         
         Swal.fire({
           title: 'Berhasil!',
           text: message,
-          icon: data.is_late ? 'warning' : 'success',
-          timer: 2000,
+          icon: icon,
+          timer: 3000,
           showConfirmButton: false
         }).then(() => {
           // Reload page to update UI
@@ -575,12 +605,14 @@ mysqli_data_seek($jadwalResult, 0);
     });
   }
   
-  // Update clock
+  // Update clock dengan timezone Makassar
   function updateClock() {
     const now = new Date();
-    const timeString = now.toLocaleTimeString('id-ID', {
+    const makassarTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Makassar"}));
+    const timeString = makassarTime.toLocaleTimeString('id-ID', {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: false
     });
     document.getElementById('currentTime').textContent = timeString;
   }

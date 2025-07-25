@@ -126,7 +126,7 @@ function buildUrlWithFilters($page) {
                   </ol>
                 </nav>
               </div>
-            </div>
+            
             
             <!-- Right: Optional Info -->
             <div class="d-flex align-items-center">
@@ -171,17 +171,6 @@ function buildUrlWithFilters($page) {
                 <h5 class="mb-0 text-dark">
                   <i class="bi bi-building me-2"></i>Daftar Kelas Yang Diampu
                 </h5>
-              </div>
-              <div class="col-md-6">
-                <div class="d-flex button-group-header justify-content-md-end gap-2">
-                  <button type="button" 
-                          class="btn btn-cetak-soft" 
-                          onclick="cetakLaporanPDF()" 
-                          id="btnCetakPDF"
-                          title="Cetak laporan kelas yang diampu">
-                    <i class="bi bi-printer me-2"></i>Cetak Laporan
-                  </button>
-                </div>
               </div>
             </div>
           </div>

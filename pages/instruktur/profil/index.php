@@ -144,7 +144,7 @@ $absensiTerakhir = $stmt->get_result()->fetch_assoc();
         </div>
 
         <!-- Profile Header Card -->
-        <div class="card content-card mb-4">
+        <div class="card border-0 shadow-sm mb-4">
           <div class="card-body p-4">
             <div class="row align-items-start">
               <div class="col-auto">
@@ -166,8 +166,8 @@ $absensiTerakhir = $stmt->get_result()->fetch_assoc();
                 <div class="d-flex justify-content-between align-items-start">
                   <div>
                     <h3 class="mb-1 fw-bold"><?= htmlspecialchars($instruktur_data['nama']) ?></h3>
-                    <p class="text-muted mb-2">Username: <?= htmlspecialchars($instruktur_data['username']) ?></p>
-                    <div class="d-flex gap-3 mb-2">
+                    <p class="text-muted mb-3">Username: <?= htmlspecialchars($instruktur_data['username']) ?></p>
+                    <div class="d-flex gap-3">
                       <span class="badge bg-primary fs-6 px-3 py-2">
                         <i class="bi bi-person-gear me-1"></i>
                         Instruktur
@@ -177,17 +177,8 @@ $absensiTerakhir = $stmt->get_result()->fetch_assoc();
                         <?= ucfirst($instruktur_data['status_aktif']) ?>
                       </span>
                     </div>
-                    <?php if($absensiTerakhir): ?>
-                    <div class="text-muted small">
-                      <i class="bi bi-clock me-1"></i>
-                      Absensi terakhir: <?= date('d/m/Y H:i', strtotime($absensiTerakhir['tanggal'] . ' ' . $absensiTerakhir['waktu'])) ?>
-                      <span class="badge bg-<?= $absensiTerakhir['status'] == 'hadir' ? 'success' : 'warning' ?> ms-2">
-                        <?= ucfirst($absensiTerakhir['status']) ?>
-                      </span>
-                    </div>
-                    <?php endif; ?>
                   </div>
-                  <div class="d-flex gap-3">
+                   <div class="d-flex gap-3">
                     <a href="../dashboard.php" class="btn btn-kembali px-4">
                       Kembali
                     </a>

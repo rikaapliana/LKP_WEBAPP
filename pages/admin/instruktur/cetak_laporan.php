@@ -5,6 +5,7 @@
 session_start();  
 require_once '../../../includes/auth.php';  
 requireAdminAuth();
+$activePage = 'laporan-instruktur'; 
 
 include '../../../includes/db.php';
 require_once('../../../vendor/fpdf/lkp_pdf.php');

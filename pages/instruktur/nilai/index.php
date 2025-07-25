@@ -7,6 +7,9 @@ include '../../../includes/db.php';
 $activePage = 'kelola-nilai'; 
 $baseURL = '../';
 
+// Set timezone Makassar (WITA)
+date_default_timezone_set('Asia/Makassar');
+
 // Ambil ID instruktur yang sedang login
 $stmt = $conn->prepare("SELECT id_instruktur, nama FROM instruktur WHERE id_user = ?");
 $stmt->bind_param("i", $_SESSION['user_id']);
@@ -308,7 +311,7 @@ function buildUrlWithFilters($page = null) {
         <?php if (isset($_SESSION['success'])): ?>
           <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="bi bi-check-circle me-2"></i>
-            <?= $_SESSION['success'] ?>
+            <?= htmlspecialchars($_SESSION['success']) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
           </div>
           <?php unset($_SESSION['success']); ?>
@@ -318,7 +321,7 @@ function buildUrlWithFilters($page = null) {
         <?php if (isset($_SESSION['error'])): ?>
           <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <i class="bi bi-exclamation-triangle me-2"></i>
-            <?= $_SESSION['error'] ?>
+            <?= htmlspecialchars($_SESSION['error']) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
           </div>
           <?php unset($_SESSION['error']); ?>
@@ -1023,30 +1026,46 @@ function buildUrlWithFilters($page = null) {
     });
   }
   
-  // Fungsi cetak laporan
+  // Fungsi cetak laporan (TANPA LOADING LAMA)
   function cetakLaporanPDF() {
     const btnCetak = document.getElementById('btnCetakPDF');
     
+    // Validasi kelas terpilih
+    const filterKelas = '<?= $filterKelas ?>';
+    if (!filterKelas) {
+      Swal.fire({
+        title: 'Pilih Kelas!',
+        text: 'Silakan pilih kelas terlebih dahulu untuk mencetak laporan',
+        icon: 'warning'
+      });
+      return;
+    }
+    
+    // Disable button sementara
     btnCetak.disabled = true;
-    btnCetak.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Memproses...';
+    btnCetak.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Membuka PDF...';
     
-    let url = 'cetak_laporan.php?';
-    const params = [];
+    // Build URL
+    const url = `cetak_laporan.php?kelas=${encodeURIComponent(filterKelas)}`;
     
-    if ('<?= $filterKelas ?>') params.push('kelas=' + encodeURIComponent('<?= $filterKelas ?>'));
-    
-    url += params.join('&');
-    
+    // Langsung buka window tanpa delay lama
     const pdfWindow = window.open(url, '_blank');
     
+    // Reset button dengan delay minimal
     setTimeout(() => {
       btnCetak.disabled = false;
       btnCetak.innerHTML = '<i class="bi bi-printer me-2"></i>Cetak Laporan';
       
+      // Check popup blocker
       if (!pdfWindow || pdfWindow.closed || typeof pdfWindow.closed == 'undefined') {
-        alert('Popup diblokir! Silakan izinkan popup untuk mengunduh laporan PDF.');
+        Swal.fire({
+          title: 'Pop-up Diblokir!',
+          text: 'Browser memblokir pop-up. Silakan izinkan popup untuk mengunduh laporan PDF.',
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        });
       }
-    }, 2000);
+    }, 500);
   }
   
   // Search functionality untuk tab rekap

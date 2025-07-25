@@ -2,3 +2,7 @@
   - Valid files: pas_foto: 1753167311_6309077107050900_pasfoto.jpg, ktp: 1753167311_6309077107050900_ktp.pdf, kk: 1753167311_6309077107050900_kk.pdf, ijazah: 1753167311_6309077107050900_ijazah.pdf
   - Status: Files sudah berada di folder yang tepat, tidak perlu copy
 
+[2025-07-24 19:33:32] File validation untuk Almanida Zahra (NIK: 6309077107050800):
+  - Valid files: pas_foto: 1752668517_pas_foto_68779965159ce.jpg, ktp: 1752668517_ktp_6877996517790.jpg, kk: 1752668517_kk_687799651830d.jpg, ijazah: 1752668517_ijazah_6877996518a6a.jpg
+  - Status: Files sudah berada di folder yang tepat, tidak perlu copy
+

@@ -14,7 +14,7 @@ $activePage = 'dashboard';
 $baseURL = './';
 include '../../includes/db.php'; 
 
-// Ambil data instruktur yang login
+// Ambil data instruktur yang login (termasuk foto profil)
 $stmt = $conn->prepare("
     SELECT i.*, COUNT(DISTINCT k.id_kelas) as total_kelas_diampu
     FROM instruktur i
@@ -210,10 +210,17 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
                                 </ul>
                             </div>
                             
-                            <!-- User info -->
+                            <!-- User info dengan foto profil -->
                             <div class="navbar-user-info">
                                 <div class="navbar-user-avatar">
-                                    <?= strtoupper(substr($instrukturData['nama'] ?? 'I', 0, 1)) ?>
+                                    <?php if(!empty($instrukturData['pas_foto']) && file_exists('../../uploads/profile_pictures/'.$instrukturData['pas_foto'])): ?>
+                                        <img src="../../uploads/profile_pictures/<?= $instrukturData['pas_foto'] ?>" 
+                                             alt="Foto Profil" 
+                                             class="rounded-circle" 
+                                             style="width: 40px; height: 40px; object-fit: cover;">
+                                    <?php else: ?>
+                                        <?= strtoupper(substr($instrukturData['nama'] ?? 'I', 0, 1)) ?>
+                                    <?php endif; ?>
                                 </div>
                                 <div class="navbar-user-details">
                                     <span class="navbar-user-name"><?= htmlspecialchars($instrukturData['nama'] ?? $_SESSION['username']) ?></span>
@@ -343,7 +350,7 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
                                         Absensi Cepat Hari Ini
                                     </h5>
                                     <a href="absensi_instruktur/" class="btn btn-outline-primary btn-sm">
-                                        <i class="bi bi-plus-circle me-1"></i>Lihat Semua
+                                    Lihat Semua
                                     </a>
                                 </div>
                             </div>

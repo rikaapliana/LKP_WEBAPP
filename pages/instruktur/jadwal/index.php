@@ -281,19 +281,9 @@ function buildUrlWithFilters($page = null) {
                   <i class="bi bi-calendar-event me-2"></i>Jadwal Mengajar Saya
                 </h5>
               </div>
-              <div class="col-md-6 text-md-end">
-                <div class="d-flex button-group-header justify-content-md-end gap-2">
-                  <button type="button" 
-                          class="btn btn-cetak-soft" 
-                          onclick="cetakLaporanPDF()" 
-                          id="btnCetakPDF"
-                          title="Cetak jadwal mengajar">
-                    <i class="bi bi-printer me-2"></i>Cetak Jadwal
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
+        </div>
 
           <!-- Search/Filter Controls -->
           <div class="p-3 border-bottom">
@@ -418,6 +408,7 @@ function buildUrlWithFilters($page = null) {
               </div>
             </form>
           </div>
+         </div>
           
           <!-- Table -->
           <div class="table-responsive" style="overflow-x: auto; overflow-y: visible;">
@@ -431,7 +422,6 @@ function buildUrlWithFilters($page = null) {
                   <th>Kelas</th>
                   <th>Siswa</th>
                   <th>Status</th>
-                  <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -497,33 +487,8 @@ function buildUrlWithFilters($page = null) {
                             <i class="bi bi-calendar-check me-1"></i>Terjadwal
                           </span>
                         <?php endif; ?>
-                      </td>
-                      
-                      <td class="text-center align-middle">
-                        <div class="btn-group btn-group-sm" role="group">
-                          <a href="../siswa/index.php?kelas=<?= $jadwal['id_kelas'] ?>" 
-                             class="btn btn-action btn-view btn-sm" 
-                             data-bs-toggle="tooltip" 
-                             title="Lihat Siswa">
-                            <i class="bi bi-people"></i>
-                          </a>
-                          <a href="../kelas/index.php" 
-                             class="btn btn-action btn-primary btn-sm" 
-                             data-bs-toggle="tooltip" 
-                             title="Detail Kelas">
-                            <i class="bi bi-building"></i>
-                          </a>
-                          <?php if($isToday || $isPast): ?>
-                          <a href="../absensi/index.php?jadwal=<?= $jadwal['id_jadwal'] ?>" 
-                             class="btn btn-action btn-edit btn-sm" 
-                             data-bs-toggle="tooltip" 
-                             title="Kelola Absensi">
-                            <i class="bi bi-clipboard-check"></i>
-                          </a>
-                          <?php endif; ?>
-                        </div>
-                      </td>
-                    </tr>
+                      </td>  
+                  </tr>
                   <?php endwhile; ?>
                 <?php else: ?>
                   <tr>

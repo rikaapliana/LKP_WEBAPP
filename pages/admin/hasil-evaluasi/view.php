@@ -288,7 +288,6 @@ function getPilihanJawaban($pilihan_jawaban) {
               <div class="col-auto">
                 <a href="detail.php?id_periode=<?= $evaluasi['id_periode'] ?>" 
                    class="btn btn-kembali px-3">
-                  <i class="bi bi-arrow-left me-1"></i>
                   Kembali
                 </a>
               </div>
@@ -296,87 +295,7 @@ function getPilihanJawaban($pilihan_jawaban) {
           </div>
         </div>
 
-        <!-- Quick Stats -->
-        <?php if($totalJawaban > 0): ?>
-        <div class="row mb-4">
-          <!-- Statistik Umum -->
-          <div class="col-md-8">
-            <div class="card content-card">
-              <div class="section-header">
-                <h5 class="mb-0 text-dark">
-                  <i class="bi bi-graph-up me-2"></i>Ringkasan Jawaban
-                </h5>
-              </div>
-              <div class="card-body">
-                <div class="row text-center">
-                  <div class="col-md-4">
-                    <div class="stat-item">
-                      <div class="fs-3 fw-bold text-primary"><?= $totalJawaban ?></div>
-                      <small class="text-muted">Total Jawaban</small>
-                    </div>
-                  </div>
-                  <div class="col-md-4">
-                    <div class="stat-item">
-                      <div class="fs-3 fw-bold text-warning"><?= $rataRataSkala ?>/5</div>
-                      <small class="text-muted">Rata-rata Rating</small>
-                    </div>
-                  </div>
-                  <div class="col-md-4">
-                    <div class="stat-item">
-                      <div class="fs-3 fw-bold text-success">
-                        <?php if($evaluasi['status_evaluasi'] == 'selesai'): ?>
-                          <i class="bi bi-check-circle"></i>
-                        <?php else: ?>
-                          <i class="bi bi-clock"></i>
-                        <?php endif; ?>
-                      </div>
-                      <small class="text-muted">
-                        <?= $evaluasi['status_evaluasi'] == 'selesai' ? 'Selesai' : 'Proses' ?>
-                      </small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <!-- Komposisi Tipe Jawaban -->
-          <div class="col-md-4">
-            <div class="card content-card">
-              <div class="section-header">
-                <h5 class="mb-0 text-dark">
-                  <i class="bi bi-pie-chart me-2"></i>Tipe Jawaban
-                </h5>
-              </div>
-              <div class="card-body">
-                <div class="row g-2 text-center">
-                  <div class="col-12">
-                    <div class="tipe-stat-small">
-                      <i class="bi bi-<?= getTipeJawabanIcon('pilihan_ganda') ?> text-info me-2"></i>
-                      <span class="fw-bold"><?= $stats_tipe['pilihan_ganda'] ?></span>
-                      <small class="text-muted ms-1">Pilihan Ganda</small>
-                    </div>
-                  </div>
-                  <div class="col-12">
-                    <div class="tipe-stat-small">
-                      <i class="bi bi-<?= getTipeJawabanIcon('skala') ?> text-warning me-2"></i>
-                      <span class="fw-bold"><?= $stats_tipe['skala'] ?></span>
-                      <small class="text-muted ms-1">Rating</small>
-                    </div>
-                  </div>
-                  <div class="col-12">
-                    <div class="tipe-stat-small">
-                      <i class="bi bi-<?= getTipeJawabanIcon('isian') ?> text-secondary me-2"></i>
-                      <span class="fw-bold"><?= $stats_tipe['isian'] ?></span>
-                      <small class="text-muted ms-1">Isian</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <?php endif; ?>
 
         <!-- Jawaban per Aspek -->
         <?php if (!empty($jawabanByAspek)): ?>

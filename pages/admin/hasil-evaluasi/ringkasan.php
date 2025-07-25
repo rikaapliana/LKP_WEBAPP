@@ -768,7 +768,7 @@ function getPilihanJawaban($pilihan_jawaban) {
                       <a href="../dashboard.php">Dashboard</a>
                     </li>
                     <li class="breadcrumb-item">
-                      <a href="#">Evaluasi & Feedback</a>
+                      <a href="#">Evaluasi</a>
                     </li>
                     <li class="breadcrumb-item">
                       <a href="index.php">Hasil Evaluasi</a>
@@ -828,7 +828,7 @@ function getPilihanJawaban($pilihan_jawaban) {
               </div>
               <div class="col-md-4 text-md-end mt-3 mt-md-0">
                  <div class="d-flex align-items-centre justify-content-end gap-1" role="group">
-                  <a href="detail.php?id_periode=<?= $id_periode ?>" 
+                  <a href="index.php?id_periode=<?= $id_periode ?>" 
                      class="btn btn-secondary-formal btn-sm">
                     Kembali
                   </a>
@@ -842,59 +842,6 @@ function getPilihanJawaban($pilihan_jawaban) {
                 </div>
               </div>
             </div>
-          </div>
-          
-          <!-- Stats Cards - Clean version dengan 4 cards penting saja -->
-          <div class="card-body">
-            <div class="row g-4">
-              <div class="col-6 col-md-3">
-                <div class="stats-item">
-                  <div class="stats-icon">
-                    <i class="bi bi-people-fill text-primary fs-2"></i>
-                  </div>
-                  <div class="stats-number text-primary"><?= count($siswaData) ?></div>
-                  <div class="stats-label">Siswa Selesai</div>
-                </div>
-              </div>
-              <div class="col-6 col-md-3">
-                <div class="stats-item">
-                  <div class="stats-icon">
-                    <i class="bi bi-question-circle-fill text-info fs-2"></i>
-                  </div>
-                  <div class="stats-number text-info"><?= count($pertanyaanList) ?></div>
-                  <div class="stats-label">Total Pertanyaan</div>
-                </div>
-              </div>
-              <div class="col-6 col-md-3">
-                <div class="stats-item">
-                  <div class="stats-icon">
-                    <i class="bi bi-check-circle-fill text-success fs-2"></i>
-                  </div>
-                  <div class="stats-number text-success">
-                    <?php 
-                    $completionRate = $periode['total_siswa_aktif'] > 0 ? round(($periode['selesai'] / $periode['total_siswa_aktif']) * 100, 1) : 0;
-                    echo $completionRate;
-                    ?>%
-                  </div>
-                  <div class="stats-label">Completion Rate</div>
-                </div>
-              </div>
-              <div class="col-6 col-md-3">
-                <div class="stats-item">
-                  <div class="stats-icon">
-                    <i class="bi bi-calendar-check-fill text-warning fs-2"></i>
-                  </div>
-                  <div class="stats-number text-warning">
-                    <span class="badge bg-<?= $periode['status'] == 'aktif' ? 'success' : ($periode['status'] == 'selesai' ? 'secondary' : 'warning') ?>-subtle text-<?= $periode['status'] == 'aktif' ? 'success' : ($periode['status'] == 'selesai' ? 'secondary' : 'warning') ?>" style="font-size: 1rem;">
-                      <?= ucfirst($periode['status']) ?>
-                    </span>
-                  </div>
-                  <div class="stats-label">Status Evaluasi</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <!-- Filter Controls -->
         <div class="card content-card mb-4">
@@ -1148,75 +1095,6 @@ function getPilihanJawaban($pilihan_jawaban) {
             </table>
           </div>
         </div>
-
-        <!-- Question Details -->
-        <div class="card content-card mt-4">
-          <div class="section-header">
-            <h5 class="mb-0 text-dark">
-              <i class="bi bi-list-ol me-2"></i>Detail Pertanyaan Evaluasi
-            </h5>
-          </div>
-          <div class="card-body">
-            <div class="row">
-              <?php foreach ($pertanyaanList as $index => $pertanyaan): ?>
-                <div class="col-lg-6 mb-4">
-                  <div class="question-card">
-                    <div class="question-card-header">
-                      <span class="question-badge <?= $pertanyaan['tipe_jawaban'] == 'skala' ? 'rating' : ($pertanyaan['tipe_jawaban'] == 'pilihan_ganda' ? 'pilihan-ganda' : 'isian') ?>">
-                        Q<?= $index + 1 ?>
-                      </span>
-                      <div class="question-meta">
-                        <h6 class="question-title"><?= htmlspecialchars($pertanyaan['aspek_dinilai']) ?></h6>
-                        <p class="question-text"><?= htmlspecialchars($pertanyaan['pertanyaan']) ?></p>
-                      </div>
-                    </div>
-                    <div class="question-stats">
-                      <div class="stat-item">
-                        <span class="stat-label">Tipe:</span>
-                        <span class="badge bg-<?= $pertanyaan['tipe_jawaban'] == 'skala' ? 'warning' : ($pertanyaan['tipe_jawaban'] == 'pilihan_ganda' ? 'success' : 'info') ?>-subtle text-<?= $pertanyaan['tipe_jawaban'] == 'skala' ? 'warning' : ($pertanyaan['tipe_jawaban'] == 'pilihan_ganda' ? 'success' : 'info') ?>">
-                          <?php if ($pertanyaan['tipe_jawaban'] == 'skala'): ?>
-                            ★ Rating 1-5
-                          <?php elseif ($pertanyaan['tipe_jawaban'] == 'pilihan_ganda'): ?>
-                            ☑ Pilihan Ganda
-                          <?php else: ?>
-                            💬 Isian Bebas
-                          <?php endif; ?>
-                        </span>
-                      </div>
-                      <div class="stat-item">
-                        <span class="stat-label">Statistik:</span>
-                        <span class="stat-value">
-                          <?php if ($pertanyaan['tipe_jawaban'] == 'skala' && isset($statistikPertanyaan[$pertanyaan['id_pertanyaan']]['rata_rata'])): ?>
-                            Rata-rata: <?= $statistikPertanyaan[$pertanyaan['id_pertanyaan']]['rata_rata'] ?>/5 
-                            <small class="text-muted">(<?= $statistikPertanyaan[$pertanyaan['id_pertanyaan']]['total_jawaban'] ?> jawaban)</small>
-                          <?php elseif ($pertanyaan['tipe_jawaban'] == 'pilihan_ganda'): ?>
-                            <?php
-                            $distribusi = $statistikPertanyaan[$pertanyaan['id_pertanyaan']]['distribusi_pilihan'];
-                            if (!empty($distribusi)) {
-                              $maxCount = max($distribusi);
-                              $mostChosen = array_search($maxCount, $distribusi);
-                              $mostChosenLabel = chr(65 + $mostChosen);
-                              echo "Terpopuler: $mostChosenLabel ($maxCount jawaban)";
-                            } else {
-                              echo "Belum ada jawaban";
-                            }
-                            ?>
-                          <?php else: ?>
-                            <?= $statistikPertanyaan[$pertanyaan['id_pertanyaan']]['total_jawaban'] ?> jawaban 
-                            <small class="text-muted">(rata-rata <?= $statistikPertanyaan[$pertanyaan['id_pertanyaan']]['avg_length'] ?> karakter)</small>
-                          <?php endif; ?>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              <?php endforeach; ?>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- Modal for Full Answer -->
   <div class="modal fade" id="answerModal" tabindex="-1">

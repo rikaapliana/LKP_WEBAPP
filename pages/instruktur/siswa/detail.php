@@ -90,9 +90,6 @@ $siswa = mysqli_fetch_assoc($result);
                     <a href="../dashboard.php">Dashboard</a>
                   </li>
                   <li class="breadcrumb-item">
-                    <a href="#">Kelas Saya</a>
-                  </li>
-                  <li class="breadcrumb-item">
                     <a href="index.php">Siswa Saya</a>
                   </li>
                   <li class="breadcrumb-item active" aria-current="page">Detail</li>
@@ -326,29 +323,6 @@ $siswa = mysqli_fetch_assoc($result);
                     <small class="text-muted">Belum terdaftar di kelas</small>
                   </div>
                 <?php endif; ?>
-              </div>
-
-              <!-- Divider -->
-              <hr class="my-4">
-              
-              <!-- Quick Actions -->
-              <div>
-                <h6 class="fw-bold mb-3">
-                  <i class="bi bi-lightning-fill me-2"></i>Quick Actions
-                </h6>
-                <div class="d-grid gap-2">
-                  <a href="../nilai/index.php?siswa=<?= $siswa['id_siswa'] ?>" class="btn btn-primary btn-sm">
-                    <i class="bi bi-clipboard-data me-2"></i>Kelola Nilai
-                  </a>
-                  <a href="../absensi/index.php?siswa=<?= $siswa['id_siswa'] ?>" class="btn btn-success btn-sm">
-                    <i class="bi bi-calendar-check me-2"></i>Lihat Absensi
-                  </a>
-                  <?php if($siswa['nama_kelas']): ?>
-                  <a href="../kelas/index.php?kelas=<?= $siswa['id_kelas'] ?>" class="btn btn-info btn-sm">
-                    <i class="bi bi-people me-2"></i>Lihat Kelas
-                  </a>
-                  <?php endif; ?>
-                </div>
               </div>
             </div>
           </div>

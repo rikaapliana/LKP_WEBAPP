@@ -7,6 +7,9 @@ include '../../../includes/db.php';
 $activePage = 'absensi'; 
 $baseURL = '../';
 
+// Set timezone Indonesia - Makassar (WITA)
+date_default_timezone_set('Asia/Makassar');
+
 // Ambil ID instruktur yang sedang login
 $stmt = $conn->prepare("SELECT id_instruktur, nama FROM instruktur WHERE id_user = ?");
 $stmt->bind_param("i", $_SESSION['user_id']);
@@ -39,17 +42,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         $checkJadwal->bind_param("ii", $id_jadwal, $id_instruktur);
         $checkJadwal->execute();
         if ($checkJadwal->get_result()->num_rows == 0) {
-            throw new Exception("Jadwal tidak valid atau bukan jadwal yang Anda ampu!");
+            throw new Exception("Jadwal tidak valid!");
         }
         
-        // Validasi siswa ada di kelas
+        // Validasi siswa
         $checkSiswa = $conn->prepare("SELECT s.id_siswa FROM siswa s 
                                      JOIN jadwal j ON s.id_kelas = j.id_kelas
                                      WHERE s.id_siswa = ? AND j.id_jadwal = ? AND s.status_aktif = 'aktif'");
         $checkSiswa->bind_param("ii", $id_siswa, $id_jadwal);
         $checkSiswa->execute();
         if ($checkSiswa->get_result()->num_rows == 0) {
-            throw new Exception("Siswa tidak valid atau tidak ada di kelas ini!");
+            throw new Exception("Siswa tidak valid!");
         }
         
         // Cek apakah sudah ada record absensi
@@ -71,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         if ($stmt->execute()) {
             echo json_encode(['success' => true, 'status' => $status]);
         } else {
-            throw new Exception("Gagal menyimpan absensi: " . $stmt->error);
+            throw new Exception("Gagal menyimpan absensi");
         }
         
     } catch (Exception $e) {
@@ -80,54 +83,85 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     exit();
 }
 
-// Get filters
-$filterTanggal = isset($_GET['tanggal']) ? $_GET['tanggal'] : date('Y-m-d');
-$filterJadwal = isset($_GET['jadwal']) ? (int)$_GET['jadwal'] : '';
+// Ambil daftar kelas yang diampu instruktur
+$kelasQuery = "SELECT k.id_kelas, k.nama_kelas, g.nama_gelombang,
+               COUNT(DISTINCT s.id_siswa) as total_siswa,
+               COUNT(DISTINCT j.id_jadwal) as total_jadwal,
+               COUNT(DISTINCT CASE WHEN j.tanggal <= CURDATE() THEN j.id_jadwal END) as jadwal_terlaksana,
+               MAX(j.tanggal) as tanggal_selesai,
+               CASE WHEN MAX(j.tanggal) < CURDATE() THEN 'selesai' ELSE 'berjalan' END as status_kelas
+               FROM kelas k 
+               LEFT JOIN gelombang g ON k.id_gelombang = g.id_gelombang
+               LEFT JOIN siswa s ON k.id_kelas = s.id_kelas AND s.status_aktif = 'aktif'
+               LEFT JOIN jadwal j ON k.id_kelas = j.id_kelas
+               WHERE k.id_instruktur = ?
+               GROUP BY k.id_kelas
+               ORDER BY k.nama_kelas";
 
-// Query jadwal hari ini yang diampu instruktur
-$jadwalQuery = "SELECT j.*, k.nama_kelas, g.nama_gelombang,
-                CONCAT(j.waktu_mulai, ' - ', j.waktu_selesai) as waktu_jadwal
-                FROM jadwal j 
-                JOIN kelas k ON j.id_kelas = k.id_kelas
-                LEFT JOIN gelombang g ON k.id_gelombang = g.id_gelombang
-                WHERE k.id_instruktur = ? AND j.tanggal = ?
-                ORDER BY j.waktu_mulai";
-$jadwalStmt = $conn->prepare($jadwalQuery);
-$jadwalStmt->bind_param("is", $id_instruktur, $filterTanggal);
-$jadwalStmt->execute();
-$jadwalResult = $jadwalStmt->get_result();
+$kelasStmt = $conn->prepare($kelasQuery);
+$kelasStmt->bind_param("i", $id_instruktur);
+$kelasStmt->execute();
+$kelasResult = $kelasStmt->get_result();
 
-// Query siswa di jadwal yang dipilih
-$siswaResult = null;
+// Filter parameter
+$selected_kelas = isset($_GET['kelas']) ? $_GET['kelas'] : '';
+
+// Inisialisasi semua variable
+$jadwalList = [];
+$siswaData = [];
+$kelasInfo = null;
 $selectedJadwal = null;
 
-if (!empty($filterJadwal)) {
-    // Get info jadwal terpilih
-    $selectedJadwalQuery = "SELECT j.*, k.nama_kelas, g.nama_gelombang 
-                            FROM jadwal j 
-                            JOIN kelas k ON j.id_kelas = k.id_kelas
-                            LEFT JOIN gelombang g ON k.id_gelombang = g.id_gelombang
-                            WHERE j.id_jadwal = ? AND k.id_instruktur = ?";
-    $selectedJadwalStmt = $conn->prepare($selectedJadwalQuery);
-    $selectedJadwalStmt->bind_param("ii", $filterJadwal, $id_instruktur);
-    $selectedJadwalStmt->execute();
-    $selectedJadwal = $selectedJadwalStmt->get_result()->fetch_assoc();
+if ($selected_kelas) {
+    // Ambil info kelas
+    mysqli_data_seek($kelasResult, 0);
+    while ($kelas = $kelasResult->fetch_assoc()) {
+        if ($kelas['nama_kelas'] == $selected_kelas) {
+            $kelasInfo = $kelas;
+            break;
+        }
+    }
     
-    // Get siswa di jadwal tersebut
-    if ($selectedJadwal) {
-        $siswaQuery = "SELECT s.*, k.nama_kelas, g.nama_gelombang,
-                       ab.status as status_absensi, ab.waktu_absen
-                       FROM siswa s
-                       JOIN kelas k ON s.id_kelas = k.id_kelas
-                       LEFT JOIN gelombang g ON k.id_gelombang = g.id_gelombang
-                       LEFT JOIN absensi_siswa ab ON s.id_siswa = ab.id_siswa AND ab.id_jadwal = ?
-                       WHERE s.id_kelas = ? AND s.status_aktif = 'aktif'
-                       ORDER BY s.nama";
+    if ($kelasInfo) {
+        // Ambil jadwal hari ini yang bisa diisi absensi
+        $today = date('Y-m-d');
+        $jadwalQuery = "SELECT j.*, 
+                        CONCAT(j.waktu_mulai, ' - ', j.waktu_selesai) as waktu_jadwal,
+                        (SELECT COUNT(*) FROM jadwal WHERE id_kelas = ? AND tanggal <= j.tanggal) as pertemuan_ke
+                        FROM jadwal j 
+                        WHERE j.id_kelas = ? AND j.tanggal = ?
+                        ORDER BY j.waktu_mulai ASC";
         
-        $siswaStmt = $conn->prepare($siswaQuery);
-        $siswaStmt->bind_param("ii", $filterJadwal, $selectedJadwal['id_kelas']);
-        $siswaStmt->execute();
-        $siswaResult = $siswaStmt->get_result();
+        $jadwalStmt = $conn->prepare($jadwalQuery);
+        $jadwalStmt->bind_param("iis", $kelasInfo['id_kelas'], $kelasInfo['id_kelas'], $today);
+        $jadwalStmt->execute();
+        $jadwalResult = $jadwalStmt->get_result();
+        
+        while ($jadwal = $jadwalResult->fetch_assoc()) {
+            $jadwalList[] = $jadwal;
+        }
+        
+        // Jika ada jadwal hari ini, ambil jadwal pertama dan data siswa
+        if (!empty($jadwalList)) {
+            $selectedJadwal = $jadwalList[0];
+            
+            $siswaQuery = "SELECT s.*, 
+                           ab.status as status_absensi, 
+                           ab.waktu_absen
+                           FROM siswa s
+                           LEFT JOIN absensi_siswa ab ON s.id_siswa = ab.id_siswa AND ab.id_jadwal = ?
+                           WHERE s.id_kelas = ? AND s.status_aktif = 'aktif'
+                           ORDER BY s.nama";
+            
+            $siswaStmt = $conn->prepare($siswaQuery);
+            $siswaStmt->bind_param("ii", $selectedJadwal['id_jadwal'], $kelasInfo['id_kelas']);
+            $siswaStmt->execute();
+            $siswaResult = $siswaStmt->get_result();
+            
+            while ($siswa = $siswaResult->fetch_assoc()) {
+                $siswaData[] = $siswa;
+            }
+        }
     }
 }
 ?>
@@ -137,13 +171,197 @@ if (!empty($filterJadwal)) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Absensi Kelas - Instruktur</title>
+  <title>Absensi Kelas - LKP Pradata Komputer</title>
   <link rel="icon" type="image/png" href="../../../assets/img/favicon.png"/>
   <link rel="stylesheet" href="../../../assets/css/bootstrap.min.css" />
   <link rel="stylesheet" href="../../../assets/css/bootstrap-icons.css" />
   <link rel="stylesheet" href="../../../assets/css/fonts.css" />
   <link rel="stylesheet" href="../../../assets/css/styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <style>
+    /* Badge Styles - Konsisten dengan referensi */
+    .badge.badge-active {
+      background-color: #d1edff;
+      color: #0c63e4;
+      border: 1px solid #b6d7ff;
+    }
+
+    .badge.badge-inactive {
+      background-color: #f8d7da;
+      color: #842029;
+      border: 1px solid #f5c6cb;
+    }
+
+    .badge.bg-success {
+      background-color: #d1f2eb !important;
+      color: #0f5132;
+      border: 1px solid #badbcc;
+    }
+
+    .badge.bg-danger {
+      background-color: #f8d7da !important;
+      color: #842029;
+      border: 1px solid #f5c6cb;
+    }
+
+    /* Button Styles - Konsisten dengan referensi */
+    .btn-action.btn-view {
+      background-color: #0c63e4;
+      border-color: #0c63e4;
+      color: white;
+    }
+
+    .btn-action.btn-view:hover {
+      background-color: #0a58ca;
+      border-color: #0a53be;
+      color: white;
+    }
+
+    .btn-primary {
+      background-color: #0c63e4;
+      border-color: #0c63e4;
+    }
+
+    .btn-primary:hover {
+      background-color: #0a58ca;
+      border-color: #0a53be;
+    }
+
+    .btn-outline-primary {
+      color: #0c63e4;
+      border-color: #0c63e4;
+    }
+
+    .btn-outline-primary:hover {
+      background-color: #0c63e4;
+      border-color: #0c63e4;
+    }
+
+    .btn-outline-success {
+      color: #0f5132;
+      border-color: #198754;
+    }
+
+    .btn-outline-success:hover {
+      background-color: #198754;
+      border-color: #198754;
+    }
+
+    /* Custom Table Styles */
+    .custom-table {
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .custom-table th {
+      font-weight: 600;
+      background-color: #f8f9fa;
+      border-bottom: 2px solid #dee2e6;
+      padding: 0.75rem 0.5rem;
+    }
+
+    .custom-table td {
+      vertical-align: middle;
+      padding: 0.75rem 0.5rem;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .custom-table tbody tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    /* Card & Layout Styles */
+    .kelas-card {
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: 1px solid #dee2e6;
+    }
+    
+    .kelas-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .kelas-card.selected {
+      border-color: #0c63e4;
+      box-shadow: 0 0 0 0.2rem rgba(12, 99, 228, 0.25);
+    }
+
+    /* Progress & Status */
+    .progress-thin {
+      height: 6px;
+    }
+
+    .status-badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+    }
+
+    /* Quick Actions Section */
+    .absensi-section {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-top: 1rem;
+      border: 1px solid #e9ecef;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+
+    .empty-state i {
+      opacity: 0.5;
+    }
+
+    .empty-state h5 {
+      color: #6c757d;
+      margin-bottom: 1rem;
+    }
+
+    /* Color consistency */
+    .text-primary {
+      color: #0c63e4 !important;
+    }
+
+    .bg-primary {
+      background-color: #0c63e4 !important;
+    }
+
+    .border-primary {
+      border-color: #0c63e4 !important;
+    }
+
+    /* Radio button styling */
+    .form-check-input:checked {
+      background-color: #0c63e4;
+      border-color: #0c63e4;
+    }
+
+    /* Card header styling */
+    .card-header.bg-primary {
+      background-color: #0c63e4 !important;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .jadwal-info {
+        text-align: center;
+      }
+      
+      .absensi-section .d-flex {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .btn-group {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -190,7 +408,7 @@ if (!empty($filterJadwal)) {
         <?php if (isset($_SESSION['success'])): ?>
           <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="bi bi-check-circle me-2"></i>
-            <?= $_SESSION['success'] ?>
+            <?= htmlspecialchars($_SESSION['success']) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
           </div>
           <?php unset($_SESSION['success']); ?>
@@ -199,176 +417,239 @@ if (!empty($filterJadwal)) {
         <?php if (isset($_SESSION['error'])): ?>
           <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <i class="bi bi-exclamation-triangle me-2"></i>
-            <?= $_SESSION['error'] ?>
+            <?= htmlspecialchars($_SESSION['error']) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
           </div>
           <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
 
-        <!-- Main Content Card -->
-        <div class="card content-card">
-          <!-- Header dengan Cetak Data -->
-          <div class="section-header">
-            <div class="row align-items-center">
-              <div class="col-md-6">
-                <h5 class="mb-0 text-dark">
-                  <i class="bi bi-calendar-check me-2"></i>Input Absensi Siswa
-                </h5>
+        <!-- Step 1: Pilih Kelas -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white border-0 py-3">
+            <h5 class="mb-0 text-dark">
+              <i class="bi bi-person-check text-primary me-2"></i>
+              Pilih Kelas yang Anda Ampu
+            </h5>
+            <small class="text-muted">Instruktur: <?= htmlspecialchars($nama_instruktur) ?></small>
+          </div>
+          <div class="card-body">
+            <?php if ($kelasResult->num_rows > 0): ?>
+              <div class="row g-3">
+                <?php 
+                mysqli_data_seek($kelasResult, 0);
+                while ($kelas = $kelasResult->fetch_assoc()): 
+                  $progress_pct = $kelas['total_jadwal'] > 0 ? 
+                                 round(($kelas['jadwal_terlaksana'] / $kelas['total_jadwal']) * 100, 1) : 0;
+                ?>
+                  <div class="col-md-6 col-lg-4">
+                    <div class="card kelas-card h-100 <?= $selected_kelas == $kelas['nama_kelas'] ? 'selected' : '' ?>"
+                         onclick="selectKelas('<?= htmlspecialchars($kelas['nama_kelas']) ?>')">
+                      <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                          <h6 class="mb-0 fw-bold"><?= htmlspecialchars($kelas['nama_kelas']) ?></h6>
+                          <span class="badge <?= $kelas['status_kelas'] == 'selesai' ? 'bg-danger' : 'bg-success' ?> status-badge">
+                            <?= $kelas['status_kelas'] == 'selesai' ? 'SELESAI' : 'BERJALAN' ?>
+                          </span>
+                        </div>
+                        
+                        <?php if($kelas['nama_gelombang']): ?>
+                          <small class="text-muted mb-2 d-block"><?= htmlspecialchars($kelas['nama_gelombang']) ?></small>
+                        <?php endif; ?>
+                        
+                        <div class="mb-3">
+                          <div class="row text-center">
+                            <div class="col-4">
+                              <div class="fw-bold text-primary"><?= $kelas['total_siswa'] ?></div>
+                              <small class="text-muted">Siswa</small>
+                            </div>
+                            <div class="col-4">
+                              <div class="fw-bold text-info"><?= $kelas['jadwal_terlaksana'] ?></div>
+                              <small class="text-muted">Terlaksana</small>
+                            </div>
+                            <div class="col-4">
+                              <div class="fw-bold text-secondary"><?= $kelas['total_jadwal'] ?></div>
+                              <small class="text-muted">Total</small>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div class="mb-2">
+                          <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="text-muted">Progress</small>
+                            <small class="fw-medium"><?= $progress_pct ?>%</small>
+                          </div>
+                          <div class="progress progress-thin">
+                            <div class="progress-bar <?= $kelas['status_kelas'] == 'selesai' ? 'bg-success' : 'bg-primary' ?>" 
+                                 style="width: <?= $progress_pct ?>%"></div>
+                          </div>
+                        </div>
+                        
+                        <?php if($selected_kelas == $kelas['nama_kelas']): ?>
+                          <div class="text-center mt-2">
+                            <i class="bi bi-check-circle text-success me-1"></i>
+                            <small class="text-success fw-bold">Terpilih</small>
+                          </div>
+                        <?php endif; ?>
+                      </div>
+                    </div>
+                  </div>
+                <?php endwhile; ?>
               </div>
-              <div class="col-md-6 text-md-end">
-                <button type="button" class="btn btn-cetak-soft" onclick="cetakLaporanAbsensi()" id="btnCetakAbsensi">
-                  <i class="bi bi-printer me-2"></i>Cetak Data
-                </button>
+            <?php else: ?>
+              <div class="text-center py-4">
+                <div class="empty-state">
+                  <i class="bi bi-inbox display-4 text-muted mb-3 d-block"></i>
+                  <h5>Belum Ada Kelas</h5>
+                  <p class="text-muted mb-0">Anda belum mengampu kelas apapun saat ini.</p>
+                </div>
+              </div>
+            <?php endif; ?>
+          </div>
+        </div>
+
+        <!-- Step 2: Input Absensi (jika kelas dipilih) -->
+        <?php if ($selected_kelas && $kelasInfo): ?>
+          
+          <!-- Header Info & Cetak - HANYA tampil jika ada jadwal hari ini -->
+          <?php if (!empty($jadwalList) && $selectedJadwal): ?>
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0 py-3">
+              <div class="row align-items-center">
+                <div class="col-md-8">
+                  <h5 class="mb-1">
+                    <i class="bi bi-calendar-event me-2"></i>
+                    Jadwal Hari Ini - <?= date('d M Y') ?>
+                  </h5>
+                  <p class="mb-2 opacity-90">
+                    <i class="bi bi-clock me-1"></i>
+                    <?= htmlspecialchars($selectedJadwal['waktu_mulai']) ?> - <?= htmlspecialchars($selectedJadwal['waktu_selesai']) ?>
+                    <span class="ms-3">
+                      <i class="bi bi-hash me-1"></i>
+                      Pertemuan ke-<?= $selectedJadwal['pertemuan_ke'] ?>
+                    </span>
+                  </p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                  <button type="button" class="btn btn-action btn-view" onclick="cetakLaporanKelas()">
+                    <i class="bi bi-printer me-1"></i>Cetak Laporan
+                  </button>
+                </div>
               </div>
             </div>
           </div>
+          <?php endif; ?>
 
-          <!-- Filter Controls dengan Quick Actions -->
-          <div class="p-3 border-bottom">
-            <form method="GET" id="filterForm">
-              <div class="row align-items-end g-3">
-                <!-- Filter Tanggal -->
-                <div class="col-md-2">
-                  <label for="filterTanggal" class="form-label small text-muted mb-1">Tanggal:</label>
-                  <input type="date" name="tanggal" id="filterTanggal" class="form-control form-control-sm" 
-                         value="<?= $filterTanggal ?>" onchange="document.getElementById('filterForm').submit();">
-                </div>
-                
-                <!-- Filter Jadwal (dikecilkan) -->
-                <div class="col-md-4">
-                  <label for="filterJadwal" class="form-label small text-muted mb-1">Pilih Jadwal Kelas:</label>
-                  <select name="jadwal" id="filterJadwal" class="form-select form-select-sm" onchange="document.getElementById('filterForm').submit();">
-                    <option value="">-- Pilih Jadwal --</option>
-                    <?php if ($jadwalResult->num_rows > 0): ?>
-                      <?php while($jadwal = $jadwalResult->fetch_assoc()): ?>
-                        <option value="<?= $jadwal['id_jadwal'] ?>" <?= ($filterJadwal == $jadwal['id_jadwal']) ? 'selected' : '' ?>>
-                          <?= htmlspecialchars($jadwal['nama_kelas']) ?>
-                          <?php if($jadwal['nama_gelombang']): ?>
-                            (<?= htmlspecialchars($jadwal['nama_gelombang']) ?>)
-                          <?php endif; ?>
-                        </option>
-                      <?php endwhile; ?>
+          <?php if ($kelasInfo['status_kelas'] == 'selesai'): ?>
+            <!-- Kelas Sudah Selesai -->
+            <div class="card border-0 shadow-sm">
+              <div class="card-body text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-check-circle display-1 text-success mb-3 d-block"></i>
+                  <h4 class="text-success mb-3">Kelas Sudah Selesai</h4>
+                  <p class="text-muted mb-4">
+                    Kelas <strong><?= htmlspecialchars($selected_kelas) ?></strong> telah menyelesaikan semua jadwal pembelajaran.<br>
+                    <?php if($kelasInfo['tanggal_selesai']): ?>
+                    Selesai pada: <strong><?= date('d M Y', strtotime($kelasInfo['tanggal_selesai'])) ?></strong>
                     <?php endif; ?>
-                  </select>
-                </div>
-                
-                <!-- Quick Actions (Semua Hadir + Simpan Semua) -->
-                <div class="col-md-6">
-                  <?php if (!empty($filterJadwal) && $siswaResult && $siswaResult->num_rows > 0): ?>
-                  <div class="d-flex gap-2 justify-content-end">
-                    <button type="button" class="btn btn-outline-success btn-sm" onclick="selectAllHadir()">
-                      <i class="bi bi-check-circle me-1"></i>Semua Hadir
-                    </button>
-                    <button type="button" class="btn btn-success btn-sm" onclick="saveAllAbsensi()">
-                      <i class="bi bi-check-all me-1"></i>Simpan Semua
-                    </button>
+                  </p>
+                  <div class="row justify-content-center">
+                    <div class="col-md-6">
+                      <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Anda dapat mencetak laporan absensi lengkap untuk semua pertemuan yang telah terlaksana.
+                      </div>
+                      <button type="button" class="btn btn-primary" onclick="cetakLaporanKelas()">
+                        <i class="bi bi-printer me-1"></i>Cetak Laporan Lengkap
+                      </button>
+                    </div>
                   </div>
-                  <?php endif; ?>
                 </div>
               </div>
-            </form>
-          </div>
+            </div>
 
-          <!-- Content Area -->
-          <div class="card-body">
-            <?php if (empty($filterJadwal)): ?>
-              <!-- Belum pilih jadwal -->
-              <div class="text-center py-5">
-                <i class="bi bi-calendar-event display-4 text-muted mb-3 d-block"></i>
-                <h5>Pilih Jadwal Kelas</h5>
-                <p class="text-muted mb-3">
-                  Pilih tanggal dan jadwal kelas untuk mulai input absensi siswa
-                </p>
-                <?php if ($jadwalResult->num_rows == 0): ?>
-                  <div class="alert alert-info">
-                    <i class="bi bi-info-circle me-2"></i>
-                    Tidak ada jadwal untuk tanggal <?= date('d M Y', strtotime($filterTanggal)) ?>
-                  </div>
-                <?php endif; ?>
-              </div>
-            
-            <?php elseif (!$selectedJadwal): ?>
-              <!-- Jadwal tidak valid -->
-              <div class="text-center py-5">
-                <i class="bi bi-exclamation-triangle display-4 text-warning mb-3 d-block"></i>
-                <h5>Jadwal Tidak Valid</h5>
-                <p class="text-muted">Jadwal yang dipilih tidak ditemukan atau bukan jadwal kelas yang Anda ampu</p>
-              </div>
-            
-            <?php else: ?>
-              <!-- Info Jadwal Terpilih -->
-              <div class="alert alert-info mb-4">
-                <div class="row align-items-center">
-                  <div class="col-md-8">
-                    <h6 class="mb-1 text-muted">
-                      <i class="bi bi-calendar-event me-2"></i>
-                      <?= htmlspecialchars($selectedJadwal['nama_kelas']) ?>
-                      <?php if($selectedJadwal['nama_gelombang']): ?>
-                        <span class="text-muted">(<?= htmlspecialchars($selectedJadwal['nama_gelombang']) ?>)</span>
+          <?php elseif (empty($jadwalList)): ?>
+            <!-- Tidak Ada Jadwal Hari Ini -->
+            <div class="card border-0 shadow-sm">
+              <div class="card-body text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-calendar-x display-1 text-muted mb-3 d-block"></i>
+                  <h4>Tidak Ada Jadwal Hari Ini</h4>
+                  <p class="text-muted mb-4">
+                    Tidak ada jadwal untuk kelas <strong><?= htmlspecialchars($selected_kelas) ?></strong> pada hari ini.<br>
+                    Silakan pilih kelas lain atau kembali di hari yang memiliki jadwal.
+                  </p>
+                  <div class="row justify-content-center">
+                    <div class="col-md-6">
+                      <div class="alert alert-warning">
+                        <i class="bi bi-calendar-week me-2"></i>
+                        Progress: <?= $kelasInfo['jadwal_terlaksana'] ?>/<?= $kelasInfo['total_jadwal'] ?> pertemuan terlaksana
+                      </div>
+                      <?php if($kelasInfo['jadwal_terlaksana'] > 0): ?>
+                      <button type="button" class="btn btn-outline-primary" onclick="cetakLaporanKelas()">
+                        <i class="bi bi-printer me-1"></i>Cetak Laporan yang Ada
+                      </button>
                       <?php endif; ?>
-                    </h6>
-                    <small class="text-muted">
-                      <i class="bi bi-clock me-1"></i>
-                      <?= date('d M Y', strtotime($selectedJadwal['tanggal'])) ?> • 
-                      <?= $selectedJadwal['waktu_mulai'] ?> - <?= $selectedJadwal['waktu_selesai'] ?>
-                    </small>
+                    </div>
                   </div>
                 </div>
               </div>
+            </div>
+           </div> 
 
-              <!-- Table Absensi -->
-              <?php if ($siswaResult && $siswaResult->num_rows > 0): ?>
+          <?php else: ?>
+            <!-- Ada Jadwal Hari Ini - Input Absensi -->
+            <div class="card border-0 shadow-sm">
+              <?php if (!empty($siswaData)): ?>
                 <div class="table-responsive">
-                  <table class="custom-table mb-0" id="absensiTable">
-                    <thead class="sticky-top">
+                  <table class="table custom-table mb-0" id="absensiTable">
+                    <thead>
                       <tr>
-                        <th style="min-width: 180px;">Nama Siswa</th>
-                        <th class="text-center" style="width: 120px;">NIK</th>
+                        <th style="width: 40px;">NO</th>
+                        <th style="min-width: 200px;">Nama Siswa</th>
                         <th class="text-center" style="width: 100px;">Hadir</th>
                         <th class="text-center" style="width: 100px;">Izin</th>
                         <th class="text-center" style="width: 100px;">Sakit</th>
                         <th class="text-center" style="width: 100px;">Alpha</th>
-                        <th class="text-center" style="width: 150px;">Waktu Absen</th>
+                        <th class="text-center" style="width: 120px;">Waktu</th>
                         <th class="text-center" style="width: 80px;">Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <?php while ($siswa = $siswaResult->fetch_assoc()): ?>
-                        <tr data-siswa="<?= $siswa['id_siswa'] ?>" data-jadwal="<?= $filterJadwal ?>">
-                          <!-- Nama Siswa -->
-                          <td class="align-middle">
+                      <?php 
+                      $no = 1;
+                      foreach ($siswaData as $siswa): 
+                      ?>
+                        <tr data-siswa="<?= $siswa['id_siswa'] ?>" data-jadwal="<?= $selectedJadwal['id_jadwal'] ?>">
+                          <td class="text-center fw-bold"><?= $no++ ?></td>
+                          
+                          <td>
                             <div class="fw-medium"><?= htmlspecialchars($siswa['nama']) ?></div>
                             <small class="text-muted">NIK: <?= htmlspecialchars($siswa['nik']) ?></small>
                           </td>
                           
-                          <!-- NIK -->
-                          <td class="text-center align-middle">
-                            <small class="text-muted"><?= htmlspecialchars($siswa['nik']) ?></small>
-                          </td>
-                          
-                          <!-- Radio Button Status -->
-                          <td class="text-center align-middle">
+                          <!-- Radio Buttons -->
+                          <td class="text-center">
                             <input type="radio" class="form-check-input status-radio" 
                                    name="status_<?= $siswa['id_siswa'] ?>" 
                                    value="hadir" 
                                    data-siswa="<?= $siswa['id_siswa'] ?>"
                                    <?= ($siswa['status_absensi'] == 'hadir') ? 'checked' : '' ?>>
                           </td>
-                          <td class="text-center align-middle">
+                          <td class="text-center">
                             <input type="radio" class="form-check-input status-radio" 
                                    name="status_<?= $siswa['id_siswa'] ?>" 
                                    value="izin" 
                                    data-siswa="<?= $siswa['id_siswa'] ?>"
                                    <?= ($siswa['status_absensi'] == 'izin') ? 'checked' : '' ?>>
                           </td>
-                          <td class="text-center align-middle">
+                          <td class="text-center">
                             <input type="radio" class="form-check-input status-radio" 
                                    name="status_<?= $siswa['id_siswa'] ?>" 
                                    value="sakit" 
                                    data-siswa="<?= $siswa['id_siswa'] ?>"
                                    <?= ($siswa['status_absensi'] == 'sakit') ? 'checked' : '' ?>>
                           </td>
-                          <td class="text-center align-middle">
+                          <td class="text-center">
                             <input type="radio" class="form-check-input status-radio" 
                                    name="status_<?= $siswa['id_siswa'] ?>" 
                                    value="tanpa keterangan" 
@@ -377,10 +658,11 @@ if (!empty($filterJadwal)) {
                           </td>
                           
                           <!-- Waktu Absen -->
-                          <td class="text-center align-middle">
+                          <td class="text-center">
                             <span class="waktu-absen-display">
                               <?php if($siswa['waktu_absen']): ?>
-                                <small class="text-muted">
+                                <small class="text-success fw-medium">
+                                  <i class="bi bi-clock me-1"></i>
                                   <?= date('H:i', strtotime($siswa['waktu_absen'])) ?>
                                 </small>
                               <?php else: ?>
@@ -390,27 +672,64 @@ if (!empty($filterJadwal)) {
                           </td>
                           
                           <!-- Aksi -->
-                          <td class="text-center align-middle">
-                            <button type="button" class="btn btn-sm btn-success save-row" 
-                                    onclick="saveAbsensiSiswa(<?= $siswa['id_siswa'] ?>, <?= $filterJadwal ?>)">
-                              <i class="bi bi-check"></i>
+                          <td class="text-center">
+                            <button type="button" class="btn btn-sm btn-outline-primary save-row" 
+                                    onclick="saveAbsensiSiswa(<?= $siswa['id_siswa'] ?>, <?= $selectedJadwal['id_jadwal'] ?>)">
+                              <i class="bi bi-save"></i>
                             </button>
                           </td>
                         </tr>
-                      <?php endwhile; ?>
+                      <?php endforeach; ?>
                     </tbody>
                   </table>
                 </div>
+                
+                <!-- Footer Actions -->
+                <div class="card-footer bg-light">
+                  <div class="row align-items-center">
+                    <div class="col-md-6">
+                      <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Gunakan <kbd>Ctrl+H</kbd> untuk semua hadir, <kbd>Ctrl+S</kbd> untuk simpan semua.
+                      </small>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                      <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-simpan px-4" onclick="saveAllAbsensi()">
+                         <i class="bi bi-check-lg me-1"></i>Simpan Semua
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
               <?php else: ?>
-                <div class="text-center py-5">
-                  <i class="bi bi-people display-4 text-muted mb-3 d-block"></i>
-                  <h5>Belum Ada Siswa</h5>
-                  <p class="text-muted">Tidak ada siswa aktif di kelas ini</p>
+                <div class="card-body text-center py-5">
+                  <div class="empty-state">
+                    <i class="bi bi-people display-4 text-muted mb-3 d-block"></i>
+                    <h5>Belum Ada Siswa</h5>
+                    <p class="text-muted mb-0">Tidak ada siswa aktif di kelas ini</p>
+                  </div>
                 </div>
               <?php endif; ?>
-            <?php endif; ?>
+            </div>
+          <?php endif; ?>
+
+        <?php elseif (!$selected_kelas): ?>
+          <!-- Belum Pilih Kelas -->
+          <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+              <div class="empty-state">
+                <i class="bi bi-arrow-up display-3 text-primary mb-3 d-block"></i>
+                <h5>Mulai dengan Memilih Kelas</h5>
+                <p class="text-muted">
+                  Silakan pilih salah satu kelas di atas untuk mulai input absensi atau melihat laporan.
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
+        <?php endif; ?>
+
       </div>
     </div>
   </div>
@@ -419,6 +738,11 @@ if (!empty($filterJadwal)) {
   <script src="../../../assets/js/scripts.js"></script>
 
   <script>
+  // Function untuk pilih kelas
+  function selectKelas(namaKelas) {
+    window.location.href = 'index.php?kelas=' + encodeURIComponent(namaKelas);
+  }
+
   // Save individual absensi
   function saveAbsensiSiswa(idSiswa, idJadwal) {
     const row = document.querySelector(`tr[data-siswa="${idSiswa}"]`);
@@ -427,9 +751,10 @@ if (!empty($filterJadwal)) {
     
     if (!statusRadio) {
       Swal.fire({
-        title: 'Perhatian!',
+        title: 'Pilih Status!',
         text: 'Pilih status absensi terlebih dahulu',
-        icon: 'warning'
+        icon: 'warning',
+        timer: 2000
       });
       return;
     }
@@ -450,26 +775,41 @@ if (!empty($filterJadwal)) {
     .then(response => response.json())
     .then(data => {
       if (data.success) {
+        // Update waktu absen
         const waktuDisplay = row.querySelector('.waktu-absen-display');
-        const currentTime = new Date().toLocaleTimeString('id-ID', {
+        
+        // Buat waktu sekarang dengan timezone Makassar (WITA)
+        const now = new Date();
+        const makassarTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Makassar"}));
+        const currentTime = makassarTime.toLocaleTimeString('id-ID', {
           hour: '2-digit',
-          minute: '2-digit'
+          minute: '2-digit',
+          hour12: false
         });
-        waktuDisplay.innerHTML = `<small class="text-muted">${currentTime}</small>`;
         
-        row.classList.add('table-success');
-        setTimeout(() => row.classList.remove('table-success'), 2000);
+        waktuDisplay.innerHTML = `
+          <small class="text-success fw-medium">
+            <i class="bi bi-clock me-1"></i>
+            ${currentTime}
+          </small>
+        `;
         
+        // Row animation
+        row.style.backgroundColor = '#d1edff';
+        setTimeout(() => row.style.backgroundColor = '', 2000);
+        
+        // Success notification
         Swal.fire({
-          title: 'Berhasil!',
-          text: 'Absensi berhasil disimpan',
+          toast: true,
+          position: 'top-end',
           icon: 'success',
-          timer: 1500,
-          showConfirmButton: false
+          title: 'Tersimpan!',
+          showConfirmButton: false,
+          timer: 1500
         });
       } else {
         Swal.fire({
-          title: 'Error!',
+          title: 'Gagal!',
           text: data.message || 'Gagal menyimpan absensi',
           icon: 'error'
         });
@@ -485,7 +825,7 @@ if (!empty($filterJadwal)) {
     })
     .finally(() => {
       saveBtn.disabled = false;
-      saveBtn.innerHTML = '<i class="bi bi-check"></i>';
+      saveBtn.innerHTML = '<i class="bi bi-save"></i>';
     });
   }
   
@@ -519,118 +859,212 @@ if (!empty($filterJadwal)) {
     if (missingStatus.length > 0) {
       Swal.fire({
         title: 'Status Belum Lengkap',
-        html: `Siswa berikut belum memiliki status absensi:<br><br>${missingStatus.join('<br>')}`,
-        icon: 'warning'
+        html: `Siswa berikut belum memiliki status absensi:<br><br><strong>${missingStatus.join('<br>')}</strong>`,
+        icon: 'warning',
+        confirmButtonText: 'OK, Saya Mengerti'
       });
       return;
     }
     
+    // Konfirmasi sebelum simpan semua
     Swal.fire({
-      title: 'Menyimpan Data...',
-      text: `Menyimpan absensi untuk ${totalRows} siswa`,
-      allowOutsideClick: false,
-      showConfirmButton: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
-    
-    rows.forEach(row => {
-      const idSiswa = row.dataset.siswa;
-      const idJadwal = row.dataset.jadwal;
-      const statusRadio = row.querySelector(`input[name="status_${idSiswa}"]:checked`);
-      
-      const formData = new FormData();
-      formData.append('action', 'save_absensi');
-      formData.append('id_siswa', idSiswa);
-      formData.append('id_jadwal', idJadwal);
-      formData.append('status', statusRadio.value);
-      
-      fetch('', {
-        method: 'POST',
-        body: formData
-      })
-      .then(response => response.json())
-      .then(data => {
-        savedRows++;
-        
-        if (data.success) {
-          const waktuDisplay = row.querySelector('.waktu-absen-display');
-          const currentTime = new Date().toLocaleTimeString('id-ID', {
-            hour: '2-digit',
-            minute: '2-digit'
-          });
-          waktuDisplay.innerHTML = `<small class="text-muted">${currentTime}</small>`;
-          row.classList.add('table-success');
-        } else {
-          hasError = true;
-          row.classList.add('table-danger');
-        }
-        
-        if (savedRows === totalRows) {
-          Swal.close();
-          
-          if (hasError) {
-            Swal.fire({
-              title: 'Sebagian Berhasil',
-              text: 'Beberapa absensi berhasil disimpan, tapi ada yang gagal',
-              icon: 'warning'
-            });
-          } else {
-            Swal.fire({
-              title: 'Semua Berhasil!',
-              text: `${totalRows} absensi siswa berhasil disimpan`,
-              icon: 'success',
-              timer: 2000,
-              showConfirmButton: false
-            });
+      title: 'Simpan Semua Absensi?',
+      text: `Akan menyimpan absensi untuk ${totalRows} siswa`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Ya, Simpan!',
+      cancelButtonText: 'Batal'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Show loading
+        Swal.fire({
+          title: 'Menyimpan...',
+          text: `Memproses ${totalRows} data absensi`,
+          allowOutsideClick: false,
+          showConfirmButton: false,
+          didOpen: () => {
+            Swal.showLoading();
           }
-          
-          setTimeout(() => {
-            rows.forEach(row => {
-              row.classList.remove('table-success', 'table-danger');
-            });
-          }, 3000);
-        }
-      })
-      .catch(error => {
-        savedRows++;
-        hasError = true;
-        console.error('Error:', error);
+        });
         
-        if (savedRows === totalRows) {
-          Swal.close();
-          Swal.fire({
-            title: 'Ada Kesalahan',
-            text: 'Terjadi kesalahan saat menyimpan beberapa absensi',
-            icon: 'error'
+        // Process each row
+        rows.forEach(row => {
+          const idSiswa = row.dataset.siswa;
+          const idJadwal = row.dataset.jadwal;
+          const statusRadio = row.querySelector(`input[name="status_${idSiswa}"]:checked`);
+          
+          const formData = new FormData();
+          formData.append('action', 'save_absensi');
+          formData.append('id_siswa', idSiswa);
+          formData.append('id_jadwal', idJadwal);
+          formData.append('status', statusRadio.value);
+          
+          fetch('', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            savedRows++;
+            
+            if (data.success) {
+              // Update waktu
+              const waktuDisplay = row.querySelector('.waktu-absen-display');
+              
+              // Buat waktu sekarang dengan timezone Makassar (WITA)
+              const now = new Date();
+              const makassarTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Makassar"}));
+              const currentTime = makassarTime.toLocaleTimeString('id-ID', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+              });
+              
+              waktuDisplay.innerHTML = `
+                <small class="text-success fw-medium">
+                  <i class="bi bi-clock me-1"></i>
+                  ${currentTime}
+                </small>
+              `;
+              
+              row.style.backgroundColor = '#d1f2eb';
+            } else {
+              hasError = true;
+              row.style.backgroundColor = '#f8d7da';
+            }
+            
+            // Check if all done
+            if (savedRows === totalRows) {
+              Swal.close();
+              
+              if (hasError) {
+                Swal.fire({
+                  title: 'Sebagian Berhasil',
+                  text: 'Beberapa absensi berhasil disimpan, tapi ada yang gagal',
+                  icon: 'warning'
+                });
+              } else {
+                Swal.fire({
+                  title: 'Semua Berhasil!',
+                  text: `${totalRows} absensi siswa berhasil disimpan`,
+                  icon: 'success',
+                  timer: 2000,
+                  showConfirmButton: false
+                });
+              }
+              
+              // Reset backgrounds after delay
+              setTimeout(() => {
+                rows.forEach(row => {
+                  row.style.backgroundColor = '';
+                });
+              }, 3000);
+            }
+          })
+          .catch(error => {
+            savedRows++;
+            hasError = true;
+            console.error('Error:', error);
+            row.style.backgroundColor = '#f8d7da';
+            
+            if (savedRows === totalRows) {
+              Swal.close();
+              Swal.fire({
+                title: 'Ada Kesalahan',
+                text: 'Terjadi kesalahan saat menyimpan beberapa absensi',
+                icon: 'error'
+              });
+            }
           });
-        }
-      });
+        });
+      }
     });
   }
   
   // Quick select functions
-  function selectAllHadir() {
-    const hadirRadios = document.querySelectorAll('input[value="hadir"]');
-    hadirRadios.forEach(radio => {
+  function selectAllStatus(status) {
+    const radios = document.querySelectorAll(`input[value="${status}"]`);
+    radios.forEach(radio => {
       radio.checked = true;
-      radio.dispatchEvent(new Event('change'));
+      // Trigger visual feedback
+      const row = radio.closest('tr');
+      row.style.backgroundColor = '#fff3cd';
+      setTimeout(() => row.style.backgroundColor = '', 1500);
+    });
+    
+    // Show notification
+    const statusText = {
+      'hadir': 'Hadir',
+      'izin': 'Izin', 
+      'sakit': 'Sakit',
+      'tanpa keterangan': 'Alpha'
+    };
+    
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'info',
+      title: `Semua siswa dipilih: ${statusText[status]}`,
+      showConfirmButton: false,
+      timer: 2000
     });
   }
   
+  function resetAllStatus() {
+    const radios = document.querySelectorAll('.status-radio');
+    radios.forEach(radio => {
+      radio.checked = false;
+    });
+    
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'info',
+      title: 'Status absensi direset',
+      showConfirmButton: false,
+      timer: 1500
+    });
+  }
+
+  // Function cetak laporan kelas (semua jadwal terlaksana)
+  // Function cetak laporan kelas (tanpa loading)
+function cetakLaporanKelas() {
+  const namaKelas = '<?= htmlspecialchars($selected_kelas ?? '') ?>';
+  
+  if (!namaKelas) {
+    Swal.fire({
+      title: 'Pilih Kelas!',
+      text: 'Silakan pilih kelas terlebih dahulu',
+      icon: 'warning'
+    });
+    return;
+  }
+  
+  // Langsung buka tanpa loading
+  const url = `cetak_laporan.php?kelas=${encodeURIComponent(namaKelas)}`;
+  const pdfWindow = window.open(url, '_blank');
+  
+  // Check if popup was blocked (tanpa delay)
+  setTimeout(() => {
+    if (!pdfWindow || pdfWindow.closed || typeof pdfWindow.closed == 'undefined') {
+      Swal.fire({
+        title: 'Pop-up Diblokir!',
+        text: 'Browser memblokir pop-up. Silakan izinkan popup untuk mengunduh laporan PDF.',
+        icon: 'warning',
+        confirmButtonText: 'OK'
+      });
+    }
+  }, 500);
+}
   // Event listeners
   document.addEventListener('DOMContentLoaded', function() {
-    const statusRadios = document.querySelectorAll('.status-radio');
-    
     // Auto-change detection
+    const statusRadios = document.querySelectorAll('.status-radio');
     statusRadios.forEach(radio => {
       radio.addEventListener('change', function() {
         const row = this.closest('tr');
-        row.style.backgroundColor = '#fff3cd'; // warning background
-        setTimeout(() => {
-          row.style.backgroundColor = '';
-        }, 2000);
+        row.style.backgroundColor = '#fff3cd';
+        setTimeout(() => row.style.backgroundColor = '', 2000);
       });
     });
     
@@ -659,40 +1093,15 @@ if (!empty($filterJadwal)) {
     // Ctrl+H untuk select all hadir
     if (e.ctrlKey && e.key === 'h') {
       e.preventDefault();
-      selectAllHadir();
+      selectAllStatus('hadir');
+    }
+    
+    // Ctrl+P untuk cetak laporan
+    if (e.ctrlKey && e.key === 'p') {
+      e.preventDefault();
+      cetakLaporanKelas();
     }
   });
-  
-  // Fungsi cetak laporan absensi
-  function cetakLaporanAbsensi() {
-    const btnCetak = document.getElementById('btnCetakAbsensi');
-    
-    btnCetak.disabled = true;
-    btnCetak.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Memproses...';
-    
-    let url = 'cetak_laporan.php?';
-    const params = [];
-    
-    if ('<?= $filterTanggal ?>') params.push('tanggal=' + encodeURIComponent('<?= $filterTanggal ?>'));
-    if ('<?= $filterJadwal ?>') params.push('jadwal=' + encodeURIComponent('<?= $filterJadwal ?>'));
-    
-    url += params.join('&');
-    
-    const pdfWindow = window.open(url, '_blank');
-    
-    setTimeout(() => {
-      btnCetak.disabled = false;
-      btnCetak.innerHTML = '<i class="bi bi-printer me-2"></i>Cetak Data';
-      
-      if (!pdfWindow || pdfWindow.closed || typeof pdfWindow.closed == 'undefined') {
-        Swal.fire({
-          title: 'Pop-up Diblokir!',
-          text: 'Browser memblokir pop-up. Silakan izinkan popup untuk mengunduh laporan PDF.',
-          icon: 'warning'
-        });
-      }
-    }, 2000);
-  }
   </script>
 
 </body>

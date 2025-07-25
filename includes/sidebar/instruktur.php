@@ -96,45 +96,9 @@ $baseURL = $baseURL ?? './'; // default: jika tidak di-set, gunakan './'
             </a>
         </li>
 
-        <!-- EVALUASI Category -->
-        <li class="nav-item mb-1 mt-3">
-            <div class="menu-category">
-                <small class="menu-category-label">
-                    EVALUASI
-                </small>
-            </div>
-        </li>
-
         <li class="nav-item">
             <a class="nav-link <?= ($activePage == 'hasil-evaluasi') ? 'active' : '' ?>" href="<?= $baseURL ?>evaluasi/index.php">
                 <i class="bi bi-graph-up me-2"></i> Hasil Evaluasi
-            </a>
-        </li>
-
-        <!-- LAPORAN Category -->
-        <li class="nav-item mb-1 mt-3">
-            <div class="menu-category">
-                <small class="menu-category-label">
-                    LAPORAN
-                </small>
-            </div>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link <?= ($activePage == 'laporan-kelas') ? 'active' : '' ?>" href="<?= $baseURL ?>laporan/kelas.php">
-                <i class="bi bi-file-earmark-bar-graph-fill me-2"></i> Laporan Kelas
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link <?= ($activePage == 'laporan-nilai') ? 'active' : '' ?>" href="<?= $baseURL ?>laporan/nilai.php">
-                <i class="bi bi-file-earmark-spreadsheet me-2"></i> Laporan Nilai
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link <?= ($activePage == 'laporan-absensi') ? 'active' : '' ?>" href="<?= $baseURL ?>laporan/absensi.php">
-                <i class="bi bi-file-earmark-check me-2"></i> Laporan Absensi
             </a>
         </li>
 

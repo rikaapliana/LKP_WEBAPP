@@ -179,7 +179,7 @@ function buildUrlWithFilters($page) {
                       <a href="../dashboard.php">Dashboard</a>
                     </li>
                     <li class="breadcrumb-item">
-                      <a href="#">Evaluasi & Feedback</a>
+                      <a href="#">Evaluasi</a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">Hasil Evaluasi</li>
                   </ol>
@@ -229,20 +229,10 @@ function buildUrlWithFilters($page) {
                 <h5 class="mb-0 text-dark">
                   <i class="bi bi-clipboard-data me-2"></i>Data Hasil Evaluasi
                 </h5>
-                <small class="text-muted">Kelola dan analisis hasil evaluasi siswa per periode</small>
               </div>
               <div class="col-md-4 text-md-end">
                 <!-- Quick Action Buttons -->
                 <div class="d-flex align-items-centre justify-content-end gap-0" role="group">
-                  <a href="../analisis-evaluasi/index.php" class="btn btn-outline-info btn-sm me-2">
-                    <i class="bi bi-graph-up me-1"></i>
-                    Analisis
-                  </a>
-                  <div class="btn-group btn-group-sm">
-                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                      <i class="bi bi-gear me-1"></i>
-                      Tools
-                    </button>
                   <ul class="dropdown-menu dropdown-menu-end">
                     <li>
                       <a class="dropdown-item" href="../evaluasi/periode/index.php">
@@ -551,26 +541,17 @@ function buildUrlWithFilters($page) {
                           <span class="badge badge-inactive">Selesai</span>
                         <?php endif; ?>
                       </td>
-                      
+
                       <!-- Aksi -->
                       <td class="text-center align-middle">
                         <div class="btn-group btn-group-sm" role="group">
                           <!-- Detail Button -->
                           <a href="detail.php?id_periode=<?= $periode['id_periode'] ?>" 
-                             class="btn btn-action btn-view btn-sm" 
+                             class="btn btn-action btn-view" 
                              data-bs-toggle="tooltip" 
-                             title="Lihat Detail Hasil">
-                            <i class="bi bi-eye"></i>
+                             title="Lihat Hasil">
+                            <i class="bi bi-eye me-1"></i>Lihat
                           </a>
-                          
-                          <!-- Ringkasan Button -->
-                          <a href="ringkasan.php?id_periode=<?= $periode['id_periode'] ?>" 
-                             class="btn btn-action btn-info btn-sm" 
-                             data-bs-toggle="tooltip" 
-                             title="Lihat Ringkasan & Analisis">
-                            <i class="bi bi-bar-chart"></i>
-                          </a>
-                          
                         </div>
                       </td>
                     </tr>

@@ -196,8 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_profil'])) {
         <?php endif; ?>
 
         <div class="row">
-          <!-- Main Edit Form -->
-          <div class="col-xl-8">
+          <div class="col-xl-12">
             <div class="card content-card">
               <div class="section-header">
                 <h5 class="mb-0 text-dark">
@@ -296,64 +295,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_profil'])) {
                       <i class="bi bi-floppy me-2"></i>Simpan Perubahan
                     </button>
                     <a href="index.php" class="btn btn-secondary-formal ms-2">
-                      <i class="bi bi-arrow-left me-2"></i>Batal
+                    Batal
                     </a>
                   </div>
                 </form>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Profile Preview Card -->
-          <div class="col-xl-4">
-            <div class="card content-card">
-              <div class="section-header">
-                <h5 class="mb-0 text-dark">
-                  <i class="bi bi-eye me-2"></i>Preview Profil
-                </h5>
-              </div>
-              
-              <div class="p-4">
-                <div class="text-center mb-4">
-                  <?php if (!empty($admin_data['foto']) && file_exists('../../../uploads/profile_pictures/' . $admin_data['foto'])): ?>
-                    <img src="../../../uploads/profile_pictures/<?= $admin_data['foto'] ?>" 
-                         alt="Foto Profil" 
-                         class="rounded-circle mb-3" 
-                         style="width: 100px; height: 100px; object-fit: cover; border: 4px solid #e9ecef;">
-                  <?php else: ?>
-                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px; border: 4px solid #e9ecef;">
-                      <i class="bi bi-person-fill" style="font-size: 3rem;"></i>
-                    </div>
-                  <?php endif; ?>
-                  <h6 class="mb-1"><?= htmlspecialchars($admin_data['nama']) ?></h6>
-                  <span class="badge bg-primary fs-6">Administrator</span>
-                </div>
-                
-                <hr>
-                
-                <div class="row text-center mb-3">
-                  <div class="col-12 mb-3">
-                    <h6 class="text-muted mb-1">Username</h6>
-                    <p class="mb-0 fw-medium"><?= htmlspecialchars($admin_data['username']) ?></p>
-                  </div>
-                  <div class="col-6">
-                    <h6 class="text-muted mb-1">Email</h6>
-                    <p class="mb-0 small"><?= htmlspecialchars($admin_data['email']) ?></p>
-                  </div>
-                  <div class="col-6">
-                    <h6 class="text-muted mb-1">No. HP</h6>
-                    <p class="mb-0 small"><?= htmlspecialchars($admin_data['no_hp']) ?></p>
-                  </div>
-                </div>
-                
-                <hr>
-                
-                <div class="text-center">
-                  <small class="text-muted">
-                    <i class="bi bi-info-circle me-1"></i>
-                    Preview akan diperbarui setelah data disimpan
-                  </small>
-                </div>
               </div>
             </div>
           </div>

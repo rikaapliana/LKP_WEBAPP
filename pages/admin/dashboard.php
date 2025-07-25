@@ -380,39 +380,6 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
 
         <!-- Statistik Cards - Row 2: Manajemen & Sistem -->
         <div class="row g-3 g-md-4 mb-4">
-      
-          <div class="col-6 col-lg-3">
-            <a href="pengaturan/gelombang/" class="text-decoration-none">
-              <div class="card stats-card stats-card-clickable">
-                <div class="card-body text-center p-3">
-                  <div class="stats-icon bg-purple text-white mb-2">
-                    <i class="bi bi-layers-fill"></i>
-                  </div>
-                  <h4 class="fw-bold mb-1"><?= ($gelombangAktif + $gelombangDibuka) ?></h4>
-                  <p class="text-muted mb-0 small">Gelombang Aktif</p>
-                  <small class="text-success"><i class="bi bi-play-circle"></i> <?= $gelombangAktif ?> Gelombang aktif</small>
-                </div>
-              </div>
-            </a>
-          </div>
-          
-          <div class="col-6 col-lg-3">
-            <a href="pengaturan/formulir/" class="text-decoration-none">
-              <div class="card stats-card stats-card-clickable">
-                <div class="card-body text-center p-3">
-                  <div class="stats-icon bg-teal text-white mb-2">
-                    <i class="bi bi-clipboard-data-fill"></i>
-                  </div>
-                  <h4 class="fw-bold mb-1"><?= $formulirAktif ?></h4>
-                  <p class="text-muted mb-0 small">Formulir Aktif</p>
-                  <small class="text-<?= $formulirAktif > 0 ? 'success' : 'warning' ?>">
-                    <i class="bi bi-<?= $formulirAktif > 0 ? 'toggle-on' : 'toggle-off' ?>"></i> 
-                    <?= $formulirAktif > 0 ? 'Pendaftaran dibuka' : 'Pendaftaran ditutup' ?>
-                  </small>
-                </div>
-              </div>
-            </a>
-          </div>
 
         <div class="col-6 col-lg-3">
           <a href="pendaftar/grafik.php" class="text-decoration-none">
@@ -442,6 +409,39 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
                   <h4 class="fw-bold mb-1"><?= $avgNilai ?></h4>
                   <p class="text-muted mb-0 small">Analisis Hasil Evaluasi</p>
                   <small class="text-primary"><i class="bi bi-bar-chart"></i> Hasil evaluasi</small>
+                </div>
+              </div>
+            </a>
+          </div>
+
+         <div class="col-6 col-lg-3">
+            <a href="pengaturan/gelombang/" class="text-decoration-none">
+              <div class="card stats-card stats-card-clickable">
+                <div class="card-body text-center p-3">
+                  <div class="stats-icon bg-purple text-white mb-2">
+                    <i class="bi bi-layers-fill"></i>
+                  </div>
+                  <h4 class="fw-bold mb-1"><?= ($gelombangAktif + $gelombangDibuka) ?></h4>
+                  <p class="text-muted mb-0 small">Gelombang Aktif</p>
+                  <small class="text-success"><i class="bi bi-play-circle"></i> <?= $gelombangAktif ?> Gelombang aktif</small>
+                </div>
+              </div>
+            </a>
+          </div>
+          
+          <div class="col-6 col-lg-3">
+            <a href="pengaturan/formulir/" class="text-decoration-none">
+              <div class="card stats-card stats-card-clickable">
+                <div class="card-body text-center p-3">
+                  <div class="stats-icon bg-teal text-white mb-2">
+                    <i class="bi bi-clipboard-data-fill"></i>
+                  </div>
+                  <h4 class="fw-bold mb-1"><?= $formulirAktif ?></h4>
+                  <p class="text-muted mb-0 small">Formulir Aktif</p>
+                  <small class="text-<?= $formulirAktif > 0 ? 'success' : 'warning' ?>">
+                    <i class="bi bi-<?= $formulirAktif > 0 ? 'toggle-on' : 'toggle-off' ?>"></i> 
+                    <?= $formulirAktif > 0 ? 'Pendaftaran dibuka' : 'Pendaftaran ditutup' ?>
+                  </small>
                 </div>
               </div>
             </a>
