@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 17 Jul 2025 pada 17.38
+-- Waktu pembuatan: 26 Jul 2025 pada 10.15
 -- Versi server: 10.4.28-MariaDB
 -- Versi PHP: 8.2.4
 
@@ -30,11 +30,20 @@ SET time_zone = "+00:00";
 CREATE TABLE `absensi_instruktur` (
   `id_absen` int(11) NOT NULL,
   `id_instruktur` int(11) DEFAULT NULL,
+  `id_jadwal` int(11) DEFAULT NULL,
   `tanggal` date DEFAULT NULL,
   `waktu` datetime DEFAULT NULL,
   `status` enum('hadir','izin','sakit','tanpa keterangan') DEFAULT NULL,
   `keterangan` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `absensi_instruktur`
+--
+
+INSERT INTO `absensi_instruktur` (`id_absen`, `id_instruktur`, `id_jadwal`, `tanggal`, `waktu`, `status`, `keterangan`) VALUES
+(1, 2, 25, '2025-07-23', '2025-07-23 08:46:42', 'hadir', ''),
+(2, 2, 72, '2025-07-25', '2025-07-25 06:42:48', 'hadir', '');
 
 -- --------------------------------------------------------
 
@@ -49,6 +58,15 @@ CREATE TABLE `absensi_siswa` (
   `status` enum('hadir','izin','sakit','tanpa keterangan') DEFAULT NULL,
   `waktu_absen` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `absensi_siswa`
+--
+
+INSERT INTO `absensi_siswa` (`id_absen`, `id_siswa`, `id_jadwal`, `status`, `waktu_absen`) VALUES
+(4, 12, 72, 'sakit', '2025-07-25 16:27:18'),
+(5, 8, 72, 'hadir', '2025-07-25 16:27:18'),
+(6, 14, 72, 'hadir', '2025-07-25 16:27:18');
 
 -- --------------------------------------------------------
 
@@ -92,9 +110,8 @@ CREATE TABLE `evaluasi` (
 --
 
 INSERT INTO `evaluasi` (`id_evaluasi`, `id_siswa`, `id_kelas`, `tanggal_evaluasi`, `status_evaluasi`, `id_periode`) VALUES
-(28, 8, 2, '2025-07-14 21:00:00', 'selesai', 17),
-(29, 12, 2, '2025-07-14 21:15:00', 'selesai', 17),
-(30, 14, 1, '2025-07-14 21:30:00', 'selesai', 17);
+(32, 14, 1, '2025-07-26 13:18:55', 'selesai', 17),
+(33, 14, 1, '2025-07-26 13:24:30', 'selesai', 19);
 
 -- --------------------------------------------------------
 
@@ -141,10 +158,10 @@ CREATE TABLE `instruktur` (
 --
 
 INSERT INTO `instruktur` (`id_instruktur`, `id_user`, `nik`, `nama`, `jenis_kelamin`, `angkatan`, `status_aktif`, `pas_foto`, `email`) VALUES
-(1, 2, '6309077107050001', 'Fithri Mutiya Rahmah', 'Perempuan', 'Gelombang 2 Tahun 2021', 'aktif', '', 'mutiya@gmail.com'),
-(2, 3, '6309077107050003', 'Fety Fatimah', 'Perempuan', 'Gelombang 1 Tahun 2020', 'aktif', '', 'fety@gmail.com'),
+(1, 2, '6309077107050001', 'Fithri Mutiya ', 'Perempuan', 'Gelombang 2 Tahun 2021', 'aktif', '', 'mutiya@gmail.com'),
+(2, 3, '6309077107050089', 'Fety Fatimah', 'Perempuan', 'Gelombang 1 Tahun 2020', 'aktif', '1753344356_instruktur_6881e9648f312.jpg', 'fety@gmail.com'),
 (3, NULL, '6309077107050002', 'Muhammad Rizki ', 'Laki-Laki', 'Gelombang 5 Tahun 2021', 'aktif', '', NULL),
-(5, NULL, '6309077107050080', 'Muhammad Alfiansyah', 'Perempuan', 'Gelombang 3 Tahun 2021', 'aktif', '1751559707_instruktur_6866ae1b04b73.jpg', NULL);
+(5, NULL, '6309077107050080', 'Muhammad Alfiansyah', 'Perempuan', 'Gelombang 3 Tahun 2021', 'aktif', '', NULL);
 
 -- --------------------------------------------------------
 
@@ -166,53 +183,28 @@ CREATE TABLE `jadwal` (
 --
 
 INSERT INTO `jadwal` (`id_jadwal`, `id_kelas`, `id_instruktur`, `tanggal`, `waktu_mulai`, `waktu_selesai`) VALUES
-(3, 1, 5, '2025-06-23', '08:00:00', '09:00:00'),
-(4, 1, 5, '2025-06-24', '08:00:00', '09:00:00'),
-(5, 1, 5, '2025-06-25', '08:00:00', '09:00:00'),
-(6, 1, 5, '2025-06-26', '08:00:00', '09:00:00'),
-(7, 1, 5, '2025-06-27', '08:00:00', '09:00:00'),
-(8, 1, 5, '2025-06-30', '08:00:00', '09:00:00'),
-(9, 1, 5, '2025-07-01', '08:00:00', '09:00:00'),
-(10, 1, 5, '2025-07-02', '08:00:00', '09:00:00'),
-(11, 1, 5, '2025-07-03', '08:00:00', '09:00:00'),
-(12, 1, 5, '2025-07-04', '08:00:00', '09:00:00'),
-(13, 1, 5, '2025-07-07', '08:00:00', '09:00:00'),
-(14, 1, 5, '2025-07-08', '08:00:00', '09:00:00'),
-(15, 1, 5, '2025-07-09', '08:00:00', '09:00:00'),
-(16, 1, 5, '2025-07-10', '08:00:00', '09:00:00'),
-(17, 1, 5, '2025-07-11', '08:00:00', '09:00:00'),
-(18, 1, 5, '2025-07-14', '08:00:00', '09:00:00'),
-(19, 1, 5, '2025-07-15', '08:00:00', '09:00:00'),
-(20, 1, 5, '2025-07-16', '08:00:00', '09:00:00'),
-(21, 1, 5, '2025-07-17', '08:00:00', '09:00:00'),
-(22, 1, 5, '2025-07-18', '08:00:00', '09:00:00'),
-(23, 1, 5, '2025-07-21', '08:00:00', '09:00:00'),
-(24, 1, 5, '2025-07-22', '08:00:00', '09:00:00'),
-(25, 1, 5, '2025-07-23', '08:00:00', '09:00:00'),
-(26, 2, 2, '2025-06-23', '08:00:00', '09:00:00'),
-(27, 2, 2, '2025-06-24', '08:00:00', '09:00:00'),
-(28, 2, 2, '2025-06-25', '08:00:00', '09:00:00'),
-(29, 2, 2, '2025-06-26', '08:00:00', '09:00:00'),
-(30, 2, 2, '2025-06-27', '08:00:00', '09:00:00'),
-(31, 2, 2, '2025-06-30', '08:00:00', '09:00:00'),
-(32, 2, 2, '2025-07-01', '08:00:00', '09:00:00'),
-(33, 2, 2, '2025-07-02', '08:00:00', '09:00:00'),
-(34, 2, 2, '2025-07-03', '08:00:00', '09:00:00'),
-(35, 2, 2, '2025-07-04', '08:00:00', '09:00:00'),
-(36, 2, 2, '2025-07-07', '08:00:00', '09:00:00'),
-(37, 2, 2, '2025-07-08', '08:00:00', '09:00:00'),
-(38, 2, 2, '2025-07-09', '08:00:00', '09:00:00'),
-(39, 2, 2, '2025-07-10', '08:00:00', '09:00:00'),
-(40, 2, 2, '2025-07-11', '08:00:00', '09:00:00'),
-(41, 2, 2, '2025-07-14', '08:00:00', '09:00:00'),
-(42, 2, 2, '2025-07-15', '08:00:00', '09:00:00'),
-(43, 2, 2, '2025-07-16', '08:00:00', '09:00:00'),
-(44, 2, 2, '2025-07-17', '08:00:00', '09:00:00'),
-(45, 2, 2, '2025-07-18', '08:00:00', '09:00:00'),
-(46, 2, 2, '2025-07-21', '08:00:00', '09:00:00'),
-(47, 2, 2, '2025-07-22', '08:00:00', '09:00:00'),
-(48, 2, 2, '2025-07-23', '08:00:00', '09:00:00'),
-(50, 2, 2, '2025-07-05', '08:00:00', '09:00:00');
+(71, 1, 2, '2025-07-24', '08:00:00', '09:00:00'),
+(72, 1, 2, '2025-07-25', '08:00:00', '09:00:00'),
+(73, 1, 2, '2025-07-28', '08:00:00', '09:00:00'),
+(74, 1, 2, '2025-07-29', '08:00:00', '09:00:00'),
+(75, 1, 2, '2025-07-30', '08:00:00', '09:00:00'),
+(76, 1, 2, '2025-07-31', '08:00:00', '09:00:00'),
+(77, 1, 2, '2025-08-01', '08:00:00', '09:00:00'),
+(78, 1, 2, '2025-08-04', '08:00:00', '09:00:00'),
+(79, 1, 2, '2025-08-05', '08:00:00', '09:00:00'),
+(80, 1, 2, '2025-08-06', '08:00:00', '09:00:00'),
+(81, 1, 2, '2025-08-07', '08:00:00', '09:00:00'),
+(82, 1, 2, '2025-08-08', '08:00:00', '09:00:00'),
+(83, 1, 2, '2025-08-11', '08:00:00', '09:00:00'),
+(84, 1, 2, '2025-08-12', '08:00:00', '09:00:00'),
+(85, 1, 2, '2025-08-13', '08:00:00', '09:00:00'),
+(86, 1, 2, '2025-08-14', '08:00:00', '09:00:00'),
+(87, 1, 2, '2025-08-15', '08:00:00', '09:00:00'),
+(88, 1, 2, '2025-08-18', '08:00:00', '09:00:00'),
+(89, 1, 2, '2025-08-19', '08:00:00', '09:00:00'),
+(90, 1, 2, '2025-08-20', '08:00:00', '09:00:00'),
+(91, 1, 2, '2025-08-21', '08:00:00', '09:00:00'),
+(92, 1, 2, '2025-08-22', '08:00:00', '09:00:00');
 
 -- --------------------------------------------------------
 
@@ -234,99 +226,59 @@ CREATE TABLE `jawaban_evaluasi` (
 --
 
 INSERT INTO `jawaban_evaluasi` (`id_jawaban`, `id_evaluasi`, `id_pertanyaan`, `id_siswa`, `jawaban`, `answered_at`) VALUES
-(405, 28, 171, 8, '4', '2025-07-14 13:01:00'),
-(406, 28, 83, 8, 'Bold dan Italic', '2025-07-14 13:01:30'),
-(407, 28, 173, 8, 'Mudah', '2025-07-14 13:02:00'),
-(408, 28, 84, 8, 'Bullet Points', '2025-07-14 13:02:30'),
-(409, 28, 174, 8, 'Baik', '2025-07-14 13:03:00'),
-(410, 28, 85, 8, 'Table of Contents', '2025-07-14 13:03:30'),
-(411, 28, 175, 8, 'Jelas', '2025-07-14 13:04:00'),
-(412, 28, 86, 8, 'Insert > Pictures', '2025-07-14 13:04:30'),
-(413, 28, 87, 8, 'Insert Table', '2025-07-14 13:05:00'),
-(414, 28, 88, 8, 'Page Layout > Margins', '2025-07-14 13:05:30'),
-(415, 28, 89, 8, 'Semua benar', '2025-07-14 13:06:00'),
-(416, 28, 90, 8, 'Semua benar', '2025-07-14 13:06:30'),
-(417, 28, 91, 8, 'Semua benar', '2025-07-14 13:07:00'),
-(418, 28, 92, 8, 'Template surat', '2025-07-14 13:07:30'),
-(419, 28, 93, 8, 'Semua penting', '2025-07-14 13:08:00'),
-(420, 28, 94, 8, 'Kombinasi template dan edit', '2025-07-14 13:08:30'),
-(421, 28, 95, 8, 'Semua benar', '2025-07-14 13:09:00'),
-(422, 28, 96, 8, 'Semua benar', '2025-07-14 13:09:30'),
-(423, 28, 97, 8, 'Semua situasi', '2025-07-14 13:10:00'),
-(424, 28, 98, 8, '4', '2025-07-14 13:10:30'),
-(425, 28, 99, 8, '5', '2025-07-14 13:11:00'),
-(426, 28, 100, 8, '4', '2025-07-14 13:11:30'),
-(427, 28, 101, 8, '4', '2025-07-14 13:12:00'),
-(428, 28, 102, 8, '5', '2025-07-14 13:12:30'),
-(429, 28, 176, 8, '4', '2025-07-14 13:13:00'),
-(430, 28, 177, 8, '5', '2025-07-14 13:13:30'),
-(431, 28, 178, 8, '4', '2025-07-14 13:14:00'),
-(432, 28, 103, 8, 'Materi sudah cukup baik, mungkin bisa ditambahkan lebih banyak contoh praktis untuk dokumen resmi seperti surat lamaran kerja.', '2025-07-14 13:14:30'),
-(433, 28, 104, 8, 'Saya berharap ada materi tentang mail merge dan cara membuat dokumen yang lebih profesional dengan template yang lebih beragam.', '2025-07-14 13:15:00'),
-(434, 28, 179, 8, 'Waktu pembelajaran sudah pas, instruktur sabar dan jelas menjelaskan. Mungkin bisa ditambah sesi praktik mandiri.', '2025-07-14 13:15:30'),
-(435, 28, 180, 8, 'Fitur table agak sulit dipahami awalnya, terutama untuk merge cells dan formatting yang kompleks.', '2025-07-14 13:16:00'),
-(436, 29, 171, 12, '3', '2025-07-14 13:16:00'),
-(437, 29, 83, 12, 'Font dan Size', '2025-07-14 13:16:30'),
-(438, 29, 173, 12, 'Sedang', '2025-07-14 13:17:00'),
-(439, 29, 84, 12, 'Numbering', '2025-07-14 13:17:30'),
-(440, 29, 174, 12, 'Cukup', '2025-07-14 13:18:00'),
-(441, 29, 85, 12, 'Page Break', '2025-07-14 13:18:30'),
-(442, 29, 175, 12, 'Cukup Jelas', '2025-07-14 13:19:00'),
-(443, 29, 86, 12, 'Copy paste dari browser', '2025-07-14 13:19:30'),
-(444, 29, 87, 12, 'Table Design', '2025-07-14 13:20:00'),
-(445, 29, 88, 12, 'File > Page Setup', '2025-07-14 13:20:30'),
-(446, 29, 89, 12, 'Grammar check', '2025-07-14 13:21:00'),
-(447, 29, 90, 12, 'Auto Save aktif', '2025-07-14 13:21:30'),
-(448, 29, 91, 12, 'Lihat layout sebelum print', '2025-07-14 13:22:00'),
-(449, 29, 92, 12, 'Format manual', '2025-07-14 13:22:30'),
-(450, 29, 93, 12, 'Ctrl+C, Ctrl+V (Copy Paste)', '2025-07-14 13:23:00'),
-(451, 29, 94, 12, 'Template CV Word', '2025-07-14 13:23:30'),
-(452, 29, 95, 12, 'Mencari kata tertentu', '2025-07-14 13:24:00'),
-(453, 29, 96, 12, 'Konsisten font dan spacing', '2025-07-14 13:24:30'),
-(454, 29, 97, 12, 'Laporan kerja', '2025-07-14 13:25:00'),
-(455, 29, 98, 12, '3', '2025-07-14 13:25:30'),
-(456, 29, 99, 12, '4', '2025-07-14 13:26:00'),
-(457, 29, 100, 12, '3', '2025-07-14 13:26:30'),
-(458, 29, 101, 12, '3', '2025-07-14 13:27:00'),
-(459, 29, 102, 12, '4', '2025-07-14 13:27:30'),
-(460, 29, 176, 12, '3', '2025-07-14 13:28:00'),
-(461, 29, 177, 12, '4', '2025-07-14 13:28:30'),
-(462, 29, 178, 12, '3', '2025-07-14 13:29:00'),
-(463, 29, 103, 12, 'Pembelajaran sudah oke, tapi mungkin perlu lebih banyak latihan soal dan contoh dokumen yang berbeda-beda.', '2025-07-14 13:29:30'),
-(464, 29, 104, 12, 'Ingin belajar lebih dalam tentang formatting yang advanced dan cara membuat dokumen yang lebih menarik secara visual.', '2025-07-14 13:30:00'),
-(465, 29, 179, 12, 'Instruktur baik dan sabar, tapi kadang terlalu cepat menjelaskan fitur yang kompleks. Mungkin bisa diperlambat sedikit.', '2025-07-14 13:30:30'),
-(466, 29, 180, 12, 'Header dan footer agak membingungkan, terutama cara setting yang berbeda untuk halaman pertama dan selanjutnya.', '2025-07-14 13:31:00'),
-(467, 30, 171, 14, '5', '2025-07-14 13:31:00'),
-(468, 30, 83, 14, 'Text Color', '2025-07-14 13:31:30'),
-(469, 30, 173, 14, 'Mudah', '2025-07-14 13:32:00'),
-(470, 30, 84, 14, 'Manual dengan tanda (-)', '2025-07-14 13:32:30'),
-(471, 30, 174, 14, 'Sangat Baik', '2025-07-14 13:33:00'),
-(472, 30, 85, 14, 'Header dan Footer', '2025-07-14 13:33:30'),
-(473, 30, 175, 14, 'Sangat Jelas', '2025-07-14 13:34:00'),
-(474, 30, 86, 14, 'Drag and drop', '2025-07-14 13:34:30'),
-(475, 30, 87, 14, 'Merge Cells', '2025-07-14 13:35:00'),
-(476, 30, 88, 14, 'Ruler di atas dokumen', '2025-07-14 13:35:30'),
-(477, 30, 89, 14, 'Cek ejaan', '2025-07-14 13:36:00'),
-(478, 30, 90, 14, 'Backup di cloud', '2025-07-14 13:36:30'),
-(479, 30, 91, 14, 'Menghemat kertas', '2025-07-14 13:37:00'),
-(480, 30, 92, 14, 'Copy template dari internet', '2025-07-14 13:37:30'),
-(481, 30, 93, 14, 'Ctrl+S (Save)', '2025-07-14 13:38:00'),
-(482, 30, 94, 14, 'Format sendiri', '2025-07-14 13:38:30'),
-(483, 30, 95, 14, 'Mengganti kata secara massal', '2025-07-14 13:39:00'),
-(484, 30, 96, 14, 'Gunakan heading styles', '2025-07-14 13:39:30'),
-(485, 30, 97, 14, 'Tugas sekolah/kuliah', '2025-07-14 13:40:00'),
-(486, 30, 98, 14, '5', '2025-07-14 13:40:30'),
-(487, 30, 99, 14, '5', '2025-07-14 13:41:00'),
-(488, 30, 100, 14, '5', '2025-07-14 13:41:30'),
-(489, 30, 101, 14, '5', '2025-07-14 13:42:00'),
-(490, 30, 102, 14, '5', '2025-07-14 13:42:30'),
-(491, 30, 176, 14, '5', '2025-07-14 13:43:00'),
-(492, 30, 177, 14, '5', '2025-07-14 13:43:30'),
-(493, 30, 178, 14, '5', '2025-07-14 13:44:00'),
-(494, 30, 103, 14, 'Pembelajaran sangat memuaskan! Instruktur sangat jelas dan sabar. Materi sudah sangat lengkap dan mudah dipahami.', '2025-07-14 13:44:30'),
-(495, 30, 104, 14, 'Semua sudah bagus, mungkin bisa ditambahkan materi tentang cara membuat dokumen yang lebih kreatif dengan shapes dan smartart.', '2025-07-14 13:45:00'),
-(496, 30, 179, 14, 'Instruktur excellent! Cara mengajar sangat mudah dipahami dan selalu memberikan tips-tips praktis yang berguna.', '2025-07-14 13:45:30'),
-(497, 30, 180, 14, 'Sebenarnya tidak ada yang terlalu sulit, semua bisa dipahami dengan baik berkat penjelasan instruktur yang detail.', '2025-07-14 13:46:00');
+(520, 32, 171, 14, '4', '2025-07-26 05:18:55'),
+(521, 32, 83, 14, 'Font dan Size', '2025-07-26 05:18:55'),
+(522, 32, 173, 14, 'Sangat Mudah', '2025-07-26 05:18:55'),
+(523, 32, 84, 14, 'Numbering', '2025-07-26 05:18:55'),
+(524, 32, 174, 14, 'Kurang', '2025-07-26 05:18:55'),
+(525, 32, 85, 14, 'Page Number', '2025-07-26 05:18:55'),
+(526, 32, 175, 14, 'Tidak Jelas', '2025-07-26 05:18:55'),
+(527, 32, 86, 14, 'Drag and drop', '2025-07-26 05:18:55'),
+(528, 32, 176, 14, '3', '2025-07-26 05:18:55'),
+(529, 32, 87, 14, 'Sort Data', '2025-07-26 05:18:55'),
+(530, 32, 177, 14, '3', '2025-07-26 05:18:55'),
+(531, 32, 88, 14, 'Format > Paragraph', '2025-07-26 05:18:55'),
+(532, 32, 178, 14, '1', '2025-07-26 05:18:55'),
+(533, 32, 89, 14, 'Cek ejaan', '2025-07-26 05:18:55'),
+(534, 32, 179, 14, 'cukup', '2025-07-26 05:18:55'),
+(535, 32, 90, 14, 'Semua benar', '2025-07-26 05:18:55'),
+(536, 32, 180, 14, 'cukup', '2025-07-26 05:18:55'),
+(537, 32, 91, 14, 'Lihat layout sebelum print', '2025-07-26 05:18:55'),
+(538, 32, 92, 14, 'Format manual', '2025-07-26 05:18:55'),
+(539, 32, 93, 14, 'Semua penting', '2025-07-26 05:18:55'),
+(540, 32, 94, 14, 'Format sendiri', '2025-07-26 05:18:55'),
+(541, 32, 95, 14, 'Koreksi typo', '2025-07-26 05:18:55'),
+(542, 32, 96, 14, 'Semua benar', '2025-07-26 05:18:55'),
+(543, 32, 97, 14, 'Semua situasi', '2025-07-26 05:18:55'),
+(544, 32, 98, 14, '4', '2025-07-26 05:18:55'),
+(545, 32, 99, 14, '4', '2025-07-26 05:18:55'),
+(546, 32, 100, 14, '4', '2025-07-26 05:18:55'),
+(547, 32, 101, 14, '4', '2025-07-26 05:18:55'),
+(548, 32, 102, 14, '4', '2025-07-26 05:18:55'),
+(549, 32, 103, 14, 'cukup', '2025-07-26 05:18:55'),
+(550, 32, 104, 14, 'cukup', '2025-07-26 05:18:55'),
+(551, 33, 105, 14, 'SUM (penjumlahan)', '2025-07-26 05:24:30'),
+(552, 33, 106, 14, 'Ketik langsung di cell', '2025-07-26 05:24:30'),
+(553, 33, 107, 14, '=AVERAGE(A1:A10)', '2025-07-26 05:24:30'),
+(554, 33, 108, 14, 'Recommended Charts', '2025-07-26 05:24:30'),
+(555, 33, 109, 14, 'Line Chart', '2025-07-26 05:24:30'),
+(556, 33, 110, 14, 'Accounting format', '2025-07-26 05:24:30'),
+(557, 33, 111, 14, 'Semua benar', '2025-07-26 05:24:30'),
+(558, 33, 112, 14, 'Format as Table', '2025-07-26 05:24:30'),
+(559, 33, 113, 14, 'Ctrl+Z (Undo)', '2025-07-26 05:24:30'),
+(560, 33, 114, 14, 'Save As dengan nama jelas', '2025-07-26 05:24:30'),
+(561, 33, 115, 14, 'Page Layout > Print Area', '2025-07-26 05:24:30'),
+(562, 33, 116, 14, 'Data karyawan', '2025-07-26 05:24:30'),
+(563, 33, 117, 14, '=(nilai/total)*100', '2025-07-26 05:24:30'),
+(564, 33, 118, 14, 'Berubah vs tetap saat copy', '2025-07-26 05:24:30'),
+(565, 33, 119, 14, 'Tugas sekolah/kuliah', '2025-07-26 05:24:30'),
+(566, 33, 120, 14, '3', '2025-07-26 05:24:30'),
+(567, 33, 121, 14, '3', '2025-07-26 05:24:30'),
+(568, 33, 122, 14, '2', '2025-07-26 05:24:30'),
+(569, 33, 123, 14, '2', '2025-07-26 05:24:30'),
+(570, 33, 124, 14, '3', '2025-07-26 05:24:30'),
+(571, 33, 125, 14, 'ckup', '2025-07-26 05:24:30'),
+(572, 33, 126, 14, 'cukup', '2025-07-26 05:24:30');
 
 -- --------------------------------------------------------
 
@@ -349,7 +301,7 @@ CREATE TABLE `kelas` (
 INSERT INTO `kelas` (`id_kelas`, `nama_kelas`, `id_gelombang`, `kapasitas`, `id_instruktur`) VALUES
 (1, '08.00 - 09.00 A', 1, 10, 2),
 (2, '08.00 - 09.00 B', 1, 10, 1),
-(10, '08.00 - 09.00 A', 2, 10, 5);
+(10, '08.00 - 09.00 A', 2, 10, NULL);
 
 -- --------------------------------------------------------
 
@@ -371,7 +323,9 @@ CREATE TABLE `materi` (
 --
 
 INSERT INTO `materi` (`id_materi`, `deskripsi`, `id_instruktur`, `id_kelas`, `judul`, `file_materi`) VALUES
-(2, 'Materi Word Bagian 1', 2, 1, 'SISTEM INFORMASI MANAJEMEN', '1751525348_RikaSlipBimbinganSkripsi_compressed.pdf');
+(2, 'Materi Word Bagian 1', 2, 1, 'SISTEM INFORMASI MANAJEMEN', '1751525348_RikaSlipBimbinganSkripsi_compressed.pdf'),
+(3, 'Materi Microsoft Persiapan Ujian', 2, 1, 'SISTEM INFORMASI MANAJEMEN 2', '1753242070_lkp_webapp4.doc'),
+(4, 'Materi Word Pertemuan 1', 1, 2, 'SISTEM INFORMASI AKADEMIK', '1753242174_lkp_webapp4.doc');
 
 -- --------------------------------------------------------
 
@@ -397,9 +351,9 @@ CREATE TABLE `nilai` (
 --
 
 INSERT INTO `nilai` (`id_nilai`, `id_siswa`, `id_kelas`, `nilai_word`, `nilai_excel`, `nilai_ppt`, `nilai_internet`, `nilai_pengembangan`, `rata_rata`, `status_kelulusan`) VALUES
-(1, 14, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(2, 12, 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(3, 8, 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+(1, 14, 1, 80, 90, 80, 80, 80, 82, 'lulus'),
+(4, 12, 1, 90, 70, NULL, NULL, NULL, 80, NULL),
+(5, 8, 1, 85, 75, NULL, NULL, NULL, 80, NULL);
 
 -- --------------------------------------------------------
 
@@ -432,10 +386,10 @@ CREATE TABLE `pendaftar` (
 --
 
 INSERT INTO `pendaftar` (`id_pendaftar`, `id_gelombang`, `nik`, `nama_pendaftar`, `tempat_lahir`, `tanggal_lahir`, `jenis_kelamin`, `pendidikan_terakhir`, `no_hp`, `email`, `alamat_lengkap`, `jam_pilihan`, `pas_foto`, `ktp`, `kk`, `ijazah`, `status_pendaftaran`) VALUES
-(1, 2, '3171012101950001', 'Ahmad Rizki Pratama', 'Jakarta', '1995-01-21', 'Laki-Laki', 'SLTA', '081234567890', 'ahmad.rizki@email.com', 'Jl. Merdeka No. 123, RT 05/RW 03, Kelurahan Menteng, Jakarta Pusat', '09.00 - 10.00', '', 'ktp_ahmad.jpg', '', '', 'Terverifikasi'),
-(2, 2, '3273024205920002', 'Siti Nurhaliza', 'Banjarmasin', '1992-05-02', 'Perempuan', 'S1', '082345678901', 'siti.nurhaliza@email.com', 'Jl. Braga No. 45, RT 02/RW 01, Kelurahan Braga, Bandung', '13.00 - 14.00', '', '', '', '', 'Terverifikasi'),
-(6, 2, '6309077107050800', 'Rizka Nohaliza', 'Tabalong', '2002-09-09', 'Perempuan', 'S1', '082213594215', 'Kikifebriani07@guru.smp.belajar.id', 'JL. Adhyaksa VI, NO. 20A, RT. 26', '13.00 - 14.00', '1752668517_pas_foto_68779965159ce.jpg', '1752668517_ktp_6877996517790.jpg', '1752668517_kk_687799651830d.jpg', '1752668517_ijazah_6877996518a6a.jpg', 'Terverifikasi'),
-(7, 2, '6309077107057000', 'Riki Ramadhan', 'Tabalong', '2000-09-09', 'Laki-Laki', 'SLTA', '082213594219', 'rikaapliana0@gmail.com', 'Kupang Nunding', '08.00 - 09.00', '1752741448_pas_foto_6878b64891df8.jpg', '1752741448_ktp_6878b64892390.jpg', '1752741448_kk_6878b64892914.jpg', '1752741448_ijazah_6878b64893355.jpg', 'Terverifikasi');
+(1, 2, '3171012101950001', 'Ahmad Rizki Pratama', 'Jakarta', '1995-01-21', 'Laki-Laki', 'SLTA', '081234567890', 'ahmad.rizki@email.com', 'Jl. Merdeka No. 123, RT 05/RW 03, Kelurahan Menteng, Jakarta Pusat', '09.00 - 10.00', '', 'ktp_ahmad.jpg', '', '', 'Belum di Verifikasi'),
+(6, 2, '6309077107050800', 'Almanida Zahra', 'Tabalong', '2002-09-09', 'Perempuan', 'S1', '082213594215', 'almanidazahra@gmail.com', 'JL. Adhyaksa VI, NO. 20A, RT. 26', '13.00 - 14.00', '1752668517_pas_foto_68779965159ce.jpg', '1752668517_ktp_6877996517790.jpg', '1752668517_kk_687799651830d.jpg', '1752668517_ijazah_6877996518a6a.jpg', 'Diterima'),
+(7, 2, '6309077107057000', 'Riki Ramadhan', 'Tabalong', '2000-09-09', 'Laki-Laki', 'SLTA', '082213594219', 'rikaapliana0@gmail.com', 'Kupang Nunding', '08.00 - 09.00', '1752741448_pas_foto_6878b64891df8.jpg', '1752741448_ktp_6878b64892390.jpg', '1752741448_kk_6878b64892914.jpg', '1752741448_ijazah_6878b64893355.jpg', 'Terverifikasi'),
+(8, 2, '6309077107050900', 'Muhammad Fadilah', 'Tabalong', '2002-07-07', 'Laki-Laki', 'D1', '082213594215', 'rikaapliana02@gmail.com', 'Kupang Nunding', '08.00 - 09.00', '1753167311_6309077107050900_pasfoto.jpg', '1753167311_6309077107050900_ktp.pdf', '1753167311_6309077107050900_kk.pdf', '1753167311_6309077107050900_ijazah.pdf', 'Terverifikasi');
 
 -- --------------------------------------------------------
 
@@ -491,7 +445,7 @@ CREATE TABLE `periode_evaluasi` (
 
 INSERT INTO `periode_evaluasi` (`id_periode`, `nama_evaluasi`, `jenis_evaluasi`, `materi_terkait`, `id_gelombang`, `tanggal_buka`, `tanggal_tutup`, `status`, `deskripsi`, `dibuat_oleh`, `created_at`, `pertanyaan_terpilih`) VALUES
 (17, 'Evaluasi Materi Microsoft Word', 'per_materi', 'word', 1, '2025-07-14 20:34:00', '2025-07-31 20:34:00', 'aktif', '', 1, '2025-07-14 12:35:00', '[171,83,173,84,174,85,175,86,176,87,177,88,178,89,179,90,180,91,92,93,94,95,96,97,98,99,100,101,102,103,104]'),
-(18, 'Evaluasi Materi Microsoft Excel', 'per_materi', 'excel', 1, '2025-07-14 20:38:00', '2025-07-31 20:38:00', 'aktif', '', 1, '2025-07-14 12:38:48', '[105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126]');
+(19, 'Evaluasi Materi Microsoft Excel', 'per_materi', 'excel', 1, '2025-07-26 13:02:00', '2025-08-02 13:02:00', 'aktif', '', 1, '2025-07-26 05:02:38', '[105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126]');
 
 -- --------------------------------------------------------
 
@@ -683,7 +637,7 @@ CREATE TABLE `siswa` (
 INSERT INTO `siswa` (`id_siswa`, `id_user`, `id_kelas`, `nik`, `nama`, `tempat_lahir`, `tanggal_lahir`, `jenis_kelamin`, `pendidikan_terakhir`, `no_hp`, `email`, `alamat_lengkap`, `pas_foto`, `ktp`, `kk`, `ijazah`, `status_aktif`) VALUES
 (8, NULL, 1, '6309077107050002', 'Norlaila Hasanah', 'Tabalong', '2002-08-07', 'Perempuan', 'S1', '082213594215', 'lailahasanah02@gmail.com', 'Ds. Kupang Nunding', '1750252872_6852bd48d28ef.jpg', '1751585653_ktp_686713755fd67.pdf', '', '', 'aktif'),
 (12, NULL, 1, '6309077107050009', 'Muhammad Rizki Nugraha', 'Tabalong', '2001-09-08', 'Laki-Laki', 'D2', '082213592100', 'rikzkinugraha02@gmail.com', 'Kupang Nunding', '', '', '', '', 'aktif'),
-(14, 8, 1, '6309077107050008', 'Almanida ', 'Banjarmasin', '2002-08-08', 'Perempuan', 'D1', '082213594202', 'almanida@gmail.com', 'Tanjung Selatan    ', '', '', '', '', 'aktif');
+(14, 8, 1, '6309077107050008', 'Almanida ', 'Banjarmasin', '2002-08-08', 'Perempuan', 'D1', '0822135942000', 'almanida@gmail.com', 'Tanjung Selatan', '1753450407_siswa_14_688387a78cca1.jpg', '', '', '', 'aktif');
 
 -- --------------------------------------------------------
 
@@ -707,13 +661,11 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id_user`, `username`, `password`, `role`, `remember_token`, `reset_token`, `reset_token_expire`, `created_at`) VALUES
-(2, 'mutiyarahmah', '$2y$10$8oTNp8NqTFVenabIFv1QgOdttYwm/qgGGsBljop/PeqnA8Qx/I3gq', 'instruktur', NULL, NULL, NULL, '2025-06-28 13:21:28'),
+(2, 'mutiyarahmah', '$2y$10$wFZSXpfKhde7LH8NAVKFAueHxdL4YH2fbYxkVYSXFH0MTZej2bQqq', 'instruktur', NULL, NULL, NULL, '2025-06-28 13:21:28'),
 (3, 'fetyfatimah', '$2y$10$hu37l/sRprS7vIRI7IgND.owVORrYvdz5MWxVcdnR9fOA/Ai12VJe', 'instruktur', NULL, NULL, NULL, '2025-06-28 13:21:28'),
 (6, 'Rika Apliana', '$2y$10$4cWKCyb0QwpzpOSFm9uHgOQZSVugqDzB1KqJc1gE.FJQGZQeW2tfG', 'admin', NULL, '14d21782598889a82a6d61ea6859121d9f25afca70b20579f7a75b831d34608d', '2025-06-28 19:58:55', '2025-06-28 13:49:54'),
-(8, 'almanida', '$2y$10$AfmN8xoG9Y37pxzLvcHLSenVMMXfqafJ1uwNYjzEGvXNTGoCfDny2', 'siswa', NULL, NULL, NULL, '2025-06-28 18:15:11'),
-(15, 'rikiramadh_2025', '$2y$10$KoyeFtT/2OCH5rSUhpRmve5xvvWRz2nbdrGMGjr8teP86Bi5fIH4W', 'siswa', NULL, NULL, NULL, '2025-07-17 14:40:48'),
-(16, 'rikiramadh_2025_1', '$2y$10$pIrkesYpJp9utowIsNItT.N1BzuqMDVZuAk7A6GZWtZMt4wmtYjWi', 'siswa', NULL, NULL, NULL, '2025-07-17 14:54:59'),
-(17, 'rikiramadh_2025_2', '$2y$10$ePY4UVIFQcxhcaUxZZ48ruaVCh5TcSf3PSyxvEfrPwA5Uxs3U7aBW', 'siswa', NULL, NULL, NULL, '2025-07-17 15:10:14');
+(8, 'almanida', '$2y$10$u5dlP1sxhobmb5K9LsGMvOcoDHnpHMID.A76P8uxs4DoN8uS/DJze', 'siswa', NULL, NULL, NULL, '2025-06-28 18:15:11'),
+(20, 'muhammadfa_2025', '$2y$10$.92FSwPsZpO.MlzvH6L7muWcf6qRJPQcZOFGTtT.4CFQKUhgmYe7C', 'siswa', NULL, NULL, NULL, '2025-07-22 07:16:41');
 
 --
 -- Indexes for dumped tables
@@ -857,13 +809,13 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT untuk tabel `absensi_instruktur`
 --
 ALTER TABLE `absensi_instruktur`
-  MODIFY `id_absen` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_absen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT untuk tabel `absensi_siswa`
 --
 ALTER TABLE `absensi_siswa`
-  MODIFY `id_absen` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_absen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT untuk tabel `admin`
@@ -875,7 +827,7 @@ ALTER TABLE `admin`
 -- AUTO_INCREMENT untuk tabel `evaluasi`
 --
 ALTER TABLE `evaluasi`
-  MODIFY `id_evaluasi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id_evaluasi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT untuk tabel `gelombang`
@@ -893,13 +845,13 @@ ALTER TABLE `instruktur`
 -- AUTO_INCREMENT untuk tabel `jadwal`
 --
 ALTER TABLE `jadwal`
-  MODIFY `id_jadwal` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
+  MODIFY `id_jadwal` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
 
 --
 -- AUTO_INCREMENT untuk tabel `jawaban_evaluasi`
 --
 ALTER TABLE `jawaban_evaluasi`
-  MODIFY `id_jawaban` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=498;
+  MODIFY `id_jawaban` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=573;
 
 --
 -- AUTO_INCREMENT untuk tabel `kelas`
@@ -911,19 +863,19 @@ ALTER TABLE `kelas`
 -- AUTO_INCREMENT untuk tabel `materi`
 --
 ALTER TABLE `materi`
-  MODIFY `id_materi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_materi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT untuk tabel `nilai`
 --
 ALTER TABLE `nilai`
-  MODIFY `id_nilai` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_nilai` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT untuk tabel `pendaftar`
 --
 ALTER TABLE `pendaftar`
-  MODIFY `id_pendaftar` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id_pendaftar` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT untuk tabel `pengaturan_pendaftaran`
@@ -935,7 +887,7 @@ ALTER TABLE `pengaturan_pendaftaran`
 -- AUTO_INCREMENT untuk tabel `periode_evaluasi`
 --
 ALTER TABLE `periode_evaluasi`
-  MODIFY `id_periode` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id_periode` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT untuk tabel `pertanyaan_evaluasi`
@@ -947,13 +899,13 @@ ALTER TABLE `pertanyaan_evaluasi`
 -- AUTO_INCREMENT untuk tabel `siswa`
 --
 ALTER TABLE `siswa`
-  MODIFY `id_siswa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
+  MODIFY `id_siswa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
 
 --
 -- AUTO_INCREMENT untuk tabel `user`
 --
 ALTER TABLE `user`
-  MODIFY `id_user` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id_user` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)

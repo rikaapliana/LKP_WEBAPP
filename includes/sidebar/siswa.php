@@ -51,6 +51,13 @@ $baseURL = $baseURL ?? './';
             </a>
         </li>
 
+         <li class="nav-item">
+            <a class="nav-link <?= ($activePage == 'absensi-saya') ? 'active' : '' ?>" href="<?= $baseURL ?>absensi/index.php">
+                <i class="bi bi-person-check me-2"></i> Absensi Saya
+            </a>
+        </li>
+
+
         <li class="nav-item">
             <a class="nav-link <?= ($activePage == 'materi-kelas') ? 'active' : '' ?>" href="<?= $baseURL ?>materi/index.php">
                 <i class="bi bi-journal-text me-2"></i> Materi Kelas
@@ -63,12 +70,7 @@ $baseURL = $baseURL ?? './';
             </a>
         </li>
 
-        <li class="nav-item">
-            <a class="nav-link <?= ($activePage == 'absensi-saya') ? 'active' : '' ?>" href="<?= $baseURL ?>absensi/index.php">
-                <i class="bi bi-person-check me-2"></i> Absensi Saya
-            </a>
-        </li>
-
+      
         <!-- EVALUASI Category -->
         <li class="nav-item mb-1 mt-3">
             <div class="menu-category">

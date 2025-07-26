@@ -580,10 +580,6 @@ if ($selected_kelas) {
                   </p>
                   <div class="row justify-content-center">
                     <div class="col-md-6">
-                      <div class="alert alert-warning">
-                        <i class="bi bi-calendar-week me-2"></i>
-                        Progress: <?= $kelasInfo['jadwal_terlaksana'] ?>/<?= $kelasInfo['total_jadwal'] ?> pertemuan terlaksana
-                      </div>
                       <?php if($kelasInfo['jadwal_terlaksana'] > 0): ?>
                       <button type="button" class="btn btn-outline-primary" onclick="cetakLaporanKelas()">
                         <i class="bi bi-printer me-1"></i>Cetak Laporan yang Ada

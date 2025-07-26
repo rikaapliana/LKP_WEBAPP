@@ -28,133 +28,124 @@ if (!$siswa_data) {
 
 // Proses update profil
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_profil'])) {
+    $username = trim($_POST['username']);
     $no_hp = trim($_POST['no_hp']);
     $email = trim($_POST['email']);
     $alamat_lengkap = trim($_POST['alamat_lengkap']);
     
     // Validasi input
-    if (empty($no_hp) || empty($email)) {
-        $_SESSION['error'] = "No. HP dan Email wajib diisi!";
+    if (empty($username) || empty($no_hp) || empty($email)) {
+        $_SESSION['error'] = "Username, No. HP dan Email wajib diisi!";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $_SESSION['error'] = "Format email tidak valid!";
+    } elseif (strlen($username) < 3) {
+        $_SESSION['error'] = "Username minimal 3 karakter!";
     } else {
-        try {
-            $conn->begin_transaction();
-            
-            // Handle upload foto
-            $foto_name = $siswa_data['pas_foto']; // Keep existing foto if no new upload
-            
-            // Check if user wants to delete current foto
-            if (isset($_POST['delete_foto']) && $_POST['delete_foto'] == '1') {
-                if (!empty($foto_name) && file_exists('../../../uploads/profile_pictures/' . $foto_name)) {
-                    unlink('../../../uploads/profile_pictures/' . $foto_name);
+        // Cek username sudah dipakai user lain atau belum
+        $stmt = $conn->prepare("SELECT id_user FROM user WHERE username = ? AND id_user != ?");
+        $stmt->bind_param("si", $username, $user_id);
+        $stmt->execute();
+        $existing_user = $stmt->get_result()->fetch_assoc();
+        
+        if ($existing_user) {
+            $_SESSION['error'] = "Username sudah digunakan, pilih username lain!";
+        } else {
+            try {
+                $conn->begin_transaction();
+                
+                // Update tabel user (username) TERLEBIH DAHULU
+                $update_user = "UPDATE user SET username = ? WHERE id_user = ?";
+                $stmt = $conn->prepare($update_user);
+                $stmt->bind_param("si", $username, $user_id);
+                
+                if (!$stmt->execute()) {
+                    throw new Exception("Gagal update username: " . $stmt->error);
                 }
-                $foto_name = '';
-            }
-            
-            if (isset($_FILES['pas_foto']) && $_FILES['pas_foto']['error'] == UPLOAD_ERR_OK) {
-                $upload_dir = '../../../uploads/profile_pictures/';
                 
-                // Create directory if not exists
-                if (!is_dir($upload_dir)) {
-                    mkdir($upload_dir, 0755, true);
+                // Cek apakah username benar ter-update
+                $stmt = $conn->prepare("SELECT username FROM user WHERE id_user = ?");
+                $stmt->bind_param("i", $user_id);
+                $stmt->execute();
+                $check_username = $stmt->get_result()->fetch_assoc();
+                
+                if ($check_username['username'] !== $username) {
+                    throw new Exception("Username tidak ter-update dengan benar!");
                 }
                 
-                $file_tmp = $_FILES['pas_foto']['tmp_name'];
-                $file_name = $_FILES['pas_foto']['name'];
-                $file_size = $_FILES['pas_foto']['size'];
-                $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+                // Handle upload foto
+                $foto_name = $siswa_data['pas_foto']; // Keep existing foto if no new upload
                 
-                // Validasi file
-                $allowed_ext = ['jpg', 'jpeg', 'png'];
-                $max_size = 2 * 1024 * 1024; // 2MB
+                // Check if user wants to delete current foto
+                if (isset($_POST['delete_foto']) && $_POST['delete_foto'] == '1') {
+                    if (!empty($foto_name) && file_exists('../../../uploads/profile_pictures/' . $foto_name)) {
+                        unlink('../../../uploads/profile_pictures/' . $foto_name);
+                    }
+                    $foto_name = '';
+                }
                 
-                if (!in_array($file_ext, $allowed_ext)) {
-                    throw new Exception("Format file harus JPG, JPEG, atau PNG!");
-                } elseif ($file_size > $max_size) {
-                    throw new Exception("Ukuran file maksimal 2MB!");
-                } else {
-                    // Generate unique filename for siswa
-                    $new_filename = time() . '_siswa_' . $siswa_data['id_siswa'] . '_' . uniqid() . '.' . $file_ext;
-                    $upload_path = $upload_dir . $new_filename;
+                if (isset($_FILES['pas_foto']) && $_FILES['pas_foto']['error'] == UPLOAD_ERR_OK) {
+                    $upload_dir = '../../../uploads/profile_pictures/';
                     
-                    if (move_uploaded_file($file_tmp, $upload_path)) {
-                        // Delete old foto if exists
-                        if (!empty($siswa_data['pas_foto']) && file_exists($upload_dir . $siswa_data['pas_foto'])) {
-                            unlink($upload_dir . $siswa_data['pas_foto']);
-                        }
-                        $foto_name = $new_filename;
+                    // Create directory if not exists
+                    if (!is_dir($upload_dir)) {
+                        mkdir($upload_dir, 0755, true);
+                    }
+                    
+                    $file_tmp = $_FILES['pas_foto']['tmp_name'];
+                    $file_name = $_FILES['pas_foto']['name'];
+                    $file_size = $_FILES['pas_foto']['size'];
+                    $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+                    
+                    // Validasi file
+                    $allowed_ext = ['jpg', 'jpeg', 'png'];
+                    $max_size = 2 * 1024 * 1024; // 2MB
+                    
+                    if (!in_array($file_ext, $allowed_ext)) {
+                        throw new Exception("Format file harus JPG, JPEG, atau PNG!");
+                    } elseif ($file_size > $max_size) {
+                        throw new Exception("Ukuran file maksimal 2MB!");
                     } else {
-                        throw new Exception("Gagal upload foto!");
+                        // Generate unique filename for siswa
+                        $new_filename = time() . '_siswa_' . $siswa_data['id_siswa'] . '_' . uniqid() . '.' . $file_ext;
+                        $upload_path = $upload_dir . $new_filename;
+                        
+                        if (move_uploaded_file($file_tmp, $upload_path)) {
+                            // Delete old foto if exists
+                            if (!empty($siswa_data['pas_foto']) && file_exists($upload_dir . $siswa_data['pas_foto'])) {
+                                unlink($upload_dir . $siswa_data['pas_foto']);
+                            }
+                            $foto_name = $new_filename;
+                        } else {
+                            throw new Exception("Gagal upload foto!");
+                        }
                     }
                 }
+                
+                // Update tabel siswa
+                $update_siswa = "UPDATE siswa SET no_hp = ?, email = ?, alamat_lengkap = ?, pas_foto = ? WHERE id_user = ?";
+                $stmt = $conn->prepare($update_siswa);
+                $stmt->bind_param("ssssi", $no_hp, $email, $alamat_lengkap, $foto_name, $user_id);
+                
+                if (!$stmt->execute()) {
+                    throw new Exception("Gagal update profil siswa: " . $stmt->error);
+                }
+                
+                $conn->commit();
+                $_SESSION['success'] = "Profil dan username berhasil diperbarui!";
+                
+                // Redirect ke halaman profil
+                header("Location: index.php");
+                exit();
+                
+            } catch (Exception $e) {
+                $conn->rollback();
+                $_SESSION['error'] = "Gagal memperbarui profil: " . $e->getMessage();
             }
-            
-            // Update tabel siswa (hanya field yang bisa diedit)
-            $update_siswa = "UPDATE siswa SET no_hp = ?, email = ?, alamat_lengkap = ?, pas_foto = ? WHERE id_user = ?";
-            $stmt = $conn->prepare($update_siswa);
-            $stmt->bind_param("ssssi", $no_hp, $email, $alamat_lengkap, $foto_name, $user_id);
-            
-            if (!$stmt->execute()) {
-                throw new Exception("Gagal update profil: " . $stmt->error);
-            }
-            
-            $conn->commit();
-            $_SESSION['success'] = "Profil berhasil diperbarui!";
-            
-            // Redirect ke halaman profil
-            header("Location: index.php");
-            exit();
-            
-        } catch (Exception $e) {
-            $conn->rollback();
-            $_SESSION['error'] = "Gagal memperbarui profil: " . $e->getMessage();
         }
     }
 }
 
-// Proses ubah password
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['ubah_password'])) {
-    $password_lama = $_POST['password_lama'];
-    $password_baru = $_POST['password_baru'];
-    $konfirmasi_password = $_POST['konfirmasi_password'];
-    
-    // Validasi input password
-    if (empty($password_lama) || empty($password_baru) || empty($konfirmasi_password)) {
-        $_SESSION['error'] = "Semua field password wajib diisi!";
-    } elseif (strlen($password_baru) < 6) {
-        $_SESSION['error'] = "Password baru minimal 6 karakter!";
-    } elseif ($password_baru !== $konfirmasi_password) {
-        $_SESSION['error'] = "Konfirmasi password tidak sama!";
-    } else {
-        // Cek password lama
-        $stmt = $conn->prepare("SELECT password FROM user WHERE id_user = ?");
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $user_data = $stmt->get_result()->fetch_assoc();
-        
-        if (!password_verify($password_lama, $user_data['password'])) {
-            $_SESSION['error'] = "Password lama tidak benar!";
-        } else {
-            try {
-                // Update password baru
-                $password_hash = password_hash($password_baru, PASSWORD_DEFAULT);
-                $stmt = $conn->prepare("UPDATE user SET password = ? WHERE id_user = ?");
-                $stmt->bind_param("si", $password_hash, $user_id);
-                
-                if ($stmt->execute()) {
-                    $_SESSION['success'] = "Password berhasil diubah!";
-                    header("Location: index.php");
-                    exit();
-                } else {
-                    throw new Exception("Gagal mengubah password!");
-                }
-            } catch (Exception $e) {
-                $_SESSION['error'] = "Gagal mengubah password: " . $e->getMessage();
-            }
-        }
-    }
-}
+// HAPUS BAGIAN PROSES UBAH PASSWORD - PINDAH KE FILE TERPISAH
 ?>
 
 <!DOCTYPE html>
@@ -287,10 +278,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['ubah_password'])) {
 
                   <!-- Form Data Kontak -->
                   <h6 class="text-muted mb-3">
-                    <i class="bi bi-telephone-fill me-2"></i>Data Kontak
+                    <i class="bi bi-person-lines-fill me-2"></i>Data Akun & Kontak
                   </h6>
                   
                   <div class="row mb-3">
+                    <div class="col-md-6">
+                      <div class="form-floating">
+                        <input class="form-control" id="username" name="username" type="text" 
+                               value="<?= htmlspecialchars($siswa_data['username']) ?>" required />
+                        <label for="username">Username *</label>
+                      </div>
+                      <div class="form-text">
+                        <small class="text-muted">Username untuk login ke sistem</small>
+                      </div>
+                    </div>
                     <div class="col-md-6">
                       <div class="form-floating">
                         <input class="form-control" id="no_hp" name="no_hp" type="text" 
@@ -298,6 +299,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['ubah_password'])) {
                         <label for="no_hp">No. HP *</label>
                       </div>
                     </div>
+                  </div>
+
+                  <div class="row mb-3">
                     <div class="col-md-6">
                       <div class="form-floating">
                         <input class="form-control" id="email" name="email" type="email" 
@@ -341,18 +345,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['ubah_password'])) {
               </div>
               
               <div class="card-body p-4">
-                <form method="POST" action="">
+                <form method="POST" action="update_password.php">
                   <div class="mb-3">
-                    <div class="form-floating">
+                    <div class="form-floating position-relative">
                       <input class="form-control" id="password_lama" name="password_lama" type="password" required />
                       <label for="password_lama">Password Lama *</label>
+                      <button type="button" class="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0" 
+                              onclick="togglePassword('password_lama', this)" style="z-index: 10;">
+                        <i class="bi bi-eye"></i>
+                      </button>
                     </div>
                   </div>
                   
                   <div class="mb-3">
-                    <div class="form-floating">
+                    <div class="form-floating position-relative">
                       <input class="form-control" id="password_baru" name="password_baru" type="password" required />
                       <label for="password_baru">Password Baru *</label>
+                      <button type="button" class="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0" 
+                              onclick="togglePassword('password_baru', this)" style="z-index: 10;">
+                        <i class="bi bi-eye"></i>
+                      </button>
                     </div>
                     <div class="form-text">
                       <small class="text-muted">Minimal 6 karakter</small>
@@ -360,9 +372,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['ubah_password'])) {
                   </div>
                   
                   <div class="mb-4">
-                    <div class="form-floating">
+                    <div class="form-floating position-relative">
                       <input class="form-control" id="konfirmasi_password" name="konfirmasi_password" type="password" required />
                       <label for="konfirmasi_password">Konfirmasi Password *</label>
+                      <button type="button" class="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0" 
+                              onclick="togglePassword('konfirmasi_password', this)" style="z-index: 10;">
+                        <i class="bi bi-eye"></i>
+                      </button>
                     </div>
                   </div>
 
@@ -374,6 +390,51 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['ubah_password'])) {
                 </form>
               </div>
             </div>
+
+            <!-- Info Data Tidak Dapat Diubah -->
+            <div class="card content-card">
+              <div class="section-header">
+                <h5 class="mb-0 text-dark">
+                  <i class="bi bi-info-circle me-2"></i>Informasi
+                </h5>
+              </div>
+              
+              <div class="card-body p-4">
+                <div class="alert alert-info mb-3">
+                  <i class="bi bi-exclamation-circle me-2"></i>
+                  <strong>Data yang tidak dapat diubah:</strong>
+                </div>
+                
+                <ul class="list-unstyled mb-0">
+                  <li class="mb-2">
+                    <i class="bi bi-lock text-muted me-2"></i>
+                    <small class="text-muted">NIK & Nama Lengkap</small>
+                  </li>
+                  <li class="mb-2">
+                    <i class="bi bi-lock text-muted me-2"></i>
+                    <small class="text-muted">Tanggal Lahir</small>
+                  </li>
+                  <li class="mb-2">
+                    <i class="bi bi-lock text-muted me-2"></i>
+                    <small class="text-muted">Pendidikan Terakhir</small>
+                  </li>
+                  <li class="mb-2">
+                    <i class="bi bi-lock text-muted me-2"></i>
+                    <small class="text-muted">Kelas & Gelombang</small>
+                  </li>
+                </ul>
+                
+                <hr class="my-3">
+                
+                <div class="text-center">
+                  <small class="text-muted">
+                    <i class="bi bi-shield-check me-1"></i>
+                    Data ini dilindungi sistem
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -477,6 +538,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['ubah_password'])) {
         this.classList.remove('is-invalid');
       }
     });
+
+    // Toggle password visibility
+    function togglePassword(fieldId, button) {
+      const field = document.getElementById(fieldId);
+      const icon = button.querySelector('i');
+      
+      if (field.type === 'password') {
+        field.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+      } else {
+        field.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+      }
+    }
   </script>
 </body>
 </html>
