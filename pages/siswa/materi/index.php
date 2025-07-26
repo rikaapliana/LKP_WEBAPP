@@ -365,25 +365,6 @@ function isNewFile($id_materi, $siswaKelas) {
         showDownloadNotification();
       });
     });
-    
-    function showDownloadNotification() {
-      const notification = document.createElement('div');
-      notification.className = 'alert alert-success alert-dismissible fade show position-fixed';
-      notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 250px;';
-      notification.innerHTML = `
-        <i class="bi bi-check-circle me-2"></i>
-        File sedang diunduh...
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      `;
-      
-      document.body.appendChild(notification);
-      
-      setTimeout(() => {
-        if (notification.parentNode) {
-          notification.remove();
-        }
-      }, 3000);
-    }
   });
   </script>
 </body>

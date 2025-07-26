@@ -185,20 +185,14 @@ if ($siswa_data['tanggal_lahir']) {
                       <?= htmlspecialchars($siswa_data['nama_gelombang'] ?? 'Gelombang') ?>
                     </p>
                     <div class="d-flex gap-3">
-                      <span class="badge bg-success fs-6 px-3 py-2">
+                      <span class="badge bg-primary fs-6 px-3 py-2">
                         <i class="bi bi-person-graduation me-1"></i>
                         Siswa
                       </span>
-                      <span class="badge bg-<?= $siswa_data['status_aktif'] == 'aktif' ? 'primary' : 'secondary' ?> fs-6 px-3 py-2">
+                      <span class="badge bg-<?= $siswa_data['status_aktif'] == 'aktif' ? 'success' : 'success' ?> fs-6 px-3 py-2">
                         <i class="bi bi-circle-fill me-1"></i>
                         <?= ucfirst($siswa_data['status_aktif'] ?? 'aktif') ?>
                       </span>
-                      <?php if ($siswa_data['sertifikat_status'] == 'eligible'): ?>
-                      <span class="badge bg-warning fs-6 px-3 py-2">
-                        <i class="bi bi-award-fill me-1"></i>
-                        Sertifikat Siap
-                      </span>
-                      <?php endif; ?>
                     </div>
                   </div>
                    <div class="d-flex gap-3">

@@ -51,7 +51,7 @@ if ($selectedPeriode > 0) {
     $detailResult = mysqli_query($conn, $detailQuery);
     $currentPeriode = mysqli_fetch_assoc($detailResult);
 
-    // Get questions for this periode
+    // Get questions for this periode (FIXED: sesuai struktur database)
     $pertanyaanData = [];
     if ($currentPeriode && $currentPeriode['pertanyaan_terpilih']) {
         $pertanyaan_terpilih = json_decode($currentPeriode['pertanyaan_terpilih'], true);
@@ -69,31 +69,40 @@ if ($selectedPeriode > 0) {
         }
     }
 
-    // Get all answers for analysis
+    // Get all answers for analysis (FIXED: menggunakan struktur tabel yang benar)
     $jawabanData = [];
     if (!empty($pertanyaanData)) {
         $jawabanQuery = "SELECT 
                            je.id_pertanyaan,
                            je.jawaban,
+                           je.answered_at,
                            s.nama as nama_siswa,
-                           k.nama_kelas
+                           s.nik,
+                           k.nama_kelas,
+                           e.id_evaluasi
                          FROM jawaban_evaluasi je
                          JOIN evaluasi e ON je.id_evaluasi = e.id_evaluasi
                          JOIN siswa s ON je.id_siswa = s.id_siswa
                          JOIN kelas k ON s.id_kelas = k.id_kelas
-                         WHERE e.id_periode = $selectedPeriode AND e.status_evaluasi = 'selesai'";
+                         WHERE e.id_periode = ? AND e.status_evaluasi = 'selesai'
+                         ORDER BY je.answered_at DESC";
         
-        $jawabanResult = mysqli_query($conn, $jawabanQuery);
+        $stmt = mysqli_prepare($conn, $jawabanQuery);
+        mysqli_stmt_bind_param($stmt, "i", $selectedPeriode);
+        mysqli_stmt_execute($stmt);
+        $jawabanResult = mysqli_stmt_get_result($stmt);
+        
         while ($jawaban = mysqli_fetch_assoc($jawabanResult)) {
             $jawabanData[] = $jawaban;
         }
     }
 
-    // Process data for charts
+    // Process data for charts (FIXED: sesuai dengan format jawaban yang sebenarnya)
     $ratingData = [];
     $multipleChoiceData = [];
     $feedbackData = [];
     $classPerformance = [];
+    $aspectPerformance = [];
 
     foreach ($pertanyaanData as $pertanyaan) {
         $id_pertanyaan = $pertanyaan['id_pertanyaan'];
@@ -102,50 +111,134 @@ if ($selectedPeriode > 0) {
         });
 
         if ($pertanyaan['tipe_jawaban'] == 'skala') {
-            $ratings = array_map('intval', array_column($answers, 'jawaban'));
+            // FIXED: Rating data processing
+            $ratings = [];
+            foreach ($answers as $answer) {
+                $rating = (int)trim($answer['jawaban']);
+                if ($rating >= 1 && $rating <= 5) {
+                    $ratings[] = $rating;
+                }
+            }
+            
             if (!empty($ratings)) {
+                $average = round(array_sum($ratings) / count($ratings), 1);
                 $ratingData[] = [
                     'aspect' => $pertanyaan['aspek_dinilai'],
-                    'average' => round(array_sum($ratings) / count($ratings), 1),
-                    'count' => count($ratings)
+                    'pertanyaan' => $pertanyaan['pertanyaan'],
+                    'average' => $average,
+                    'count' => count($ratings),
+                    'detail' => array_count_values($ratings) // Distribusi rating 1-5
+                ];
+                
+                // Group by aspect for overall performance
+                if (!isset($aspectPerformance[$pertanyaan['aspek_dinilai']])) {
+                    $aspectPerformance[$pertanyaan['aspek_dinilai']] = [];
+                }
+                $aspectPerformance[$pertanyaan['aspek_dinilai']] = array_merge(
+                    $aspectPerformance[$pertanyaan['aspek_dinilai']], 
+                    $ratings
+                );
+            }
+            
+        } elseif ($pertanyaan['tipe_jawaban'] == 'pilihan_ganda') {
+            // FIXED: Multiple choice data processing - jawaban berupa text, bukan index
+            $pilihan = [];
+            if (!empty($pertanyaan['pilihan_jawaban'])) {
+                $pilihan = json_decode($pertanyaan['pilihan_jawaban'], true);
+                if (!is_array($pilihan)) $pilihan = [];
+            }
+            
+            $distribution = [];
+            foreach ($answers as $answer) {
+                $jawabanText = trim($answer['jawaban']);
+                
+                // Cari index jawaban berdasarkan text
+                $choiceIndex = array_search($jawabanText, $pilihan);
+                if ($choiceIndex !== false) {
+                    $choiceLabel = chr(65 + $choiceIndex); // A, B, C, D, E
+                    if (!isset($distribution[$choiceLabel])) {
+                        $distribution[$choiceLabel] = [
+                            'count' => 0,
+                            'text' => $jawabanText
+                        ];
+                    }
+                    $distribution[$choiceLabel]['count']++;
+                } else {
+                    // Jika tidak ditemukan exact match, coba partial match
+                    foreach ($pilihan as $idx => $option) {
+                        if (stripos($option, $jawabanText) !== false || stripos($jawabanText, $option) !== false) {
+                            $choiceLabel = chr(65 + $idx);
+                            if (!isset($distribution[$choiceLabel])) {
+                                $distribution[$choiceLabel] = [
+                                    'count' => 0,
+                                    'text' => $option
+                                ];
+                            }
+                            $distribution[$choiceLabel]['count']++;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if (!empty($distribution)) {
+                $multipleChoiceData[] = [
+                    'aspect' => $pertanyaan['aspek_dinilai'],
+                    'pertanyaan' => $pertanyaan['pertanyaan'],
+                    'distribution' => $distribution,
+                    'total_responses' => count($answers)
                 ];
             }
-        } elseif ($pertanyaan['tipe_jawaban'] == 'pilihan_ganda') {
-            $pilihan = json_decode($pertanyaan['pilihan_jawaban'], true);
-            if (is_array($pilihan)) {
-                $distribution = [];
-                foreach ($answers as $answer) {
-                    $choiceIndex = (int)$answer['jawaban'];
-                    $choiceLabel = chr(65 + $choiceIndex);
-                    if (!isset($distribution[$choiceLabel])) {
-                        $distribution[$choiceLabel] = 0;
-                    }
-                    $distribution[$choiceLabel]++;
-                }
-                $multipleChoiceData[$pertanyaan['aspek_dinilai']] = $distribution;
-            }
+            
         } elseif ($pertanyaan['tipe_jawaban'] == 'isian') {
-            $texts = array_column($answers, 'jawaban');
-            $feedbackData[$pertanyaan['aspek_dinilai']] = $texts;
+            // FIXED: Text answers processing
+            $texts = [];
+            foreach ($answers as $answer) {
+                $text = trim($answer['jawaban']);
+                if (!empty($text) && strlen($text) > 3) { // Filter jawaban yang bermakna
+                    $texts[] = $text;
+                }
+            }
+            
+            if (!empty($texts)) {
+                $feedbackData[] = [
+                    'aspect' => $pertanyaan['aspek_dinilai'],
+                    'pertanyaan' => $pertanyaan['pertanyaan'],
+                    'responses' => $texts,
+                    'count' => count($texts)
+                ];
+            }
         }
 
-        // Class performance for rating questions
+        // Class performance for rating questions (FIXED)
         if ($pertanyaan['tipe_jawaban'] == 'skala') {
             foreach ($answers as $answer) {
                 $kelas = $answer['nama_kelas'];
-                if (!isset($classPerformance[$kelas])) {
-                    $classPerformance[$kelas] = [];
+                $rating = (int)trim($answer['jawaban']);
+                
+                if ($rating >= 1 && $rating <= 5) {
+                    if (!isset($classPerformance[$kelas])) {
+                        $classPerformance[$kelas] = [];
+                    }
+                    $classPerformance[$kelas][] = $rating;
                 }
-                $classPerformance[$kelas][] = (int)$answer['jawaban'];
             }
         }
     }
 
-    // Calculate class averages
+    // Calculate class averages (FIXED)
     $classAverages = [];
     foreach ($classPerformance as $kelas => $ratings) {
         if (!empty($ratings)) {
             $classAverages[$kelas] = round(array_sum($ratings) / count($ratings), 1);
+        }
+    }
+    
+    // Calculate aspect averages (FIXED)
+    $aspectAverages = [];
+    foreach ($aspectPerformance as $aspect => $ratings) {
+        if (!empty($ratings)) {
+            $aspectAverages[$aspect] = round(array_sum($ratings) / count($ratings), 1);
         }
     }
 
@@ -156,6 +249,7 @@ if ($selectedPeriode > 0) {
     $multipleChoiceData = [];
     $feedbackData = [];
     $classAverages = [];
+    $aspectAverages = [];
 }
 
 // Helper function
@@ -196,13 +290,9 @@ $materi_labels = [
   <link rel="stylesheet" href="../../../assets/css/fonts.css" />
   <link rel="stylesheet" href="../../../assets/css/styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
-  <!-- SweetAlert2 for better alerts -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
-
-
   .chart-container {
     position: relative;
     height: 300px;
@@ -265,6 +355,12 @@ $materi_labels = [
     line-height: 1.4;
   }
 
+  .feedback-meta {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+  }
+
   .filter-section {
     background: white;
     padding: 1rem 1.5rem;
@@ -283,6 +379,33 @@ $materi_labels = [
     font-size: 3rem;
     margin-bottom: 1rem;
     opacity: 0.5;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-card {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    text-align: center;
+  }
+
+  .stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-label {
+    color: #6b7280;
+    font-size: 0.9rem;
   }
 
   @media (max-width: 768px) {
@@ -365,7 +488,6 @@ $materi_labels = [
                 </div>
                 
                 <?php if ($currentPeriode): ?>
-                <!-- Button Cetak PDF sejajar dengan dropdown -->
                 <div class="flex-shrink-0">
                   <button type="button" 
                           class="btn btn-cetak-soft" 
@@ -373,7 +495,6 @@ $materi_labels = [
                           id="btnCetakPDF"
                           title="Cetak laporan analisis evaluasi dalam format PDF"
                           <?php 
-                          // Disable button jika tidak ada data rating atau evaluasi belum selesai
                           $hasData = !empty($ratingData) || !empty($multipleChoiceData) || !empty($feedbackData);
                           $hasCompletedEvaluation = $currentPeriode && $currentPeriode['evaluasi_selesai'] > 0;
                           
@@ -395,7 +516,6 @@ $materi_labels = [
           </div>
           
           <?php if ($currentPeriode): ?>
-          <!-- Keterangan di bawah dalam row terpisah -->
           <div class="row">
             <div class="col-12">
               <small class="text-muted">
@@ -411,17 +531,17 @@ $materi_labels = [
           <?php endif; ?>
         </div>
 
-<?php if ($currentPeriode && !empty($pertanyaanData)): ?>
+        <?php if ($currentPeriode && !empty($pertanyaanData)): ?>
           <!-- Statistics Cards -->
           <div class="row mb-4">
-            <div class="col-md-4 mb-3">
+            <div class="col-md-3 mb-3">
               <div class="card stats-card stats-card-mobile">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center stats-card-content">
                     <div class="flex-grow-1 stats-text-content">
                       <h6 class="mb-1 stats-title">Siswa Selesai</h6>
                       <h3 class="mb-0 stats-number"><?= number_format($currentPeriode['evaluasi_selesai']) ?></h3>
-                      <small class="text-muted stats-subtitle">Telah menyelesaikan evaluasi</small>
+                      <small class="text-muted stats-subtitle">Total responses</small>
                     </div>
                     <div class="stats-icon bg-primary-light stats-icon-mobile">
                       <i class="bi bi-check-circle text-primary"></i>
@@ -431,7 +551,7 @@ $materi_labels = [
               </div>
             </div>
             
-            <div class="col-md-4 mb-3">
+            <div class="col-md-3 mb-3">
               <div class="card stats-card stats-card-mobile">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center stats-card-content">
@@ -444,7 +564,7 @@ $materi_labels = [
                         echo number_format($completionRate, 1);
                         ?>%
                       </h3>
-                      <small class="text-muted stats-subtitle">Tingkat penyelesaian</small>
+                      <small class="text-muted stats-subtitle">Participation rate</small>
                     </div>
                     <div class="stats-icon bg-success-light stats-icon-mobile">
                       <i class="bi bi-graph-up text-success"></i>
@@ -454,7 +574,7 @@ $materi_labels = [
               </div>
             </div>
             
-            <div class="col-md-4 mb-3">
+            <div class="col-md-3 mb-3">
               <div class="card stats-card stats-card-mobile">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center stats-card-content">
@@ -462,14 +582,39 @@ $materi_labels = [
                       <h6 class="mb-1 stats-title">Rata-rata Rating</h6>
                       <h3 class="mb-0 stats-number">
                         <?php 
-                        $avgRating = !empty($ratingData) ? round(array_sum(array_column($ratingData, 'average')) / count($ratingData), 1) : 0;
+                        $avgRating = !empty($aspectAverages) ? round(array_sum($aspectAverages) / count($aspectAverages), 1) : 0;
                         echo number_format($avgRating, 1);
                         ?>
                       </h3>
-                      <small class="text-muted stats-subtitle">Rating keseluruhan</small>
+                      <small class="text-muted stats-subtitle">Overall satisfaction</small>
                     </div>
                     <div class="stats-icon bg-warning-light stats-icon-mobile">
                       <i class="bi bi-star text-warning"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+              <div class="card stats-card stats-card-mobile">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center stats-card-content">
+                    <div class="flex-grow-1 stats-text-content">
+                      <h6 class="mb-1 stats-title">Total Feedback</h6>
+                      <h3 class="mb-0 stats-number">
+                        <?php 
+                        $totalFeedback = 0;
+                        foreach ($feedbackData as $data) {
+                            $totalFeedback += $data['count'];
+                        }
+                        echo number_format($totalFeedback);
+                        ?>
+                      </h3>
+                      <small class="text-muted stats-subtitle">Written responses</small>
+                    </div>
+                    <div class="stats-icon bg-info-light stats-icon-mobile">
+                      <i class="bi bi-chat-text text-info"></i>
                     </div>
                   </div>
                 </div>
@@ -479,7 +624,8 @@ $materi_labels = [
 
           <!-- Charts Row 1 -->
           <div class="row">
-            <!-- Rating Overview -->
+            <!-- Rating Overview by Aspect -->
+            <?php if (!empty($aspectAverages)): ?>
             <div class="col-lg-8 mb-4">
               <div class="chart-card">
                 <div class="chart-title">
@@ -487,13 +633,14 @@ $materi_labels = [
                   Rating Overview per Aspek
                 </div>
                 <div class="chart-container">
-                  <canvas id="ratingChart"></canvas>
+                  <canvas id="aspectChart"></canvas>
                 </div>
               </div>
             </div>
+            <?php endif; ?>
 
             <!-- Completion Rate -->
-            <div class="col-lg-4 mb-4">
+            <div class="col-lg-<?= !empty($aspectAverages) ? '4' : '6' ?> mb-4">
               <div class="chart-card">
                 <div class="chart-title">
                   <i class="bi bi-pie-chart-fill text-success"></i>
@@ -523,7 +670,7 @@ $materi_labels = [
             </div>
             <?php endif; ?>
 
-            <!-- Multiple Choice Distribution (First one) -->
+            <!-- Multiple Choice Distribution -->
             <?php if (!empty($multipleChoiceData)): ?>
             <div class="col-lg-<?= !empty($classAverages) ? '6' : '12' ?> mb-4">
               <div class="chart-card">
@@ -533,6 +680,11 @@ $materi_labels = [
                 </div>
                 <div class="chart-container">
                   <canvas id="multipleChoiceChart"></canvas>
+                </div>
+                <div class="mt-2">
+                  <small class="text-muted">
+                    Aspek: <?= htmlspecialchars($multipleChoiceData[0]['aspect']) ?>
+                  </small>
                 </div>
               </div>
             </div>
@@ -551,20 +703,15 @@ $materi_labels = [
                 </div>
                 <div class="card-body">
                   <?php 
-                  // Generate insights
+                  // Generate insights berdasarkan data yang sebenarnya
                   $insights = [];
                   
-                  if (!empty($ratingData)) {
-                    $maxRating = max(array_column($ratingData, 'average'));
-                    $minRating = min(array_column($ratingData, 'average'));
+                  if (!empty($aspectAverages)) {
+                    $maxRating = max($aspectAverages);
+                    $minRating = min($aspectAverages);
                     
-                    $bestAspect = '';
-                    $worstAspect = '';
-                    
-                    foreach ($ratingData as $data) {
-                      if ($data['average'] == $maxRating) $bestAspect = $data['aspect'];
-                      if ($data['average'] == $minRating) $worstAspect = $data['aspect'];
-                    }
+                    $bestAspect = array_search($maxRating, $aspectAverages);
+                    $worstAspect = array_search($minRating, $aspectAverages);
                     
                     if ($bestAspect) {
                       $insights[] = [
@@ -600,6 +747,28 @@ $materi_labels = [
                     }
                   }
                   
+                  // Insight dari pilihan ganda
+                  if (!empty($multipleChoiceData)) {
+                    foreach ($multipleChoiceData as $mcData) {
+                      $maxChoice = '';
+                      $maxCount = 0;
+                      foreach ($mcData['distribution'] as $choice => $data) {
+                        if ($data['count'] > $maxCount) {
+                          $maxCount = $data['count'];
+                          $maxChoice = $choice;
+                        }
+                      }
+                      if ($maxChoice) {
+                        $percentage = round(($maxCount / $mcData['total_responses']) * 100, 1);
+                        $insights[] = [
+                          'title' => 'Pilihan Dominan',
+                          'text' => "Pada aspek '{$mcData['aspect']}', {$percentage}% siswa memilih opsi {$maxChoice}."
+                        ];
+                      }
+                      break; // Hanya tampilkan insight untuk data pertama
+                    }
+                  }
+                  
                   if (empty($insights)) {
                     $insights[] = [
                       'title' => 'Status Baik',
@@ -629,11 +798,11 @@ $materi_labels = [
                 <div class="card-body">
                   <?php 
                   $allFeedback = [];
-                  foreach ($feedbackData as $aspect => $texts) {
-                    foreach ($texts as $text) {
-                      if (strlen(trim($text)) > 10) { // Filter out very short responses
+                  foreach ($feedbackData as $data) {
+                    foreach ($data['responses'] as $text) {
+                      if (strlen(trim($text)) > 10) {
                         $allFeedback[] = [
-                          'aspect' => $aspect,
+                          'aspect' => $data['aspect'],
                           'text' => trim($text)
                         ];
                       }
@@ -648,7 +817,7 @@ $materi_labels = [
                   <?php if (!empty($sampleFeedback)): ?>
                     <?php foreach ($sampleFeedback as $feedback): ?>
                       <div class="feedback-item">
-                        <small class="text-muted d-block mb-1"><?= htmlspecialchars($feedback['aspect']) ?></small>
+                        <div class="feedback-meta"><?= htmlspecialchars($feedback['aspect']) ?></div>
                         "<?= htmlspecialchars($feedback['text']) ?>"
                       </div>
                     <?php endforeach; ?>
@@ -671,6 +840,53 @@ $materi_labels = [
             </div>
           </div>
 
+          <!-- Detailed Rating Analysis -->
+          <?php if (!empty($ratingData)): ?>
+          <div class="row">
+            <div class="col-12 mb-4">
+              <div class="content-card">
+                <div class="section-header">
+                  <h5 class="mb-0 text-dark">
+                    <i class="bi bi-graph-up me-2"></i>Analisis Detail Rating
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <?php foreach ($ratingData as $data): ?>
+                      <div class="col-lg-6 col-xl-4 mb-3">
+                        <div class="border rounded p-3">
+                          <h6 class="mb-2"><?= htmlspecialchars($data['aspect']) ?></h6>
+                          <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-primary me-2"><?= $data['average'] ?>/5</span>
+                            <small class="text-muted"><?= $data['count'] ?> responses</small>
+                          </div>
+                          
+                          <!-- Rating distribution -->
+                          <div class="mt-2">
+                            <?php for ($i = 5; $i >= 1; $i--): ?>
+                              <?php 
+                              $count = $data['detail'][$i] ?? 0;
+                              $percentage = $data['count'] > 0 ? round(($count / $data['count']) * 100, 1) : 0;
+                              ?>
+                              <div class="d-flex align-items-center mb-1">
+                                <span class="me-2" style="width: 15px; font-size: 0.8rem;"><?= $i ?>★</span>
+                                <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                  <div class="progress-bar bg-warning" style="width: <?= $percentage ?>%"></div>
+                                </div>
+                                <span style="width: 35px; font-size: 0.75rem;"><?= $count ?></span>
+                              </div>
+                            <?php endfor; ?>
+                          </div>
+                        </div>
+                      </div>
+                    <?php endforeach; ?>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <?php endif; ?>
+
         <?php elseif ($selectedPeriode > 0): ?>
           <!-- No Data State -->
           <div class="content-card">
@@ -679,6 +895,12 @@ $materi_labels = [
                 <i class="bi bi-bar-chart"></i>
                 <h5>Belum Ada Data Evaluasi</h5>
                 <p>Periode evaluasi ini belum memiliki data yang cukup untuk dianalisis.</p>
+                <?php if ($currentPeriode): ?>
+                  <small class="text-muted">
+                    Status: <?= ucfirst($currentPeriode['status']) ?> | 
+                    Responses: <?= $currentPeriode['evaluasi_selesai'] ?>/<?= $currentPeriode['total_siswa_aktif'] ?>
+                  </small>
+                <?php endif; ?>
               </div>
             </div>
           </div>
@@ -702,7 +924,6 @@ $materi_labels = [
   <!-- Scripts -->
   <script src="../../../assets/js/bootstrap.bundle.min.js"></script>
   <script src="../../../assets/js/scripts.js"></script>
-  <script src="../../../assets/js/chart.min.js"></script>
 
   <script>
   // Global chart configs
@@ -719,16 +940,15 @@ $materi_labels = [
     }
   }
 
-  // Fungsi Cetak PDF untuk Analisis Evaluasi dengan Charts
+  // Fungsi Cetak PDF untuk Analisis Evaluasi
   function cetakLaporanPDF() {
     const button = document.getElementById('btnCetakPDF');
     const originalHTML = button.innerHTML;
     
     // Set loading state
     button.disabled = true;
-    button.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Capturing Charts...';
+    button.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Generating PDF...';
     
-    // Ambil periode yang sedang dipilih
     const selectedPeriode = document.getElementById('periodeSelect')?.value || '';
     
     if (!selectedPeriode) {
@@ -744,105 +964,63 @@ $materi_labels = [
       return;
     }
     
-    // Capture all charts as base64 images
+    // Capture charts if available and generate PDF
     captureChartsAndGeneratePDF(selectedPeriode, button, originalHTML);
   }
 
   async function captureChartsAndGeneratePDF(selectedPeriode, button, originalHTML) {
     try {
-      button.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processing Charts...';
+      button.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processing...';
       
       const chartImages = {};
       
-      // Capture Rating Chart
-      const ratingChart = Chart.getChart('ratingChart');
-      if (ratingChart) {
-        chartImages.ratingChart = ratingChart.toBase64Image('image/png', 1.0);
+      // Capture charts if they exist
+      const aspectChart = Chart.getChart('aspectChart');
+      if (aspectChart) {
+        chartImages.aspectChart = aspectChart.toBase64Image('image/png', 1.0);
       }
       
-      // Capture Completion Chart
       const completionChart = Chart.getChart('completionChart');
       if (completionChart) {
         chartImages.completionChart = completionChart.toBase64Image('image/png', 1.0);
       }
       
-      // Capture Class Performance Chart
       const classChart = Chart.getChart('classChart');
       if (classChart) {
         chartImages.classChart = classChart.toBase64Image('image/png', 1.0);
       }
       
-      // Capture Multiple Choice Chart
       const mcChart = Chart.getChart('multipleChoiceChart');
       if (mcChart) {
         chartImages.multipleChoiceChart = mcChart.toBase64Image('image/png', 1.0);
       }
       
-      button.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Generating PDF...';
+      // Generate PDF URL
+      const cetakURL = `cetak_laporan.php?periode=${selectedPeriode}`;
       
-      // Send charts data to PHP for PDF generation
-      const formData = new FormData();
-      formData.append('periode', selectedPeriode);
-      formData.append('chartImages', JSON.stringify(chartImages));
+      // Open PDF in new tab
+      const newWindow = window.open(cetakURL, '_blank');
       
-      // Use fetch to send data and open PDF
-      const response = await fetch('cetak_laporan.php', {
-        method: 'POST',
-        body: formData
-      });
-      
-      if (response.ok) {
-        // Get the blob and create URL for PDF
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        
-        // Open in new tab
-        const newWindow = window.open(url, '_blank');
-        
-        // Clean up URL after use
-        setTimeout(() => {
-          window.URL.revokeObjectURL(url);
-        }, 1000);
-        
-        // Handle popup blocked
-        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
-          // Create download link as fallback
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `Analisis_Evaluasi_${selectedPeriode}_${new Date().toISOString().slice(0,10)}.pdf`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          
-          Swal.fire({
-            title: 'Pop-up Diblokir!',
-            text: 'PDF telah didownload secara otomatis karena browser memblokir pop-up.',
-            icon: 'info',
-            confirmButtonText: 'OK'
-          });
-        }
-        
-      } else {
-        throw new Error('Failed to generate PDF');
+      // Handle popup blocked
+      if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+        Swal.fire({
+          title: 'Pop-up Diblokir!',
+          html: `Browser memblokir pop-up. Klik tombol di bawah untuk membuka PDF secara manual:<br><br>
+                 <a href="${cetakURL}" target="_blank" class="btn btn-danger">
+                 <i class="bi bi-file-earmark-pdf"></i> Buka PDF Manual</a>`,
+          icon: 'warning',
+          showConfirmButton: false,
+          showCloseButton: true,
+          allowOutsideClick: true
+        });
       }
       
     } catch (error) {
       console.error('Error generating PDF:', error);
       
-      Swal.fire({
-        title: 'Error!',
-        text: 'Gagal generate PDF dengan charts. Coba dengan versi teks saja.',
-        icon: 'error',
-        showCancelButton: true,
-        confirmButtonText: 'PDF Teks Saja',
-        cancelButtonText: 'Cancel'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // Fallback to text-only PDF
-          const cetakURL = `cetak_laporan.php?periode=${selectedPeriode}`;
-          window.open(cetakURL, '_blank');
-        }
-      });
+      // Fallback to simple PDF
+      const cetakURL = `cetak_laporan.php?periode=${selectedPeriode}`;
+      window.open(cetakURL, '_blank');
     } finally {
       // Reset button state
       setTimeout(() => {
@@ -854,16 +1032,16 @@ $materi_labels = [
 
   <?php if ($currentPeriode && !empty($pertanyaanData)): ?>
   
-  // Rating Chart
-  <?php if (!empty($ratingData)): ?>
-  const ratingCtx = document.getElementById('ratingChart').getContext('2d');
-  new Chart(ratingCtx, {
+  // Aspect Rating Chart
+  <?php if (!empty($aspectAverages)): ?>
+  const aspectCtx = document.getElementById('aspectChart').getContext('2d');
+  new Chart(aspectCtx, {
     type: 'bar',
     data: {
-      labels: <?= json_encode(array_column($ratingData, 'aspect')) ?>,
+      labels: <?= json_encode(array_keys($aspectAverages)) ?>,
       datasets: [{
         label: 'Rata-rata Rating',
-        data: <?= json_encode(array_column($ratingData, 'average')) ?>,
+        data: <?= json_encode(array_values($aspectAverages)) ?>,
         backgroundColor: 'rgba(59, 130, 246, 0.8)',
         borderColor: 'rgba(59, 130, 246, 1)',
         borderWidth: 1,
@@ -891,6 +1069,13 @@ $materi_labels = [
       plugins: {
         legend: {
           display: false
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return `Rating: ${context.parsed.y}/5`;
+            }
+          }
         }
       }
     }
@@ -925,6 +1110,15 @@ $materi_labels = [
       plugins: {
         legend: {
           position: 'bottom'
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = ((context.parsed / total) * 100).toFixed(1);
+              return `${context.label}: ${context.parsed} (${percentage}%)`;
+            }
+          }
         }
       }
     }
@@ -961,36 +1155,51 @@ $materi_labels = [
       plugins: {
         legend: {
           display: false
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return `${context.label}: ${context.parsed.y}/5`;
+            }
+          }
         }
       }
     }
   });
   <?php endif; ?>
 
-  // Multiple Choice Chart (First dataset only)
+  // Multiple Choice Chart
   <?php if (!empty($multipleChoiceData)): ?>
-  <?php $firstMCData = array_values($multipleChoiceData)[0]; ?>
+  <?php 
+  $firstMCData = $multipleChoiceData[0]['distribution'];
+  $mcLabels = [];
+  $mcData = [];
+  $mcColors = [
+    'rgba(245, 158, 11, 0.8)',
+    'rgba(34, 197, 94, 0.8)', 
+    'rgba(239, 68, 68, 0.8)',
+    'rgba(139, 92, 246, 0.8)',
+    'rgba(6, 182, 212, 0.8)'
+  ];
+  
+  $colorIndex = 0;
+  foreach ($firstMCData as $choice => $data) {
+    $mcLabels[] = $choice . '. ' . substr($data['text'], 0, 30) . (strlen($data['text']) > 30 ? '...' : '');
+    $mcData[] = $data['count'];
+    $colorIndex++;
+  }
+  ?>
   const mcCtx = document.getElementById('multipleChoiceChart').getContext('2d');
   new Chart(mcCtx, {
     type: 'pie',
     data: {
-      labels: <?= json_encode(array_keys($firstMCData)) ?>,
+      labels: <?= json_encode($mcLabels) ?>,
       datasets: [{
-        data: <?= json_encode(array_values($firstMCData)) ?>,
-        backgroundColor: [
-          'rgba(245, 158, 11, 0.8)',
-          'rgba(34, 197, 94, 0.8)',
-          'rgba(239, 68, 68, 0.8)',
-          'rgba(139, 92, 246, 0.8)',
-          'rgba(6, 182, 212, 0.8)'
-        ],
-        borderColor: [
-          'rgba(245, 158, 11, 1)',
-          'rgba(34, 197, 94, 1)',
-          'rgba(239, 68, 68, 1)',
-          'rgba(139, 92, 246, 1)',
-          'rgba(6, 182, 212, 1)'
-        ],
+        data: <?= json_encode($mcData) ?>,
+        backgroundColor: <?= json_encode(array_slice($mcColors, 0, count($mcData))) ?>,
+        borderColor: <?= json_encode(array_map(function($color) { 
+          return str_replace('0.8)', '1)', $color); 
+        }, array_slice($mcColors, 0, count($mcData)))) ?>,
         borderWidth: 2
       }]
     },
@@ -999,7 +1208,20 @@ $materi_labels = [
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: 'bottom'
+          position: 'bottom',
+          labels: {
+            boxWidth: 12,
+            padding: 15
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = ((context.parsed / total) * 100).toFixed(1);
+              return `${context.label}: ${context.parsed} (${percentage}%)`;
+            }
+          }
         }
       }
     }

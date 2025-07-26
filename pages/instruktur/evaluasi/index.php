@@ -350,53 +350,6 @@ function formatTanggal($tanggal) {
                     <input type="search" id="searchInput" class="form-control form-control-sm search-input">
                   </div>
                   
-                  <!-- Filter Status -->
-                  <div class="dropdown">
-                    <button class="btn btn-light btn-icon position-relative control-btn" 
-                            type="button" 
-                            data-bs-toggle="dropdown" 
-                            aria-expanded="false"
-                            id="filterButton"
-                            title="Filter">
-                      <i class="bi bi-funnel"></i>
-                      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="filterBadge">
-                        0
-                      </span>
-                    </button>
-                    
-                    <div class="dropdown-menu dropdown-menu-end shadow p-3" style="min-width: 250px;">
-                      <h6 class="mb-3 fw-bold">
-                        <i class="bi bi-funnel me-2"></i>Filter Data
-                      </h6>
-                      
-                      <div class="mb-3">
-                        <label class="form-label small text-muted mb-1">Status Evaluasi</label>
-                        <select class="form-select form-select-sm" id="filterStatus">
-                          <option value="">Semua Status</option>
-                          <option value="selesai">Sudah Selesai</option>
-                          <option value="belum">Belum Mulai</option>
-                        </select>
-                      </div>
-                      
-                      <hr class="my-3">
-                      
-                      <div class="row g-2">
-                        <div class="col-6">
-                          <button class="btn btn-primary btn-sm w-100" id="applyFilter" type="button">
-                            <i class="bi bi-check-lg me-1"></i>
-                            Terapkan
-                          </button>
-                        </div>
-                        <div class="col-6">
-                          <button class="btn btn-light btn-sm w-100" id="resetFilter" type="button">
-                            <i class="bi bi-arrow-clockwise me-1"></i>
-                            Reset
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
                  <!-- Result Info -->
                   <div class="ms-auto result-info d-flex align-items-center">
                     <label class="me-2 mb-0 search-label">
@@ -806,13 +759,7 @@ function formatTanggal($tanggal) {
     justify-content: center;
   }
 
-  .info-badge {
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 0.375rem;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
-  }
+  
 
   .result-info .info-count {
     font-weight: 600;

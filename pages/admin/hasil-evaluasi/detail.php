@@ -156,6 +156,13 @@ function getNamaMateri($materi) {
         default: return ucfirst($materi);
     }
 }
+
+// Fungsi untuk membersihkan data agar aman untuk JavaScript
+function sanitizeForJS($text) {
+    $text = preg_replace('/[^\p{L}\p{N}\s\-.,!?()]/u', '', $text);
+    $text = trim($text);
+    return $text;
+}
 ?>
 
 <!DOCTYPE html>
@@ -171,41 +178,70 @@ function getNamaMateri($materi) {
     <link rel="stylesheet" href="../../../assets/css/styles.css" />
     
     <style>
-   
-
-    /* Controls */
-    .controls-section {
-        background: #f8f9fa;
-        padding: 1.25rem;
-        border-bottom: 1px solid #e9ecef;
+    /* Controls - SAMA PERSIS DENGAN REFERENSI */
+    .controls-container {
+        gap: 8px;
     }
-
+    
     .search-container {
-        position: relative;
         max-width: 300px;
     }
-
+    
+    .search-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
     .search-input {
         border: 1px solid #ced4da;
-        border-radius: 0.5rem;
-        padding: 0.5rem 2.5rem 0.5rem 1rem;
-        font-size: 0.9rem;
+        border-radius: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
     }
-
-    .search-icon {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
+    
+    .control-btn {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.375rem;
+        border: 1px solid #ced4da;
+    }
+    
+    .btn-icon {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .result-info {
+        gap: 0.5rem;
+    }
+    
+  
+    
+    .info-count {
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .info-separator, .info-label {
         color: #6c757d;
     }
+    
+    .info-total {
+        font-weight: 600;
+        color: #495057;
+    }
 
-    .filter-select {
-        border: 1px solid #ced4da;
-        border-radius: 0.5rem;
-        padding: 0.5rem 0.75rem;
-        font-size: 0.9rem;
-        min-width: 150px;
+    /* Button Group */
+    .button-group-header {
+        gap: 8px;
     }
 
     /* Table Container - Perbaikan utama */
@@ -226,10 +262,10 @@ function getNamaMateri($materi) {
         border-spacing: 0;
         width: 100%;
         min-width: max-content;
-        transform: translateZ(0); /* Hardware acceleration */
+        transform: translateZ(0);
     }
 
-    /* Header Styling - Diperbaiki */
+    /* Header Styling */
     .evaluation-table thead th {
         background: #f8f9fa !important;
         border: none;
@@ -262,23 +298,21 @@ function getNamaMateri($materi) {
         background-color: #f8f9fa;
     }
 
-    /* Sticky Columns - PERBAIKAN UTAMA */
+    /* Sticky Columns */
     .sticky-col {
         position: sticky !important;
         background: inherit;
         z-index: 20;
         border-right: 2px solid #dee2e6 !important;
         box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.1);
-        transform: translateZ(0); /* Hardware acceleration */
+        transform: translateZ(0);
     }
 
-    /* Header sticky columns - z-index tertinggi */
     .evaluation-table thead .sticky-col {
         z-index: 30 !important;
         background: #f8f9fa !important;
     }
 
-    /* Body sticky columns */
     .evaluation-table tbody .sticky-col {
         background: white !important;
     }
@@ -287,7 +321,6 @@ function getNamaMateri($materi) {
         background: #f8f9fa !important;
     }
 
-    /* Posisi sticky columns yang diperbaiki */
     .sticky-col.number {
         left: 0;
         width: 60px;
@@ -298,26 +331,26 @@ function getNamaMateri($materi) {
 
     .sticky-col.student {
         left: 60px;
-        width: 250px;    /* Diperbesar sedikit */
+        width: 250px;
         min-width: 250px;
         max-width: 250px;
     }
 
     .sticky-col.class {
-        left: 310px;     /* Disesuaikan dengan lebar student column */
-        width: 180px;    /* Diperbesar untuk nama kelas yang panjang */
+        left: 310px;
+        width: 180px;
         min-width: 180px;
         max-width: 180px;
         text-align: center;
-        padding: 0.5rem; /* Padding yang cukup */
+        padding: 0.5rem;
     }
 
-    /* Question Headers - Diperbaiki dengan preview soal */
+    /* Question Headers */
     .question-header {
         text-align: center;
         line-height: 1.3;
         padding: 0.75rem 0.4rem;
-        width: 170px;    /* Sedikit diperbesar */
+        width: 170px;
         min-width: 170px;
         max-width: 170px;
         cursor: pointer;
@@ -371,7 +404,6 @@ function getNamaMateri($materi) {
         border: 1px solid #a3d9a5;
     }
 
-    /* Preview soal yang lebih baik */
     .question-preview {
         font-size: 0.7rem;
         color: #495057;
@@ -379,12 +411,12 @@ function getNamaMateri($materi) {
         cursor: pointer;
         transition: all 0.2s;
         display: -webkit-box;
-        -webkit-line-clamp: 3; /* Maksimal 3 baris */
+        -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
         height: auto;
-        max-height: 4.2rem; /* 3 baris x 1.4 line-height */
+        max-height: 4.2rem;
         padding: 0.25rem;
         background: rgba(255, 255, 255, 0.8);
         border-radius: 0.25rem;
@@ -399,12 +431,7 @@ function getNamaMateri($materi) {
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
-    .question-header.highlighted .question-preview {
-        background: rgba(255, 193, 7, 0.1);
-        border-color: #ffc107;
-    }
-
-    /* Student Info - diperbaiki overflow */
+    /* Student Info */
     .student-info {
         display: flex;
         flex-direction: column;
@@ -430,7 +457,7 @@ function getNamaMateri($materi) {
         word-wrap: break-word;
     }
 
-    /* Perbaikan class badge agar tidak overflow */
+    /* Class styling */
     .class-container {
         display: flex;
         align-items: center;
@@ -456,26 +483,6 @@ function getNamaMateri($materi) {
         line-height: 1.2;
     }
 
-    /* Untuk kelas dengan nama panjang, gunakan wrapping */
-    .class-badge.long-name {
-        white-space: normal;
-        word-wrap: break-word;
-        text-align: center;
-        line-height: 1.3;
-        padding: 0.3rem 0.6rem;
-    }
-
-    /* Khusus untuk kelas dengan nama sangat panjang */
-    .class-badge.extra-long {
-        font-size: 0.7rem;
-        padding: 0.3rem 0.5rem;
-        line-height: 1.2;
-        max-width: calc(100% - 0.5rem);
-        white-space: normal;
-        word-break: break-word;
-        text-align: center;
-    }
-
     /* Answer Displays */
     .answer-container {
         display: flex;
@@ -486,7 +493,6 @@ function getNamaMateri($materi) {
         width: 100%;
     }
 
-    /* Rating Display */
     .rating-answer {
         text-align: center;
         cursor: pointer;
@@ -525,7 +531,6 @@ function getNamaMateri($materi) {
         font-weight: 500;
     }
 
-    /* Multiple Choice Display */
     .choice-answer {
         text-align: center;
         cursor: pointer;
@@ -566,7 +571,6 @@ function getNamaMateri($materi) {
         font-weight: 500;
     }
 
-    /* Text Answer Display */
     .text-answer {
         text-align: center;
         cursor: pointer;
@@ -604,13 +608,46 @@ function getNamaMateri($materi) {
         color: #558b2f;
     }
 
-    /* Empty Answer */
     .empty-answer {
         text-align: center;
         color: #9e9e9e;
         font-style: italic;
         font-size: 0.75rem;
         padding: 1rem 0.5rem;
+    }
+
+    /* Stats */
+    .stats-info {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid #e9ecef;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #495057;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 500;
     }
 
     /* Modal Styling */
@@ -738,64 +775,46 @@ function getNamaMateri($materi) {
         margin-left: 0.5rem;
     }
 
-    /* Stats Info */
-    .stats-info {
-        background: #f8f9fa;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin-bottom: 1rem;
-        border: 1px solid #e9ecef;
-    }
-
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 1rem;
-    }
-
-    .stat-item {
+    /* Empty States */
+    .empty-state {
         text-align: center;
-    }
-
-    .stat-number {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: #495057;
-        margin-bottom: 0.25rem;
-    }
-
-    .stat-label {
-        font-size: 0.75rem;
+        padding: 3rem 1rem;
         color: #6c757d;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-weight: 500;
     }
 
-    /* Responsive untuk tablet */
-    @media (max-width: 992px) {
-        .sticky-col.student {
-            width: 220px;
-            min-width: 220px;
-            max-width: 220px;
-        }
-        
-        .sticky-col.class {
-            left: 280px;
-            width: 160px;
-            min-width: 160px;
-            max-width: 160px;
-        }
-        
-        .question-header {
-            width: 150px;
-            min-width: 150px;
-            max-width: 150px;
-        }
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
     }
 
-    /* Responsive untuk mobile */
+    /* Responsive */
     @media (max-width: 768px) {
+        .controls-container {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .search-container {
+            width: 100%;
+            max-width: none;
+        }
+        
+        .result-info {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .button-group-header {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .button-group-header .btn {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
         .sticky-col.student {
             width: 200px;
             min-width: 200px;
@@ -814,65 +833,6 @@ function getNamaMateri($materi) {
             min-width: 130px;
             max-width: 130px;
         }
-        
-        .class-badge {
-            font-size: 0.7rem;
-            padding: 0.3rem 0.6rem;
-        }
-        
-        .controls-section {
-            padding: 1rem;
-        }
-        
-        .controls-section .row > div {
-            margin-bottom: 0.75rem;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .sticky-col.student {
-            width: 180px;
-            min-width: 180px;
-            max-width: 180px;
-        }
-        
-        .sticky-col.class {
-            left: 240px;
-            width: 120px;
-            min-width: 120px;
-            max-width: 120px;
-        }
-        
-        .question-header {
-            width: 110px;
-            min-width: 110px;
-            max-width: 110px;
-        }
-        
-        .class-badge {
-            font-size: 0.65rem;
-            padding: 0.25rem 0.5rem;
-        }
-    }
-
-    /* Loading & Empty States */
-    .empty-state {
-        text-align: center;
-        padding: 3rem 1rem;
-        color: #6c757d;
-    }
-
-    .empty-state i {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-        opacity: 0.5;
-    }
-
-    .loading-spinner {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 200px;
     }
     </style>
 </head>
@@ -956,13 +916,13 @@ function getNamaMateri($materi) {
                                 </div>
                             </div>
                             <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                                <div class="d-flex align-items-center justify-content-end gap-2">
-                                    <a href="index.php" class="btn btn-light btn-sm">
-                                        <i class="bi bi-arrow-left me-1"></i>Kembali
+                                <div class="d-flex align-items-center justify-content-end gap-2 button-group-header">
+                                    <a href="index.php" class="btn btn-kembali">
+                                       Kembali
                                     </a>
-                                    <button type="button" class="btn btn-success btn-sm" onclick="exportToExcel()">
-                                        <i class="bi bi-file-excel me-1"></i>Export
-                                    </button>
+                                   <button type="button" class="btn btn-success" onclick="exportToExcel()">
+                                        <i class="bi bi-file-excel me-1"></i>Export Excel
+                                </button>
                                 </div>
                             </div>
                         </div>
@@ -995,38 +955,136 @@ function getNamaMateri($materi) {
                     </div>
                 </div>
 
-                <!-- Controls -->
-                <div class="card content-card mb-4">
-                    <div class="controls-section">
+                <!-- Main Table -->
+                <div class="card content-card">
+                    <div class="section-header">
                         <div class="row align-items-center">
                             <div class="col-md-6">
-                                <div class="search-container">
-                                    <input type="search" id="searchInput" class="form-control search-input" placeholder="Cari nama atau NIK siswa...">
-                                    <i class="bi bi-search search-icon"></i>
-                                </div>
+                                <h5 class="mb-0 text-dark">
+                                    <i class="bi bi-table me-2"></i>Data Hasil Evaluasi
+                                </h5>
                             </div>
-                            <div class="col-md-3">
-                                <select id="kelasFilter" class="form-select filter-select">
-                                    <option value="">Semua Kelas</option>
-                                    <?php 
-                                    $kelasList = array_unique(array_column($siswaData, 'nama_kelas'));
-                                    sort($kelasList);
-                                    foreach($kelasList as $kelas): ?>
-                                        <option value="<?= htmlspecialchars($kelas) ?>"><?= htmlspecialchars($kelas) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-3 text-md-end">
-                                <div class="text-muted small">
-                                    <span id="showingInfo">Menampilkan <?= count($siswaData) ?> dari <?= count($siswaData) ?> data</span>
+                        </div>
+                    </div>
+
+                    <!-- Search/Filter Controls - STRUKTUR SAMA SEPERTI REFERENSI -->
+                    <div class="p-3 border-bottom">
+                        <div class="row align-items-center">  
+                            <div class="col-12">
+                                <div class="d-flex flex-wrap align-items-center gap-2 controls-container">
+                                    <!-- Search Box -->
+                                    <div class="d-flex align-items-center search-container">
+                                        <label for="searchInput" class="me-2 mb-0 search-label">
+                                            <small>Search:</small>
+                                        </label>
+                                        <input type="search" id="searchInput" class="form-control form-control-sm search-input" />
+                                    </div>
+                                    
+                                    <!-- Sort Button -->
+                                    <div class="dropdown">
+                                        <button class="btn btn-light btn-icon position-relative control-btn" 
+                                                type="button" 
+                                                data-bs-toggle="dropdown" 
+                                                data-bs-display="static"
+                                                aria-expanded="false"
+                                                title="Sort">
+                                            <i class="bi bi-arrow-down-up"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="min-width: 200px;">
+                                            <li><h6 class="dropdown-header">Sort by</h6></li>
+                                            <li>
+                                                <a class="dropdown-item sort-option" href="#" data-sort="nama" data-order="asc">
+                                                    <i class="bi bi-sort-alpha-down me-2"></i>Nama Siswa A-Z
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item sort-option" href="#" data-sort="nama" data-order="desc">
+                                                    <i class="bi bi-sort-alpha-up me-2"></i>Nama Siswa Z-A
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <!-- Filter Button -->
+                                    <div class="dropdown">
+                                        <button class="btn btn-light btn-icon position-relative control-btn" 
+                                                type="button" 
+                                                data-bs-toggle="dropdown" 
+                                                aria-expanded="false"
+                                                id="filterButton"
+                                                title="Filter">
+                                            <i class="bi bi-funnel"></i>
+                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="filterBadge">
+                                                0
+                                            </span>
+                                        </button>
+                                        
+                                        <!-- Filter Dropdown -->
+                                        <div class="dropdown-menu dropdown-menu-end shadow p-3" style="min-width: 300px;">
+                                            <h6 class="mb-3 fw-bold">
+                                                <i class="bi bi-funnel me-2"></i>Filter Data
+                                            </h6>
+                                            
+                                            <!-- Filter Kelas -->
+                                            <div class="mb-3">
+                                                <label class="form-label small text-muted mb-1">Kelas</label>
+                                                <select class="form-select form-select-sm" id="filterKelas">
+                                                    <option value="">Semua Kelas</option>
+                                                    <?php 
+                                                    $kelasList = array_unique(array_column($siswaData, 'nama_kelas'));
+                                                    sort($kelasList);
+                                                    foreach($kelasList as $kelas): ?>
+                                                        <option value="<?= htmlspecialchars($kelas) ?>">
+                                                            <?= htmlspecialchars($kelas) ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
+                                            
+                                            <hr class="my-3">
+                                            
+                                            <!-- Filter Buttons -->
+                                            <div class="row g-2">
+                                                <div class="col-6">
+                                                    <button class="btn btn-primary btn-sm w-100 d-flex align-items-center justify-content-center" 
+                                                            id="applyFilter" 
+                                                            type="button"
+                                                            style="height: 36px;">
+                                                        <i class="bi bi-check-lg me-1"></i>
+                                                        <span>Terapkan</span>
+                                                    </button>
+                                                </div>
+                                                <div class="col-6">
+                                                    <button class="btn btn-light btn-sm w-100 d-flex align-items-center justify-content-center" 
+                                                            id="resetFilter" 
+                                                            type="button"
+                                                            style="height: 36px;">
+                                                        <i class="bi bi-arrow-clockwise me-1"></i>
+                                                        <span>Reset</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Result Info -->
+                                    <div class="ms-auto result-info d-flex align-items-center">
+                                        <label class="me-2 mb-0 search-label">
+                                            <small>Show:</small>
+                                        </label>
+                                        <div class="info-badge">
+                                            <span class="info-count" id="showingCount"><?= count($siswaData) ?></span>
+                                            <span class="info-separator">dari</span>
+                                            <span class="info-total" id="totalCount"><?= count($siswaData) ?></span>
+                                            <span class="info-label">data</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Main Table -->
-                <div class="card content-card">
+                    <!-- Table -->
                     <div class="table-responsive">
                         <table class="table evaluation-table" id="evaluationTable">
                             <thead>
@@ -1034,24 +1092,28 @@ function getNamaMateri($materi) {
                                     <th class="sticky-col number">No</th>
                                     <th class="sticky-col student">Siswa</th>
                                     <th class="sticky-col class">Kelas</th>
-                                  <!-- Ganti bagian header pertanyaan -->
-<?php foreach ($pertanyaanList as $index => $pertanyaan): ?>
-    <th class="question-header" onclick="showQuestionDetail(<?= $pertanyaan['id_pertanyaan'] ?>, <?= json_encode($pertanyaan['pertanyaan']) ?>, <?= json_encode($pertanyaan['aspek_dinilai']) ?>, <?= json_encode($pertanyaan['tipe_jawaban']) ?>)">
-        <div class="question-number">Q<?= $index + 1 ?></div>
-        <div class="question-type <?= $pertanyaan['tipe_jawaban'] ?>">
-            <?php
-            switch($pertanyaan['tipe_jawaban']) {
-                case 'skala': echo 'Rating'; break;
-                case 'pilihan_ganda': echo 'Pilihan'; break;
-                case 'isian': echo 'Isian'; break;
-            }
-            ?>
-        </div>
-        <div class="question-preview" title="<?= htmlspecialchars($pertanyaan['pertanyaan']) ?>">
-            <?= htmlspecialchars($pertanyaan['pertanyaan']) ?>
-        </div>
-    </th>
-<?php endforeach; ?>
+                                    <?php foreach ($pertanyaanList as $index => $pertanyaan): ?>
+                                        <th class="question-header" 
+                                            data-qid="<?= $pertanyaan['id_pertanyaan'] ?>" 
+                                            data-qtext="<?= htmlspecialchars(sanitizeForJS($pertanyaan['pertanyaan'])) ?>" 
+                                            data-qaspect="<?= htmlspecialchars(sanitizeForJS($pertanyaan['aspek_dinilai'])) ?>" 
+                                            data-qtype="<?= $pertanyaan['tipe_jawaban'] ?>" 
+                                            onclick="showQuestionDetail(this)">
+                                            <div class="question-number">Q<?= $index + 1 ?></div>
+                                            <div class="question-type <?= $pertanyaan['tipe_jawaban'] ?>">
+                                                <?php
+                                                switch($pertanyaan['tipe_jawaban']) {
+                                                    case 'skala': echo 'Rating'; break;
+                                                    case 'pilihan_ganda': echo 'Pilihan'; break;
+                                                    case 'isian': echo 'Isian'; break;
+                                                }
+                                                ?>
+                                            </div>
+                                            <div class="question-preview" title="<?= htmlspecialchars($pertanyaan['pertanyaan']) ?>">
+                                                <?= htmlspecialchars($pertanyaan['pertanyaan']) ?>
+                                            </div>
+                                        </th>
+                                    <?php endforeach; ?>
                                 </tr>
                             </thead>
                             <tbody id="tableBody">
@@ -1082,21 +1144,8 @@ function getNamaMateri($materi) {
                                             <!-- Kelas -->
                                             <td class="sticky-col class">
                                                 <div class="class-container">
-                                                    <?php 
-                                                    $namaKelas = htmlspecialchars($siswa['nama_kelas']);
-                                                    $kelasLength = strlen($namaKelas);
-                                                    
-                                                    // Tentukan class CSS berdasarkan panjang nama kelas
-                                                    if ($kelasLength > 20) {
-                                                        $badgeClass = 'class-badge extra-long';
-                                                    } elseif ($kelasLength > 15) {
-                                                        $badgeClass = 'class-badge long-name';
-                                                    } else {
-                                                        $badgeClass = 'class-badge';
-                                                    }
-                                                    ?>
-                                                    <span class="<?= $badgeClass ?>" title="<?= $namaKelas ?>">
-                                                        <?= $namaKelas ?>
+                                                    <span class="class-badge" title="<?= htmlspecialchars($siswa['nama_kelas']) ?>">
+                                                        <?= htmlspecialchars($siswa['nama_kelas']) ?>
                                                     </span>
                                                 </div>
                                             </td>
@@ -1109,71 +1158,83 @@ function getNamaMateri($materi) {
                                                         $jawaban = $jawabanMatrix[$siswa['id_siswa']][$pertanyaan['id_pertanyaan']] ?? null;
                                                         if ($jawaban !== null): 
                                                         ?>
-                                                           <!-- Ganti bagian onclick untuk setiap jenis jawaban dalam file -->
+                                                            <?php if ($pertanyaan['tipe_jawaban'] == 'skala'): ?>
+                                                                <!-- Rating Answer -->
+                                                                <div class="rating-answer" 
+                                                                     data-qtext="<?= htmlspecialchars(sanitizeForJS($pertanyaan['pertanyaan'])) ?>" 
+                                                                     data-answer="<?= htmlspecialchars(sanitizeForJS($jawaban)) ?>" 
+                                                                     data-student="<?= htmlspecialchars(sanitizeForJS($siswa['nama'])) ?>" 
+                                                                     onclick="showAnswerDetail(this)">
+                                                                    <div class="rating-number"><?= htmlspecialchars($jawaban) ?></div>
+                                                                    <div class="rating-stars">
+                                                                        <?php for($i = 1; $i <= 5; $i++): ?>
+                                                                            <i class="bi bi-star<?= $i <= (int)$jawaban ? '-fill' : '' ?>" style="color: #ffd700;"></i>
+                                                                        <?php endfor; ?>
+                                                                    </div>
+                                                                    <div class="rating-label">
+                                                                        <?php
+                                                                        $labels = ['Sangat Buruk', 'Buruk', 'Cukup', 'Baik', 'Sangat Baik'];
+                                                                        echo $labels[(int)$jawaban - 1] ?? 'Invalid';
+                                                                        ?>
+                                                                    </div>
+                                                                </div>
 
-<?php if ($pertanyaan['tipe_jawaban'] == 'skala'): ?>
-    <!-- Rating Answer - DIPERBAIKI -->
-    <div class="rating-answer" onclick="showAnswerDetail('Rating', <?= json_encode($pertanyaan['pertanyaan']) ?>, <?= json_encode($jawaban) ?>, <?= json_encode($siswa['nama']) ?>)">
-        <div class="rating-number"><?= htmlspecialchars($jawaban) ?></div>
-        <div class="rating-stars">
-            <?php for($i = 1; $i <= 5; $i++): ?>
-                <i class="bi bi-star<?= $i <= (int)$jawaban ? '-fill' : '' ?>" style="color: #ffd700;"></i>
-            <?php endfor; ?>
-        </div>
-        <div class="rating-label">
-            <?php
-            $labels = ['Sangat Buruk', 'Buruk', 'Cukup', 'Baik', 'Sangat Baik'];
-            echo $labels[(int)$jawaban - 1] ?? 'Invalid';
-            ?>
-        </div>
-    </div>
+                                                            <?php elseif ($pertanyaan['tipe_jawaban'] == 'pilihan_ganda'): ?>
+                                                                <!-- Multiple Choice Answer -->
+                                                                <?php 
+                                                                $pilihan = getPilihanJawaban($pertanyaan['pilihan_jawaban']);
+                                                                $jawabanText = $jawaban;
+                                                                $jawabanIndex = array_search($jawabanText, $pilihan);
+                                                                
+                                                                if ($jawabanIndex === false) {
+                                                                    foreach ($pilihan as $index => $option) {
+                                                                        if (trim($option) === trim($jawabanText)) {
+                                                                            $jawabanIndex = $index;
+                                                                            break;
+                                                                        }
+                                                                    }
+                                                                }
+                                                                
+                                                                if ($jawabanIndex === false) {
+                                                                    $jawabanIndex = 0;
+                                                                    $jawabanText = 'Jawaban tidak valid';
+                                                                } else {
+                                                                    $jawabanText = $pilihan[$jawabanIndex];
+                                                                }
+                                                                
+                                                                $jawabanLabel = chr(65 + $jawabanIndex);
+                                                                ?>
+                                                                <div class="choice-answer" 
+                                                                     data-qtext="<?= htmlspecialchars(sanitizeForJS($pertanyaan['pertanyaan'])) ?>" 
+                                                                     data-chosen="<?= htmlspecialchars(sanitizeForJS($jawabanText)) ?>" 
+                                                                     data-label="<?= $jawabanLabel ?>" 
+                                                                     data-choices="<?= htmlspecialchars(json_encode(array_map('sanitizeForJS', $pilihan))) ?>" 
+                                                                     data-student="<?= htmlspecialchars(sanitizeForJS($siswa['nama'])) ?>" 
+                                                                     onclick="showChoiceDetail(this)">
+                                                                    <div class="choice-letter"><?= $jawabanLabel ?></div>
+                                                                    <div class="choice-preview">
+                                                                        <?= strlen($jawabanText) > 25 ? htmlspecialchars(substr($jawabanText, 0, 25)) . '...' : htmlspecialchars($jawabanText) ?>
+                                                                    </div>
+                                                                </div>
 
-<?php elseif ($pertanyaan['tipe_jawaban'] == 'pilihan_ganda'): ?>
-    <!-- Multiple Choice Answer - DIPERBAIKI -->
-    <?php 
-    $pilihan = getPilihanJawaban($pertanyaan['pilihan_jawaban']);
-    $jawabanText = $jawaban;
-    $jawabanIndex = array_search($jawabanText, $pilihan);
-    
-    if ($jawabanIndex === false) {
-        foreach ($pilihan as $index => $option) {
-            if (trim($option) === trim($jawabanText)) {
-                $jawabanIndex = $index;
-                break;
-            }
-        }
-    }
-    
-    if ($jawabanIndex === false) {
-        $jawabanIndex = 0;
-        $jawabanText = 'Jawaban tidak valid';
-    } else {
-        $jawabanText = $pilihan[$jawabanIndex];
-    }
-    
-    $jawabanLabel = chr(65 + $jawabanIndex);
-    ?>
-    <div class="choice-answer" onclick="showChoiceDetail(<?= json_encode($pertanyaan['pertanyaan']) ?>, <?= json_encode($jawabanText) ?>, <?= json_encode($jawabanLabel) ?>, <?= json_encode($pilihan) ?>, <?= json_encode($siswa['nama']) ?>)">
-        <div class="choice-letter"><?= $jawabanLabel ?></div>
-        <div class="choice-preview">
-            <?= strlen($jawabanText) > 25 ? htmlspecialchars(substr($jawabanText, 0, 25)) . '...' : htmlspecialchars($jawabanText) ?>
-        </div>
-    </div>
-
-<?php else: ?>
-    <!-- Text Answer - DIPERBAIKI -->
-    <div class="text-answer" onclick="showTextDetail(<?= json_encode($pertanyaan['pertanyaan']) ?>, <?= json_encode($jawaban) ?>, <?= json_encode($siswa['nama']) ?>)">
-        <div class="text-icon">
-            <i class="bi bi-chat-text"></i>
-        </div>
-        <div class="text-preview">
-            <?= strlen($jawaban) > 30 ? htmlspecialchars(substr($jawaban, 0, 30)) . '...' : htmlspecialchars($jawaban) ?>
-        </div>
-        <div class="text-meta">
-            <?= strlen($jawaban) ?> karakter
-        </div>
-    </div>
-<?php endif; ?>
+                                                            <?php else: ?>
+                                                                <!-- Text Answer -->
+                                                                <div class="text-answer" 
+                                                                     data-qtext="<?= htmlspecialchars(sanitizeForJS($pertanyaan['pertanyaan'])) ?>" 
+                                                                     data-answer="<?= htmlspecialchars(sanitizeForJS($jawaban)) ?>" 
+                                                                     data-student="<?= htmlspecialchars(sanitizeForJS($siswa['nama'])) ?>" 
+                                                                     onclick="showTextDetail(this)">
+                                                                    <div class="text-icon">
+                                                                        <i class="bi bi-chat-text"></i>
+                                                                    </div>
+                                                                    <div class="text-preview">
+                                                                        <?= strlen($jawaban) > 30 ? htmlspecialchars(substr($jawaban, 0, 30)) . '...' : htmlspecialchars($jawaban) ?>
+                                                                    </div>
+                                                                    <div class="text-meta">
+                                                                        <?= strlen($jawaban) ?> karakter
+                                                                    </div>
+                                                                </div>
+                                                            <?php endif; ?>
                                                         <?php else: ?>
                                                             <div class="empty-answer">
                                                                 <i class="bi bi-dash-circle"></i><br>
@@ -1350,115 +1411,250 @@ function getNamaMateri($materi) {
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const searchInput = document.getElementById('searchInput');
-        const kelasFilter = document.getElementById('kelasFilter');
-        const tableBody = document.getElementById('tableBody');
-        const showingInfo = document.getElementById('showingInfo');
-        const allRows = Array.from(tableBody.querySelectorAll('.student-row'));
+        // Referensi elemen
+        const table = document.getElementById('evaluationTable');
+        if (!table) return;
         
-        // Filter functionality
-        function applyFilters() {
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            const selectedKelas = kelasFilter.value;
-            
-            let visibleCount = 0;
-            
-            allRows.forEach((row, index) => {
-                const nama = row.dataset.nama || '';
-                const nik = row.dataset.nik || '';
-                const kelas = row.dataset.kelas || '';
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('.student-row')).filter(row => !row.querySelector('.empty-state'));
+        const filterButton = document.getElementById('filterButton');
+        const filterBadge = document.getElementById('filterBadge');
+        const showingCount = document.getElementById('showingCount');
+        const totalCount = document.getElementById('totalCount');
+        
+        const originalOrder = [...rows];
+        let activeFilters = 0;
+
+        // Force dropdown positioning
+        function forceDropdownPositioning() {
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                menu.style.setProperty('position', 'absolute', 'important');
+                menu.style.setProperty('top', '100%', 'important');
+                menu.style.setProperty('bottom', 'auto', 'important');
+                menu.style.setProperty('transform', 'none', 'important');
+                menu.style.setProperty('z-index', '1055', 'important');
+                menu.style.setProperty('margin-top', '2px', 'important');
                 
-                let show = true;
-                
-                // Apply search filter
-                if (searchTerm && !nama.includes(searchTerm) && !nik.includes(searchTerm)) {
-                    show = false;
-                }
-                
-                // Apply class filter
-                if (selectedKelas && kelas !== selectedKelas) {
-                    show = false;
-                }
-                
-                row.style.display = show ? '' : 'none';
-                if (show) {
-                    visibleCount++;
-                    // Update row number
-                    const numberCell = row.querySelector('.sticky-col.number strong');
-                    if (numberCell) numberCell.textContent = visibleCount;
+                if (menu.classList.contains('dropdown-menu-end')) {
+                    menu.style.setProperty('right', '0', 'important');
+                    menu.style.setProperty('left', 'auto', 'important');
                 }
             });
-            
-            // Update showing info
-            showingInfo.textContent = `Menampilkan ${visibleCount} dari ${allRows.length} data`;
         }
-        
-        // Event listeners for filters
-        let searchTimeout;
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(applyFilters, 300);
-        });
-        
-        kelasFilter.addEventListener('change', applyFilters);
-        
-        // Fungsi untuk menangani sticky columns saat scroll
-        function handleStickyScroll() {
-            const tableContainer = document.querySelector('.table-responsive');
-            const stickyHeaders = document.querySelectorAll('.evaluation-table thead .sticky-col');
-            const stickyCells = document.querySelectorAll('.evaluation-table tbody .sticky-col');
-            
-            if (!tableContainer) return;
-            
-            tableContainer.addEventListener('scroll', function() {
-                const scrollLeft = this.scrollLeft;
-                
-                // Update shadow untuk sticky columns berdasarkan posisi scroll
-                const hasShadow = scrollLeft > 0;
-                
-                [...stickyHeaders, ...stickyCells].forEach(cell => {
-                    if (hasShadow) {
-                        cell.style.boxShadow = '2px 0 8px -2px rgba(0, 0, 0, 0.15)';
-                    } else {
-                        cell.style.boxShadow = '2px 0 5px -2px rgba(0, 0, 0, 0.1)';
-                    }
+
+        // Sort functionality
+        function initializeSortOptions() {
+            document.querySelectorAll('.sort-option').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    document.querySelectorAll('.sort-option').forEach(opt => {
+                        opt.classList.remove('active');
+                        opt.style.backgroundColor = '';
+                        opt.style.color = '';
+                    });
+                    
+                    this.classList.add('active');
+                    this.style.backgroundColor = '#0d6efd';
+                    this.style.color = 'white';
+                    
+                    const sortType = this.dataset.sort;
+                    const sortOrder = this.dataset.order;
+                    
+                    sortTable(sortType, sortOrder);
+                    
+                    setTimeout(() => {
+                        const dropdownToggle = this.closest('.dropdown').querySelector('[data-bs-toggle="dropdown"]');
+                        if (dropdownToggle) {
+                            const dropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+                            if (dropdown) dropdown.hide();
+                        }
+                    }, 150);
                 });
             });
         }
         
-        // Fungsi untuk highlight pertanyaan yang dipilih
-        function highlightQuestion(questionElement) {
-            // Hapus highlight sebelumnya
-            document.querySelectorAll('.question-header').forEach(header => {
-                header.classList.remove('highlighted');
+        function sortTable(type, order) {
+            let sortedRows;
+            
+            try {
+                if (type === 'nama') {
+                    sortedRows = [...rows].sort((a, b) => {
+                        const aNama = (a.dataset.nama || '').trim().toLowerCase();
+                        const bNama = (b.dataset.nama || '').trim().toLowerCase();
+                        return order === 'asc' ? aNama.localeCompare(bNama) : bNama.localeCompare(aNama);
+                    });
+                } else {
+                    sortedRows = [...originalOrder];
+                }
+                
+                const fragment = document.createDocumentFragment();
+                sortedRows.forEach(row => fragment.appendChild(row));
+                tbody.appendChild(fragment);
+                
+                updateRowNumbers();
+                
+            } catch (error) {
+                console.error('Sort error:', error);
+                const fragment = document.createDocumentFragment();
+                originalOrder.forEach(row => fragment.appendChild(row));
+                tbody.appendChild(fragment);
+                updateRowNumbers();
+            }
+        }
+
+        // Filter functionality
+        const searchInput = document.getElementById('searchInput');
+        const filterKelas = document.getElementById('filterKelas');
+        const applyFilterBtn = document.getElementById('applyFilter');
+        const resetFilterBtn = document.getElementById('resetFilter');
+        
+        let searchTimeout;
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                e.stopPropagation();
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    applyFilters();
+                }, 300);
             });
-            
-            // Tambahkan highlight ke pertanyaan yang dipilih
-            questionElement.classList.add('highlighted');
-            
-            // Hapus highlight setelah 3 detik
-            setTimeout(() => {
-                questionElement.classList.remove('highlighted');
-            }, 3000);
         }
         
-        // Modal functions
-        window.showQuestionDetail = function(id, question, aspect, type) {
-            const questionHeaders = document.querySelectorAll('.question-header');
-            let questionNumber = 1;
+        function applyFilters() {
+            const searchTerm = (searchInput?.value || '').toLowerCase().trim();
+            const kelasFilter = filterKelas?.value || '';
             
-            questionHeaders.forEach((header, index) => {
-                const onclickAttr = header.getAttribute('onclick');
-                if (onclickAttr && onclickAttr.includes(`showQuestionDetail(${id},`)) {
-                    questionNumber = index + 1;
+            let visibleCount = 0;
+            activeFilters = 0;
+            
+            if (kelasFilter) activeFilters++;
+            
+            updateFilterBadge();
+            
+            rows.forEach(row => {
+                try {
+                    const nama = (row.dataset.nama || '').toLowerCase();
+                    const nik = (row.dataset.nik || '').toLowerCase();
+                    const kelas = (row.dataset.kelas || '').trim();
+                    
+                    let showRow = true;
+                    
+                    // Filter search
+                    if (searchTerm && 
+                        !nama.includes(searchTerm) && 
+                        !nik.includes(searchTerm)) {
+                        showRow = false;
+                    }
+                    
+                    // Filter kelas
+                    if (kelasFilter && kelas !== kelasFilter) showRow = false;
+                    
+                    row.style.display = showRow ? '' : 'none';
+                    if (showRow) visibleCount++;
+                    
+                } catch (error) {
+                    console.error('Filter error for row:', error);
+                    row.style.display = '';
+                    visibleCount++;
                 }
             });
             
+            updateRowNumbers();
+            updateShowingCount(visibleCount);
+        }
+        
+        function updateFilterBadge() {
+            if (!filterBadge || !filterButton) return;
+            
+            if (activeFilters > 0) {
+                filterBadge.textContent = activeFilters;
+                filterBadge.classList.remove('d-none');
+                filterButton.classList.add('btn-primary');
+                filterButton.classList.remove('btn-light');
+            } else {
+                filterBadge.classList.add('d-none');
+                filterButton.classList.remove('btn-primary');
+                filterButton.classList.add('btn-light');
+            }
+        }
+        
+        function updateRowNumbers() {
+            let counter = 1;
+            rows.forEach(row => {
+                if (row.style.display !== 'none') {
+                    const numberCell = row.querySelector('.sticky-col.number strong');
+                    if (numberCell) numberCell.textContent = counter++;
+                }
+            });
+        }
+
+        function updateShowingCount(visibleCount) {
+            if (showingCount) {
+                showingCount.textContent = visibleCount;
+            }
+        }
+
+        // Event listeners
+        if (applyFilterBtn) {
+            applyFilterBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                applyFilters();
+                setTimeout(() => {
+                    const dropdown = bootstrap.Dropdown.getInstance(filterButton);
+                    if (dropdown) dropdown.hide();
+                }, 100);
+            });
+        }
+        
+        if (resetFilterBtn) {
+            resetFilterBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (searchInput) searchInput.value = '';
+                if (filterKelas) filterKelas.value = '';
+                applyFilters();
+            });
+        }
+        
+        const filterDropdown = document.querySelector('.dropdown-menu.p-3');
+        if (filterDropdown) {
+            filterDropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        }
+
+        // Dropdown event handlers
+        document.addEventListener('show.bs.dropdown', function (e) {
+            forceDropdownPositioning();
+        });
+        
+        document.addEventListener('shown.bs.dropdown', function (e) {
+            const dropdown = e.target.nextElementSibling;
+            if (dropdown && dropdown.classList.contains('dropdown-menu')) {
+                dropdown.style.setProperty('position', 'absolute', 'important');
+                dropdown.style.setProperty('top', '100%', 'important');
+                dropdown.style.setProperty('bottom', 'auto', 'important');
+                dropdown.style.setProperty('transform', 'none', 'important');
+                dropdown.style.setProperty('z-index', '1055', 'important');
+                dropdown.style.setProperty('margin-top', '2px', 'important');
+                
+                if (dropdown.classList.contains('dropdown-menu-end')) {
+                    dropdown.style.setProperty('right', '0', 'important');
+                    dropdown.style.setProperty('left', 'auto', 'important');
+                }
+            }
+        });
+
+        // Modal functions
+        window.showQuestionDetail = function(element) {
+            const questionNumber = Array.from(document.querySelectorAll('.question-header')).indexOf(element) + 1;
+            
             document.getElementById('qNumber').textContent = `Q${questionNumber}`;
             
-            // Perbaikan display tipe
             let typeDisplay = '';
-            switch(type) {
+            switch(element.dataset.qtype) {
                 case 'skala': 
                     typeDisplay = 'Rating (1-5)'; 
                     break;
@@ -1469,34 +1665,35 @@ function getNamaMateri($materi) {
                     typeDisplay = 'Isian Bebas'; 
                     break;
                 default: 
-                    typeDisplay = type;
+                    typeDisplay = element.dataset.qtype;
             }
             
             document.getElementById('qType').textContent = typeDisplay;
-            document.getElementById('qAspect').textContent = aspect;
-            document.getElementById('qText').innerHTML = question.replace(/\n/g, '<br>');
+            document.getElementById('qAspect').textContent = element.dataset.qaspect;
+            document.getElementById('qText').innerHTML = element.dataset.qtext.replace(/\n/g, '<br>');
             
             new bootstrap.Modal(document.getElementById('questionModal')).show();
         };
-        
-        window.showAnswerDetail = function(type, question, answer, student) {
-            document.getElementById('modalQuestion').textContent = question;
-            document.getElementById('modalStudent').textContent = student;
-            document.getElementById('modalAnswer').textContent = `Rating: ${answer}/5`;
+
+        window.showAnswerDetail = function(element) {
+            document.getElementById('modalQuestion').textContent = element.dataset.qtext;
+            document.getElementById('modalStudent').textContent = element.dataset.student;
+            document.getElementById('modalAnswer').textContent = `Rating: ${element.dataset.answer}/5`;
             
             new bootstrap.Modal(document.getElementById('answerModal')).show();
         };
-        
-        window.showChoiceDetail = function(question, chosenText, chosenLabel, allChoices, student) {
-            document.getElementById('modalChoiceQuestion').textContent = question;
-            document.getElementById('modalChoiceStudent').textContent = student;
-            document.getElementById('modalChoiceLabel').textContent = chosenLabel;
-            document.getElementById('modalChoiceText').textContent = chosenText;
+
+        window.showChoiceDetail = function(element) {
+            document.getElementById('modalChoiceQuestion').textContent = element.dataset.qtext;
+            document.getElementById('modalChoiceStudent').textContent = element.dataset.student;
+            document.getElementById('modalChoiceLabel').textContent = element.dataset.label;
+            document.getElementById('modalChoiceText').textContent = element.dataset.chosen;
             
+            const allChoices = JSON.parse(element.dataset.choices);
             let choicesHtml = '';
             allChoices.forEach((choice, index) => {
                 const label = String.fromCharCode(65 + index);
-                const isSelected = label === chosenLabel;
+                const isSelected = label === element.dataset.label;
                 choicesHtml += `
                     <div class="choice-item ${isSelected ? 'selected' : ''}">
                         <span class="choice-letter">${label}</span>
@@ -1509,79 +1706,55 @@ function getNamaMateri($materi) {
             document.getElementById('modalAllChoices').innerHTML = choicesHtml;
             new bootstrap.Modal(document.getElementById('choiceModal')).show();
         };
-        
-        window.showTextDetail = function(question, answer, student) {
-            document.getElementById('modalTextQuestion').textContent = question;
-            document.getElementById('modalTextStudent').textContent = student;
-            document.getElementById('modalTextAnswer').textContent = answer;
-            document.getElementById('modalTextLength').textContent = answer.length;
+
+        window.showTextDetail = function(element) {
+            document.getElementById('modalTextQuestion').textContent = element.dataset.qtext;
+            document.getElementById('modalTextStudent').textContent = element.dataset.student;
+            document.getElementById('modalTextAnswer').textContent = element.dataset.answer;
+            document.getElementById('modalTextLength').textContent = element.dataset.answer.length;
             
             new bootstrap.Modal(document.getElementById('textModal')).show();
         };
-        
-        // Helper function untuk toast notification
-        function showSuccessToast(title, message) {
-            const toast = document.createElement('div');
-            toast.className = 'position-fixed top-0 end-0 p-3';
-            toast.style.zIndex = '9999';
-            toast.innerHTML = `
-                <div class="toast show" role="alert">
-                    <div class="toast-header">
-                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                        <strong class="me-auto">${title}</strong>
-                        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-                    </div>
-                    <div class="toast-body">${message}</div>
-                </div>
-            `;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 4000);
-        }
 
-        function showErrorToast(title, message) {
-            const toast = document.createElement('div');
-            toast.className = 'position-fixed top-0 end-0 p-3';
-            toast.style.zIndex = '9999';
-            toast.innerHTML = `
-                <div class="toast show" role="alert">
-                    <div class="toast-header">
-                        <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
-                        <strong class="me-auto">${title}</strong>
-                        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-                    </div>
-                    <div class="toast-body">${message}</div>
-                </div>
-            `;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 4000);
-        }
-        
-        // Export to Excel - Diperbaiki
+        // Export to Excel - COMPACT & VISIBLE VERSION
         window.exportToExcel = function() {
             try {
                 const wb = XLSX.utils.book_new();
-                const wsData = [];
                 
-                // Header dengan informasi lengkap
-                const headers = ['No', 'Nama Siswa', 'NIK', 'Kelas', 'Tanggal Evaluasi'];
+                // Sheet 1: Data Utama (COMPACT)
+                const wsData1 = [];
                 
-                // Tambahkan header pertanyaan dengan detail
+                // Info singkat di atas (hanya 3 baris)
+                wsData1.push(['HASIL EVALUASI: <?= htmlspecialchars($periode['nama_evaluasi']) ?>']);
+                wsData1.push(['Gelombang: <?= htmlspecialchars($periode['nama_gelombang']) ?> (<?= $periode['tahun'] ?>) | Siswa: <?= count($siswaData) ?> | Export: ' + new Date().toLocaleDateString('id-ID')]);
+                wsData1.push(['']); // 1 baris kosong saja
+                
+                // Header dengan pertanyaan yang VISIBLE
+                const headers1 = ['No', 'Nama Siswa', 'NIK', 'Kelas', 'Tanggal'];
+                
                 const questionHeaders = document.querySelectorAll('.question-header');
                 questionHeaders.forEach((header, index) => {
                     const questionNumber = header.querySelector('.question-number').textContent;
                     const questionType = header.querySelector('.question-type').textContent;
                     const questionPreview = header.querySelector('.question-preview');
-                    
-                    // Ambil teks lengkap dari title attribute jika ada, atau dari textContent
                     const fullQuestion = questionPreview.getAttribute('title') || questionPreview.textContent;
                     
-                    headers.push(`${questionNumber} (${questionType}) - ${fullQuestion.substring(0, 50)}${fullQuestion.length > 50 ? '...' : ''}`);
+                    // Header yang COMPACT tapi JELAS
+                    const shortType = questionType === 'Rating' ? 'R' : questionType === 'Pilihan' ? 'PG' : 'T';
+                    let questionText = fullQuestion;
+                    
+                    // Potong pertanyaan jika terlalu panjang, tapi tetap informatif
+                    if (questionText.length > 60) {
+                        questionText = questionText.substring(0, 57) + '...';
+                    }
+                    
+                    headers1.push(`${questionNumber} [${shortType}] ${questionText}`);
                 });
                 
-                wsData.push(headers);
+                wsData1.push(headers1);
                 
-                // Data rows - hanya yang visible
-                const visibleRows = allRows.filter(row => row.style.display !== 'none');
+                // Data rows - LANGSUNG DIMULAI
+                const visibleRows = rows.filter(row => row.style.display !== 'none');
                 visibleRows.forEach((row, index) => {
                     const studentInfo = row.querySelector('.student-info');
                     const nama = studentInfo.querySelector('.student-name').textContent.trim();
@@ -1589,103 +1762,304 @@ function getNamaMateri($materi) {
                     const nik = studentDetails.split('NIK: ')[1].split('\n')[0].trim();
                     const kelas = row.querySelector('.class-badge').textContent.trim();
                     
-                    // Ambil tanggal dari student details
-                    const tanggalMatch = studentDetails.match(/(\d{1,2}\s\w{3}\s\d{4},\s\d{2}:\d{2})/);
+                    const tanggalMatch = studentDetails.match(/(\d{1,2}\s\w{3}\s\d{4})/);
                     const tanggal = tanggalMatch ? tanggalMatch[1] : '-';
                     
                     const rowData = [index + 1, nama, nik, kelas, tanggal];
                     
-                    // Add answers dengan format yang lebih baik
+                    // Add answers dengan format COMPACT tapi JELAS
                     const answerCells = row.querySelectorAll('td:not(.sticky-col)');
-                    answerCells.forEach(cell => {
-                        const ratingEl = cell.querySelector('.rating-number');
-                        const choiceEl = cell.querySelector('.choice-letter');
-                        const textEl = cell.querySelector('.text-preview');
+                    answerCells.forEach((cell, cellIndex) => {
+                        const ratingEl = cell.querySelector('.rating-answer');
+                        const choiceEl = cell.querySelector('.choice-answer');
+                        const textEl = cell.querySelector('.text-answer');
                         const emptyEl = cell.querySelector('.empty-answer');
                         
                         if (ratingEl) {
-                            const rating = ratingEl.textContent;
-                            const ratingLabel = cell.querySelector('.rating-label').textContent;
+                            const rating = ratingEl.dataset.answer;
+                            const labels = ['SB', 'B', 'C', 'Ba', 'SBa']; // Singkatan
+                            const ratingLabel = labels[parseInt(rating) - 1] || 'X';
                             rowData.push(`${rating}/5 (${ratingLabel})`);
                         } else if (choiceEl) {
-                            const choiceText = cell.querySelector('.choice-preview').textContent;
-                            rowData.push(`${choiceEl.textContent}: ${choiceText}`);
-                        } else if (textEl) {
-                            // Coba ambil teks lengkap dari onclick attribute
-                            const textAnswer = cell.querySelector('.text-answer');
-                            const onclickAttr = textAnswer.getAttribute('onclick');
-                            if (onclickAttr) {
-                                const match = onclickAttr.match(/showTextDetail\('.*?', '(.*?)', '.*?'\)/);
-                                if (match) {
-                                    rowData.push(match[1].replace(/\\'/g, "'"));
-                                } else {
-                                    rowData.push(textEl.textContent);
-                                }
-                            } else {
-                                rowData.push(textEl.textContent);
+                            const choiceLabel = choiceEl.dataset.label;
+                            let choiceText = choiceEl.dataset.chosen;
+                            // Potong jawaban pilihan jika terlalu panjang
+                            if (choiceText.length > 50) {
+                                choiceText = choiceText.substring(0, 47) + '...';
                             }
-                        } else if (emptyEl) {
-                            rowData.push('-');
+                            rowData.push(`${choiceLabel}. ${choiceText}`);
+                        } else if (textEl) {
+                            let fullAnswer = textEl.dataset.answer || textEl.querySelector('.text-preview').textContent;
+                            // Batasi jawaban isian agar tidak terlalu panjang di view
+                            if (fullAnswer.length > 100) {
+                                fullAnswer = fullAnswer.substring(0, 97) + '...';
+                            }
+                            rowData.push(fullAnswer);
                         } else {
                             rowData.push('-');
                         }
                     });
                     
-                    wsData.push(rowData);
+                    wsData1.push(rowData);
                 });
                 
-                const ws = XLSX.utils.aoa_to_sheet(wsData);
+                const ws1 = XLSX.utils.aoa_to_sheet(wsData1);
                 
-                // Set column widths yang lebih baik
-                const colWidths = [
-                    { wch: 5 },   // No
-                    { wch: 25 },  // Nama
-                    { wch: 18 },  // NIK
-                    { wch: 15 },  // Kelas
-                    { wch: 20 },  // Tanggal
+                // Column widths yang OPTIMAL untuk VISIBILITAS
+                const colWidths1 = [
+                    { wch: 4 },   // No
+                    { wch: 20 },  // Nama
+                    { wch: 15 },  // NIK
+                    { wch: 12 },  // Kelas
+                    { wch: 12 },  // Tanggal
                 ];
                 
-                // Width untuk kolom pertanyaan berdasarkan tipe
+                // Width yang SEIMBANG untuk pertanyaan
                 questionHeaders.forEach(header => {
                     const questionType = header.querySelector('.question-type').textContent.toLowerCase();
-                    let width = 20;
+                    let width = 18; // Default yang cukup
                     
                     if (questionType.includes('isian')) {
-                        width = 50;
+                        width = 25; // Cukup untuk isian
                     } else if (questionType.includes('pilihan')) {
-                        width = 35;
+                        width = 22; // Cukup untuk pilihan
                     } else if (questionType.includes('rating')) {
-                        width = 15;
+                        width = 15; // Compact untuk rating
                     }
                     
-                    colWidths.push({ wch: width });
+                    colWidths1.push({ wch: width });
                 });
                 
-                ws['!cols'] = colWidths;
-                XLSX.utils.book_append_sheet(wb, ws, 'Hasil Evaluasi');
+                ws1['!cols'] = colWidths1;
                 
-                const filename = `Hasil_Evaluasi_<?= str_replace(' ', '_', $periode['nama_evaluasi']) ?>_<?= date('Ymd_His') ?>.xlsx`;
+                // Style untuk header info (baris 1-3)
+                for (let row = 0; row <= 2; row++) {
+                    for (let col = 0; col < 3; col++) {
+                        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+                        if (ws1[cellAddress]) {
+                            ws1[cellAddress].s = {
+                                font: { bold: true, color: { rgb: "1F4E79" } },
+                                fill: { fgColor: { rgb: "E7F3FF" } },
+                                alignment: { horizontal: "left" }
+                            };
+                        }
+                    }
+                }
+                
+                // Style untuk header kolom (baris 4)
+                const headerRow = 3; // Index 3 = baris ke-4
+                for (let col = 0; col < headers1.length; col++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: headerRow, c: col });
+                    if (ws1[cellAddress]) {
+                        ws1[cellAddress].s = {
+                            font: { bold: true, color: { rgb: "FFFFFF" } },
+                            fill: { fgColor: { rgb: "4472C4" } },
+                            alignment: { horizontal: "center", vertical: "center" },
+                            border: {
+                                top: { style: "thin", color: { rgb: "000000" } },
+                                bottom: { style: "thin", color: { rgb: "000000" } },
+                                left: { style: "thin", color: { rgb: "000000" } },
+                                right: { style: "thin", color: { rgb: "000000" } }
+                            }
+                        };
+                    }
+                }
+                
+                XLSX.utils.book_append_sheet(wb, ws1, 'Data Evaluasi');
+                
+                // Sheet 2: Pertanyaan Detail (COMPACT)
+                const wsData2 = [];
+                wsData2.push(['DAFTAR PERTANYAAN LENGKAP']);
+                wsData2.push(['']); // Hanya 1 baris kosong
+                wsData2.push(['No', 'Soal', 'Tipe', 'Aspek', 'Pertanyaan Lengkap', 'Opsi Jawaban']);
+                
+                questionHeaders.forEach((header, index) => {
+                    const questionNumber = header.querySelector('.question-number').textContent;
+                    const questionType = header.querySelector('.question-type').textContent;
+                    const questionPreview = header.querySelector('.question-preview');
+                    const fullQuestion = questionPreview.getAttribute('title') || questionPreview.textContent;
+                    const aspectValue = header.dataset.qaspect || '-';
+                    
+                    let pilihanJawaban = '';
+                    if (questionType.toLowerCase().includes('pilihan')) {
+                        // Cari contoh pilihan dari jawaban yang ada
+                        const allChoices = document.querySelectorAll('.choice-answer[data-choices]');
+                        if (allChoices.length > 0) {
+                            try {
+                                const choices = JSON.parse(allChoices[0].dataset.choices);
+                                pilihanJawaban = choices.map((choice, idx) => `${String.fromCharCode(65 + idx)}. ${choice}`).join(' | ');
+                            } catch (e) {
+                                pilihanJawaban = 'Pilihan ganda tersedia';
+                            }
+                        }
+                    } else if (questionType.toLowerCase().includes('rating')) {
+                        pilihanJawaban = '1=Sangat Buruk | 2=Buruk | 3=Cukup | 4=Baik | 5=Sangat Baik';
+                    } else {
+                        pilihanJawaban = 'Jawaban bebas (text)';
+                    }
+                    
+                    wsData2.push([
+                        index + 1,
+                        questionNumber,
+                        questionType,
+                        aspectValue,
+                        fullQuestion,
+                        pilihanJawaban
+                    ]);
+                });
+                
+                const ws2 = XLSX.utils.aoa_to_sheet(wsData2);
+                
+                // Column widths yang VISIBLE
+                ws2['!cols'] = [
+                    { wch: 4 },   // No
+                    { wch: 8 },   // Soal
+                    { wch: 12 },  // Tipe
+                    { wch: 15 },  // Aspek
+                    { wch: 50 },  // Pertanyaan
+                    { wch: 60 }   // Opsi
+                ];
+                
+                // Style untuk sheet 2
+                ws2['A1'].s = {
+                    font: { bold: true, size: 14, color: { rgb: "1F4E79" } },
+                    fill: { fgColor: { rgb: "E7F3FF" } }
+                };
+                
+                // Header row styling
+                for (let col = 0; col < 6; col++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: 2, c: col });
+                    if (ws2[cellAddress]) {
+                        ws2[cellAddress].s = {
+                            font: { bold: true, color: { rgb: "FFFFFF" } },
+                            fill: { fgColor: { rgb: "70AD47" } },
+                            alignment: { horizontal: "center" }
+                        };
+                    }
+                }
+                
+                XLSX.utils.book_append_sheet(wb, ws2, 'Detail Pertanyaan');
+                
+                // Sheet 3: Statistik (SUPER COMPACT)
+                const wsData3 = [];
+                wsData3.push(['RINGKASAN STATISTIK']);
+                wsData3.push(['']);
+                
+                // Statistik dalam format tabel compact
+                wsData3.push(['Metric', 'Value']);
+                wsData3.push(['Total Siswa Selesai', visibleRows.length]);
+                wsData3.push(['Total Pertanyaan', questionHeaders.length]);
+                
+                // Hitung tipe pertanyaan
+                let ratingCount = 0, choiceCount = 0, textCount = 0;
+                questionHeaders.forEach(header => {
+                    const questionType = header.querySelector('.question-type').textContent.toLowerCase();
+                    if (questionType.includes('rating')) ratingCount++;
+                    else if (questionType.includes('pilihan')) choiceCount++;
+                    else if (questionType.includes('isian')) textCount++;
+                });
+                
+                wsData3.push(['Pertanyaan Rating', ratingCount]);
+                wsData3.push(['Pertanyaan Pilihan Ganda', choiceCount]);
+                wsData3.push(['Pertanyaan Isian', textCount]);
+                wsData3.push(['']);
+                
+                // Statistik kelas
+                wsData3.push(['Kelas', 'Jumlah Siswa']);
+                const kelasStats = {};
+                visibleRows.forEach(row => {
+                    const kelas = row.dataset.kelas;
+                    kelasStats[kelas] = (kelasStats[kelas] || 0) + 1;
+                });
+                
+                Object.entries(kelasStats).forEach(([kelas, count]) => {
+                    wsData3.push([kelas, count]);
+                });
+                
+                const ws3 = XLSX.utils.aoa_to_sheet(wsData3);
+                ws3['!cols'] = [{ wch: 25 }, { wch: 15 }];
+                
+                XLSX.utils.book_append_sheet(wb, ws3, 'Statistik');
+                
+                // Generate filename
+                const now = new Date();
+                const dateStr = now.getFullYear() + 
+                    String(now.getMonth() + 1).padStart(2, '0') + 
+                    String(now.getDate()).padStart(2, '0') + '_' +
+                    String(now.getHours()).padStart(2, '0') + 
+                    String(now.getMinutes()).padStart(2, '0');
+                
+                const filename = `Evaluasi_<?= str_replace([' ', '(', ')', '/', ','], ['_', '', '', '_', ''], $periode['nama_evaluasi']) ?>_${dateStr}.xlsx`;
+                
+                // Save file
                 XLSX.writeFile(wb, filename);
                 
-                // Show success toast
-                showSuccessToast('Export berhasil!', 'File Excel berhasil diunduh.');
+                // Show success message dengan info yang jelas
+                const toast = document.createElement('div');
+                toast.className = 'position-fixed top-0 end-0 p-3';
+                toast.style.zIndex = '9999';
+                toast.innerHTML = `
+                    <div class="toast show" role="alert">
+                        <div class="toast-header">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            <strong class="me-auto">Export Berhasil!</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                        </div>
+                        <div class="toast-body">
+                            <strong>File Excel siap dibuka!</strong><br>
+                            • <strong>Sheet 1</strong>: Data lengkap siswa & jawaban<br>
+                            • <strong>Sheet 2</strong>: Detail pertanyaan & opsi<br>
+                            • <strong>Sheet 3</strong>: Statistik ringkasan<br>
+                            <small class="text-muted">Data langsung terlihat tanpa scroll berlebihan</small>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 6000);
                 
             } catch (error) {
                 console.error('Export error:', error);
-                showErrorToast('Export gagal!', 'Silakan coba lagi.');
+                
+                const toast = document.createElement('div');
+                toast.className = 'position-fixed top-0 end-0 p-3';
+                toast.style.zIndex = '9999';
+                toast.innerHTML = `
+                    <div class="toast show" role="alert">
+                        <div class="toast-header">
+                            <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
+                            <strong class="me-auto">Export Gagal!</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                        </div>
+                        <div class="toast-body">Error: ${error.message}<br>Silakan coba lagi.</div>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 5000);
             }
         };
+
+        // Initialize everything
+        forceDropdownPositioning();
+        initializeSortOptions();
         
-        // Initialize semua fungsi
-        handleStickyScroll();
-        
-        // Tambahkan event listener untuk highlight saat klik question header
-        document.querySelectorAll('.question-header').forEach(header => {
-            header.addEventListener('click', function() {
-                highlightQuestion(this);
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' || mutation.type === 'attributes') {
+                    forceDropdownPositioning();
+                }
             });
         });
         
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['class', 'style']
+        });
+        
+        window.addEventListener('resize', forceDropdownPositioning);
+        window.addEventListener('scroll', forceDropdownPositioning);
+
         // Initialize filters
         applyFilters();
     });

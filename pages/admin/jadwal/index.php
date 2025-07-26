@@ -467,7 +467,7 @@ function buildUrlWithFilters($page = null) {
               </div>
             </form>
           </div>
-          
+        </div>
           <!-- Table -->
           <div class="table-responsive" style="overflow-x: auto; overflow-y: visible;">
             <table class="custom-table mb-0" id="jadwalTable">

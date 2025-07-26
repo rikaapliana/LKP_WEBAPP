@@ -422,9 +422,6 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
                                                 <?= htmlspecialchars($materi['nama_instruktur']) ?>
                                             </small>
                                         </div>
-                                        <a href="materi/" class="btn btn-outline-primary btn-sm">
-                                            <i class="bi bi-download"></i>
-                                        </a>
                                     </div>
                                 <?php endwhile; ?>
                             </div>

@@ -144,13 +144,7 @@ function buildUrlWithFilters($page) {
     min-width: 120px;
   }
 
-  .info-badge {
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 0.375rem;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
-  }
+ 
   </style>
 </head>
 
