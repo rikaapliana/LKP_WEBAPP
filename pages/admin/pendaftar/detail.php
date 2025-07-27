@@ -81,7 +81,7 @@ if ($pendaftar['status_pendaftaran'] === 'Terverifikasi') {
                       <a href="../dashboard.php">Dashboard</a>
                     </li>
                     <li class="breadcrumb-item">
-                      <a href="#">Manajemen Siswa</a>
+                      <a href="#">Data Pendaftaran</a>
                     </li>
                     <li class="breadcrumb-item">
                       <a href="index.php">Data Pendaftar</a>

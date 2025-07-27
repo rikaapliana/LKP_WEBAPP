@@ -1,69 +1,125 @@
 <?php
-session_start();  
-require_once '../../../includes/auth.php';  
+session_start();
+require_once '../../../includes/auth.php';
 requireAdminAuth();
 
 include '../../../includes/db.php';
-$activePage = 'pengguna'; 
+$activePage = 'gelombang';
 $baseURL = '../';
 
+// Function untuk terbilang angka
+function terbilang($angka) {
+    $bilangan = array(
+        1 => 'satu', 2 => 'dua', 3 => 'tiga', 4 => 'empat', 5 => 'lima',
+        6 => 'enam', 7 => 'tujuh', 8 => 'delapan', 9 => 'sembilan', 10 => 'sepuluh',
+        11 => 'sebelas', 12 => 'dua belas'
+    );
+    return isset($bilangan[$angka]) ? $bilangan[$angka] : $angka;
+}
+
+// Proses hapus gelombang
+if (isset($_GET['action']) && $_GET['action'] === 'hapus' && isset($_GET['id'])) {
+    $id_gelombang = (int)$_GET['id'];
+    
+    try {
+        // Cek apakah gelombang sedang digunakan
+        $cekKelas = mysqli_query($conn, "SELECT COUNT(*) as total FROM kelas WHERE id_gelombang = $id_gelombang");
+        $jumlahKelas = mysqli_fetch_assoc($cekKelas)['total'];
+        
+        $cekPengaturan = mysqli_query($conn, "SELECT COUNT(*) as total FROM pengaturan_pendaftaran WHERE id_gelombang = $id_gelombang");
+        $jumlahPengaturan = mysqli_fetch_assoc($cekPengaturan)['total'];
+        
+        $cekPendaftar = mysqli_query($conn, "SELECT COUNT(*) as total FROM pendaftar WHERE id_gelombang = $id_gelombang");
+        $jumlahPendaftar = mysqli_fetch_assoc($cekPendaftar)['total'];
+        
+        if ($jumlahKelas > 0) {
+            $_SESSION['error'] = "Tidak dapat menghapus gelombang karena masih digunakan oleh $jumlahKelas kelas.";
+        } elseif ($jumlahPendaftar > 0) {
+            $_SESSION['error'] = "Tidak dapat menghapus gelombang karena sudah memiliki $jumlahPendaftar pendaftar.";
+        } elseif ($jumlahPengaturan > 0) {
+            $_SESSION['error'] = "Tidak dapat menghapus gelombang karena sudah memiliki pengaturan pendaftaran.";
+        } else {
+            $deleteQuery = "DELETE FROM gelombang WHERE id_gelombang = $id_gelombang";
+            if (mysqli_query($conn, $deleteQuery)) {
+                $_SESSION['success'] = "Gelombang berhasil dihapus!";
+            } else {
+                $_SESSION['error'] = "Gagal menghapus gelombang: " . mysqli_error($conn);
+            }
+        }
+    } catch (Exception $e) {
+        $_SESSION['error'] = "Error: " . $e->getMessage();
+    }
+    
+    header('Location: index.php');
+    exit();
+}
+
 // Pagination settings
-$recordsPerPage = 20;
+$recordsPerPage = 10;
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$currentPage = max(1, $currentPage); // Ensure minimum page is 1
+$currentPage = max(1, $currentPage);
 $offset = ($currentPage - 1) * $recordsPerPage;
 
-// Count total records untuk pagination
-$countQuery = "SELECT COUNT(DISTINCT u.id_user) as total FROM user u";
+// Count total records
+$countQuery = "SELECT COUNT(*) as total FROM gelombang";
 $countResult = mysqli_query($conn, $countQuery);
 $totalRecords = mysqli_fetch_assoc($countResult)['total'];
 $totalPages = ceil($totalRecords / $recordsPerPage);
 
-// Ambil data user dengan join ke tabel admin, instruktur, dan siswa dengan pagination
-$query = "SELECT u.id_user, u.username, u.role, u.created_at,
-          CASE 
-            WHEN u.role = 'admin' THEN a.nama
-            WHEN u.role = 'instruktur' THEN i.nama
-            WHEN u.role = 'siswa' THEN s.nama
-            ELSE NULL
-          END as nama_lengkap,
-          CASE 
-            WHEN u.role = 'admin' THEN a.email
-            WHEN u.role = 'instruktur' THEN i.email
-            WHEN u.role = 'siswa' THEN s.email
-            ELSE NULL
-          END as email,
-          CASE 
-            WHEN u.role = 'instruktur' THEN i.status_aktif
-            WHEN u.role = 'siswa' THEN s.status_aktif
-            ELSE 'aktif'
-          END as status_aktif
-          FROM user u 
-          LEFT JOIN admin a ON u.id_user = a.id_user AND u.role = 'admin'
-          LEFT JOIN instruktur i ON u.id_user = i.id_user AND u.role = 'instruktur'
-          LEFT JOIN siswa s ON u.id_user = s.id_user AND u.role = 'siswa'
-          ORDER BY u.created_at DESC
+// Query utama - DIPERBAIKI: pisahkan perhitungan kelas dan siswa
+$query = "SELECT g.*, 
+                 COALESCE(kelas_count.jumlah_kelas, 0) as jumlah_kelas,
+                 COALESCE(siswa_count.jumlah_siswa, 0) as jumlah_siswa,
+                 p.status_pendaftaran,
+                 p.kuota_maksimal,
+                 COALESCE(pendaftar_count.jumlah_pendaftar, 0) as jumlah_pendaftar
+          FROM gelombang g 
+          LEFT JOIN (
+              SELECT id_gelombang, COUNT(*) as jumlah_kelas 
+              FROM kelas 
+              GROUP BY id_gelombang
+          ) kelas_count ON g.id_gelombang = kelas_count.id_gelombang
+          LEFT JOIN (
+              SELECT k.id_gelombang, COUNT(s.id_siswa) as jumlah_siswa
+              FROM kelas k
+              LEFT JOIN siswa s ON k.id_kelas = s.id_kelas AND s.status_aktif = 'aktif'
+              GROUP BY k.id_gelombang
+          ) siswa_count ON g.id_gelombang = siswa_count.id_gelombang
+          LEFT JOIN pengaturan_pendaftaran p ON g.id_gelombang = p.id_gelombang
+          LEFT JOIN (
+              SELECT id_gelombang, COUNT(*) as jumlah_pendaftar
+              FROM pendaftar
+              GROUP BY id_gelombang
+          ) pendaftar_count ON g.id_gelombang = pendaftar_count.id_gelombang
+          ORDER BY g.tahun DESC, g.gelombang_ke DESC
           LIMIT $recordsPerPage OFFSET $offset";
 $result = mysqli_query($conn, $query);
 
-// Hitung statistik user
-$queryAdmin = "SELECT COUNT(*) as total FROM user WHERE role = 'admin'";
-$resultAdmin = mysqli_query($conn, $queryAdmin);
-$totalAdmin = mysqli_fetch_assoc($resultAdmin)['total'];
+// Statistik gelombang
+$statsQuery = "SELECT 
+    COUNT(*) as total,
+    COUNT(CASE WHEN status = 'aktif' THEN 1 END) as aktif,
+    COUNT(CASE WHEN status = 'dibuka' THEN 1 END) as dibuka,
+    COUNT(CASE WHEN status = 'selesai' THEN 1 END) as selesai
+FROM gelombang";
+$statsResult = mysqli_query($conn, $statsQuery);
+$stats = mysqli_fetch_assoc($statsResult);
 
-$queryInstruktur = "SELECT COUNT(*) as total FROM user WHERE role = 'instruktur'";
-$resultInstruktur = mysqli_query($conn, $queryInstruktur);
-$totalInstruktur = mysqli_fetch_assoc($resultInstruktur)['total'];
+// Untuk dropdown filter
+$tahunQuery = "SELECT DISTINCT tahun FROM gelombang ORDER BY tahun DESC";
+$tahunResult = mysqli_query($conn, $tahunQuery);
 
-$querySiswa = "SELECT COUNT(*) as total FROM user WHERE role = 'siswa'";
-$resultSiswa = mysqli_query($conn, $querySiswa);
-$totalSiswa = mysqli_fetch_assoc($resultSiswa)['total'];
-
-// Function untuk build URL dengan filter (untuk pagination)
 function buildUrlWithFilters($page) {
-  $params = $_GET;
-  $params['page'] = $page;
-  return '?' . http_build_query($params);
+    $params = $_GET;
+    $params['page'] = $page;
+    unset($params['action'], $params['id']);
+    return '?' . http_build_query($params);
+}
+
+// Function to check if gelombang can be deleted
+function canDelete($row) {
+    return ($row['jumlah_kelas'] == 0 && $row['jumlah_pendaftar'] == 0 && 
+            ($row['status_pendaftaran'] != 'dibuka' || $row['status_pendaftaran'] === null));
 }
 ?>
 
@@ -72,15 +128,12 @@ function buildUrlWithFilters($page) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Manajemen Data Pengguna</title>
+  <title>Data Gelombang - LKP Pradata Komputer</title>
   <link rel="icon" type="image/png" href="../../../assets/img/favicon.png"/>
   <link rel="stylesheet" href="../../../assets/css/bootstrap.min.css" />
   <link rel="stylesheet" href="../../../assets/css/bootstrap-icons.css" />
   <link rel="stylesheet" href="../../../assets/css/fonts.css" />
   <link rel="stylesheet" href="../../../assets/css/styles.css" />
-  
-  <!-- SweetAlert2 for better alerts -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
     /* Style untuk button cetak */
@@ -131,49 +184,6 @@ function buildUrlWithFilters($page) {
         margin-bottom: 5px;
       }
     }
-
-    /* Role badge styles */
-    .role-badge {
-      font-size: 0.75rem;
-      padding: 0.25rem 0.5rem;
-      border-radius: 0.375rem;
-      font-weight: 500;
-    }
-    
-    .role-admin {
-      background-color: #ee1a6bff;
-      color: white;
-    }
-    
-    .role-instruktur {
-      background-color: #0d6efd;
-      color: white;
-    }
-    
-    .role-siswa {
-      background-color: #23d180ff;
-      color: white;
-    }
-
-    /* Status badge styles */
-    .status-badge {
-      font-size: 0.75rem;
-      padding: 0.25rem 0.5rem;
-      border-radius: 0.375rem;
-      font-weight: 500;
-    }
-    
-    .status-aktif {
-      background-color: #d1e7dd;
-      color: #0f5132;
-      border: 1px solid #badbcc;
-    }
-    
-    .status-nonaktif {
-      background-color: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c2c7;
-    }
   </style>
 </head>
 
@@ -186,31 +196,27 @@ function buildUrlWithFilters($page) {
       <nav class="top-navbar">
         <div class="container-fluid px-3 px-md-4">
           <div class="d-flex align-items-center">
-            <!-- Left: Hamburger + Page Info -->
             <div class="d-flex align-items-center flex-grow-1">
-              <!-- Sidebar Toggle Button -->
               <button class="btn btn-link text-dark p-2 me-3 sidebar-toggle" type="button" id="sidebarToggle">
                 <i class="bi bi-list fs-4"></i>
               </button>
               
-              <!-- Page Title & Breadcrumb -->
               <div class="page-info">
-                <h2 class="page-title mb-1">DATA PENGGUNA</h2>
+                <h2 class="page-title mb-1">DATA GELOMBANG</h2>
                 <nav aria-label="breadcrumb">
                   <ol class="breadcrumb page-breadcrumb mb-0">
                     <li class="breadcrumb-item">
-                      <a href="../dashboard.php">Dashboard</a>
+                      <a href="../../dashboard.php">Dashboard</a>
                     </li>
                     <li class="breadcrumb-item">
-                      <a href="#">Data Master</a>
+                      <a href="#">Data Pendaftaran</a>
                     </li>
-                    <li class="breadcrumb-item active" aria-current="page">Data Pengguna</li>
+                    <li class="breadcrumb-item active" aria-current="page">Data Gelombang</li>
                   </ol>
                 </nav>
               </div>
             </div>
             
-            <!-- Right: Optional Info -->
             <div class="d-flex align-items-center">
               <div class="navbar-page-info d-none d-md-block">
                 <small class="text-muted">
@@ -224,7 +230,7 @@ function buildUrlWithFilters($page) {
       </nav>
 
       <div class="container-fluid mt-4">
-        <!-- Alert Success -->
+        <!-- Alert Messages -->
         <?php if (isset($_SESSION['success'])): ?>
           <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="bi bi-check-circle me-2"></i>
@@ -234,7 +240,6 @@ function buildUrlWithFilters($page) {
           <?php unset($_SESSION['success']); ?>
         <?php endif; ?>
 
-        <!-- Alert Error -->
         <?php if (isset($_SESSION['error'])): ?>
           <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <i class="bi bi-exclamation-triangle me-2"></i>
@@ -250,11 +255,11 @@ function buildUrlWithFilters($page) {
             <div class="row align-items-center">
               <div class="col-md-6">
                 <h5 class="mb-0 text-dark">
-                  <i class="bi bi-people me-2"></i>Kelola Data Pengguna
+                  <i class="bi bi-layers me-2"></i>Daftar Gelombang Pelatihan
                 </h5>
               </div>
               <div class="col-md-6 text-md-end">
-                <!-- Button Group dengan Cetak PDF -->
+                <!-- UPDATED: Button Group dengan Cetak PDF -->
                 <div class="d-flex button-group-header justify-content-md-end">                 
                   <!-- Button Tambah Data -->
                   <a href="tambah.php" class="btn btn-tambah-soft">
@@ -265,7 +270,7 @@ function buildUrlWithFilters($page) {
                           class="btn btn-cetak-soft" 
                           onclick="cetakLaporanPDF()" 
                           id="btnCetakPDF"
-                          title="Cetak laporan data pengguna dalam format PDF">
+                          title="Cetak laporan data gelombang dalam format PDF">
                     <i class="bi bi-printer me-2"></i>Cetak Data
                   </button>
                 </div>
@@ -299,24 +304,24 @@ function buildUrlWithFilters($page) {
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="min-width: 200px;">
                       <li><h6 class="dropdown-header">Sort by</h6></li>
                       <li>
-                        <a class="dropdown-item sort-option" href="#" data-sort="username" data-order="asc">
-                          <i class="bi bi-sort-alpha-down me-2"></i>Username A-Z
+                        <a class="dropdown-item sort-option" href="#" data-sort="nama" data-order="asc">
+                          <i class="bi bi-sort-alpha-down me-2"></i>Nama A-Z
                         </a>
                       </li>
                       <li>
-                        <a class="dropdown-item sort-option" href="#" data-sort="username" data-order="desc">
-                          <i class="bi bi-sort-alpha-up me-2"></i>Username Z-A
+                        <a class="dropdown-item sort-option" href="#" data-sort="nama" data-order="desc">
+                          <i class="bi bi-sort-alpha-up me-2"></i>Nama Z-A
                         </a>
                       </li>
                       <li><hr class="dropdown-divider"></li>
                       <li>
-                        <a class="dropdown-item sort-option" href="#" data-sort="role" data-order="asc">
-                          <i class="bi bi-person-gear me-2"></i>Role
+                        <a class="dropdown-item sort-option" href="#" data-sort="tahun" data-order="desc">
+                          <i class="bi bi-calendar-check me-2"></i>Tahun Terbaru
                         </a>
                       </li>
                       <li>
-                        <a class="dropdown-item sort-option" href="#" data-sort="created_at" data-order="desc">
-                          <i class="bi bi-calendar-plus me-2"></i>Terbaru
+                        <a class="dropdown-item sort-option" href="#" data-sort="tahun" data-order="asc">
+                          <i class="bi bi-calendar-x me-2"></i>Tahun Terlama
                         </a>
                       </li>
                     </ul>
@@ -342,24 +347,42 @@ function buildUrlWithFilters($page) {
                         <i class="bi bi-funnel me-2"></i>Filter Data
                       </h6>
                       
-                      <!-- Filter Role -->
+                      <!-- Filter Tahun -->
                       <div class="mb-3">
-                        <label class="form-label small text-muted mb-1">Role</label>
-                        <select class="form-select form-select-sm" id="filterRole">
-                          <option value="">Semua Role</option>
-                          <option value="admin">Admin</option>
-                          <option value="instruktur">Instruktur</option>
-                          <option value="siswa">Siswa</option>
+                        <label class="form-label small text-muted mb-1">Tahun</label>
+                        <select class="form-select form-select-sm" id="filterTahun">
+                          <option value="">Semua Tahun</option>
+                          <?php 
+                          if ($tahunResult) {
+                            mysqli_data_seek($tahunResult, 0);
+                            while($tahun = mysqli_fetch_assoc($tahunResult)): ?>
+                              <option value="<?= $tahun['tahun'] ?>">
+                                <?= $tahun['tahun'] ?>
+                              </option>
+                            <?php endwhile;
+                          } ?>
                         </select>
                       </div>
                       
-                      <!-- Filter Status -->
+                      <!-- Filter Status Gelombang -->
                       <div class="mb-3">
-                        <label class="form-label small text-muted mb-1">Status</label>
+                        <label class="form-label small text-muted mb-1">Status Gelombang</label>
                         <select class="form-select form-select-sm" id="filterStatus">
                           <option value="">Semua Status</option>
                           <option value="aktif">Aktif</option>
-                          <option value="nonaktif">Non-aktif</option>
+                          <option value="dibuka">Dibuka</option>
+                          <option value="selesai">Selesai</option>
+                        </select>
+                      </div>
+                      
+                      <!-- Filter Status Formulir -->
+                      <div class="mb-3">
+                        <label class="form-label small text-muted mb-1">Status Formulir</label>
+                        <select class="form-select form-select-sm" id="filterFormulir">
+                          <option value="">Semua Status</option>
+                          <option value="dibuka">Dibuka</option>
+                          <option value="ditutup">Ditutup</option>
+                          <option value="belum_diatur">Belum Diatur</option>
                         </select>
                       </div>
                       
@@ -389,7 +412,7 @@ function buildUrlWithFilters($page) {
                     </div>
                   </div>
                   
-                  <!-- Result Info -->
+                 <!-- Result Info -->
                   <div class="ms-auto result-info d-flex align-items-center">
                     <label class="me-2 mb-0 search-label">
                       <small>Show:</small>
@@ -398,7 +421,7 @@ function buildUrlWithFilters($page) {
                       <span class="info-count"><?= (($currentPage - 1) * $recordsPerPage) + 1 ?>-<?= min($currentPage * $recordsPerPage, $totalRecords) ?></span>
                       <span class="info-separator">dari</span>
                       <span class="info-total"><?= number_format($totalRecords) ?></span>
-                      <span class="info-label">data</span>
+                      <span class="info-label">gelombang</span>
                     </div>
                   </div>
                 </div>
@@ -408,177 +431,203 @@ function buildUrlWithFilters($page) {
           
           <!-- Table -->
           <div class="table-responsive" style="overflow-x: auto; overflow-y: visible;">
-            <table class="custom-table mb-0" id="penggunaTable">
+            <table class="custom-table mb-0" id="gelombangTable">
               <thead class="sticky-top">
                 <tr>
                   <th>No</th>
-                  <th>Username</th>
-                  <th>Role</th>
-                  <th>Nama Lengkap</th>
-                  <th>Email</th>
+                  <th>Nama Gelombang</th>
+                  <th>Tahun</th>
+                  <th>Gelombang</th>
                   <th>Status</th>
-                  <th>Terdaftar</th>
+                  <th>Kelas</th>
+                  <th>Siswa</th>
+                  <th>Formulir</th>
+                  <th>Kuota</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 <?php if (mysqli_num_rows($result) > 0): ?>
                   <?php 
-                  $no = ($currentPage - 1) * $recordsPerPage + 1; // Start numbering from correct position
-                  while ($user = mysqli_fetch_assoc($result)): 
+                  $no = ($currentPage - 1) * $recordsPerPage + 1;
+                  while ($gelombang = mysqli_fetch_assoc($result)): 
                   ?>
                     <tr>
                       <!-- No -->
-                      <td class="text-center align-middle" style="text-align: center !important;"><?= $no++ ?></td>
+                      <td class="text-center align-middle"><?= $no++ ?></td>
                       
-                      <!-- Username -->
-                      <td class="align-middle">
-                        <div class="fw-medium"><?= htmlspecialchars($user['username']) ?></div>
+                      <!-- Nama Gelombang -->
+                      <td class="text-nowrap align-middle">
+                        <div class="fw-semibold"><?= htmlspecialchars($gelombang['nama_gelombang']) ?></div>
                       </td>
                       
-                      <!-- Role -->
+                      <!-- Tahun -->
                       <td class="align-middle">
-                        <span class="role-badge role-<?= htmlspecialchars($user['role']) ?>">
-                          <?= ucfirst(htmlspecialchars($user['role'])) ?>
-                        </span>
+                        <span class="badge bg-light text-dark"><?= $gelombang['tahun'] ?></span>
                       </td>
                       
-                      <!-- Nama Lengkap -->
+                      <!-- Gelombang Ke - UPDATED: Teks biasa dengan terbilang -->
                       <td class="align-middle">
-                        <?php if($user['nama_lengkap']): ?>
-                          <div><?= htmlspecialchars($user['nama_lengkap']) ?></div>
-                        <?php else: ?>
-                          <span class="text-muted fst-italic">
-                            <i class="bi bi-dash-circle me-1"></i>
-                            Belum diatur
-                          </span>
-                        <?php endif; ?>
-                      </td>
-                      
-                      <!-- Email -->
-                      <td class="align-middle">
-                        <?php if($user['email']): ?>
-                          <small><?= htmlspecialchars($user['email']) ?></small>
-                        <?php else: ?>
-                          <span class="text-muted fst-italic">
-                            <i class="bi bi-dash-circle me-1"></i>
-                            Belum diatur
-                          </span>
-                        <?php endif; ?>
+                        <?= $gelombang['gelombang_ke'] ?> (<?= terbilang($gelombang['gelombang_ke']) ?>)
                       </td>
                       
                       <!-- Status -->
-                      <td class="align-middle">
-                        <span class="status-badge status-<?= htmlspecialchars($user['status_aktif']) ?>">
-                          <?= ucfirst(htmlspecialchars($user['status_aktif'])) ?>
+                      <td class="text-center align-middle">
+                        <?php 
+                        $statusClass = 'secondary';
+                        $statusText = 'Draft';
+                        $statusIcon = 'pause-circle';
+                        
+                        switch($gelombang['status']) {
+                          case 'aktif':
+                            $statusClass = 'success';
+                            $statusText = 'Aktif';
+                            $statusIcon = 'play-circle';
+                            break;
+                          case 'dibuka':
+                            $statusClass = 'primary';
+                            $statusText = 'Dibuka';
+                            $statusIcon = 'door-open';
+                            break;
+                          case 'selesai':
+                            $statusClass = 'secondary';
+                            $statusText = 'Selesai';
+                            $statusIcon = 'check-circle';
+                            break;
+                        }
+                        ?>
+                        <span class="badge bg-<?= $statusClass ?> px-2 py-1">
+                          <i class="bi bi-<?= $statusIcon ?> me-1"></i><?= $statusText ?>
                         </span>
                       </td>
                       
-                      <!-- Created At -->
-                      <td class="align-middle">
-                        <small><?= date('d/m/Y H:i', strtotime($user['created_at'])) ?></small>
+                      <!-- Kelas - UPDATED: Tanpa badge -->
+                      <td class="text-center align-middle">
+                        <?php if ($gelombang['jumlah_kelas'] > 0): ?>
+                          <span class="fw-medium"><?= $gelombang['jumlah_kelas'] ?> kelas</span>
+                        <?php else: ?>
+                          <span class="text-muted">-</span>
+                        <?php endif; ?>
+                      </td>
+                      
+                      <!-- Siswa - UPDATED: Tanpa badge -->
+                      <td class="text-center align-middle">
+                        <?php if ($gelombang['jumlah_siswa'] > 0): ?>
+                          <span class="fw-medium"><?= $gelombang['jumlah_siswa'] ?> siswa</span>
+                        <?php else: ?>
+                          <span class="text-muted">-</span>
+                        <?php endif; ?>
+                      </td>
+                      
+                      <!-- Status Formulir - UPDATED: Simplified -->
+                      <td class="text-center align-middle">
+                        <?php if ($gelombang['status_pendaftaran'] === 'dibuka'): ?>
+                          <span class="badge bg-success">Dibuka</span>
+                        <?php elseif ($gelombang['status_pendaftaran'] === 'ditutup'): ?>
+                          <span class="badge bg-secondary">Ditutup</span>
+                        <?php else: ?>
+                          <span class="badge bg-warning">Belum diatur</span>
+                        <?php endif; ?>
+                      </td>
+                      
+                      <!-- Kuota -->
+                      <td class="text-center align-middle">
+                        <?php if ($gelombang['kuota_maksimal']): ?>
+                          <span class="badge bg-info"><?= number_format($gelombang['kuota_maksimal']) ?> orang</span>
+                        <?php else: ?>
+                          <span class="text-muted">Belum diatur</span>
+                        <?php endif; ?>
                       </td>
                       
                       <!-- Aksi -->
                       <td class="text-center align-middle">
                         <div class="btn-group btn-group-sm" role="group">
-                          <a href="edit.php?id=<?= $user['id_user'] ?>" 
+                          <a href="edit.php?id=<?= $gelombang['id_gelombang'] ?>" 
                              class="btn btn-action btn-edit btn-sm" 
                              data-bs-toggle="tooltip" 
-                             title="Edit">
+                             title="Edit Gelombang">
                             <i class="bi bi-pencil"></i>
                           </a>
-                          <button type="button" 
-                                  class="btn btn-action btn-delete btn-sm" 
-                                  data-bs-toggle="modal" 
-                                  data-bs-target="#modalHapus<?= $user['id_user'] ?>"
-                                  title="Hapus">
-                            <i class="bi bi-trash"></i>
-                          </button>
+                          
+                          <a href="kelola_formulir.php?id=<?= $gelombang['id_gelombang'] ?>" 
+                             class="btn btn-action btn-view btn-sm" 
+                             data-bs-toggle="tooltip" 
+                             title="Kelola Formulir Pendaftaran">
+                            <i class="bi bi-gear"></i>
+                          </a>
+                          
+                          <?php if (canDelete($gelombang)): ?>
+                            <button type="button" 
+                                    class="btn btn-action btn-delete btn-sm" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#modalHapus<?= $gelombang['id_gelombang'] ?>"
+                                    title="Hapus Gelombang">
+                              <i class="bi bi-trash"></i>
+                            </button>
+                          <?php else: ?>
+                            <button type="button" 
+                                    class="btn btn-secondary btn-sm" 
+                                    disabled
+                                    title="Terkunci (sedang digunakan)">
+                              <i class="bi bi-lock"></i>
+                            </button>
+                          <?php endif; ?>
                         </div>
                       </td>
                     </tr>
                     
                     <!-- Modal Konfirmasi Hapus -->
-                    <div class="modal fade" id="modalHapus<?= $user['id_user'] ?>" tabindex="-1" aria-labelledby="modalHapusLabel<?= $user['id_user'] ?>" aria-hidden="true">
+                    <?php if (canDelete($gelombang)): ?>
+                    <div class="modal fade" id="modalHapus<?= $gelombang['id_gelombang'] ?>" tabindex="-1" aria-hidden="true">
                       <div class="modal-dialog modal-dialog-centered modal-sm">
                         <div class="modal-content border-0 shadow-lg">
-                          
-                          <!-- Modal Header -->
                           <div class="modal-header bg-danger text-white border-0">
                             <div class="w-100">
-                              <div class="warning-icon">
-                                <i class="bi bi-exclamation-triangle-fill"></i>
-                              </div>
-                              <h5 class="modal-title" id="modalHapusLabel<?= $user['id_user'] ?>">
+                              <h5 class="modal-title">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
                                 Konfirmasi Hapus
                               </h5>
                               <small>Tindakan ini tidak dapat dibatalkan</small>
                             </div>
                           </div>
                           
-                          <!-- Modal Body -->
                           <div class="modal-body">
-                            <p>Anda yakin ingin menghapus data pengguna:</p>
-                            
-                            <div class="student-preview">
-                              <!-- Icon User -->
-                              <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center">
-                                <i class="bi bi-person-fill text-white fs-4"></i>
-                              </div>
-                              
-                              <!-- Info User -->
-                              <div class="text-center">
-                                <div class="fw-bold">
-                                  <?= htmlspecialchars($user['username']) ?>
-                                </div>
-                                <div class="text-muted">
-                                  Role: <?= ucfirst(htmlspecialchars($user['role'])) ?>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div class="alert alert-warning">
-                              <i class="bi bi-info-circle me-2"></i>
-                              Data pengguna dan semua data terkait akan dihapus permanen
+                            <p>Anda yakin ingin menghapus gelombang:</p>
+                            <div class="text-center p-3 bg-light rounded">
+                              <div class="fw-bold"><?= htmlspecialchars($gelombang['nama_gelombang']) ?></div>
+                              <div class="text-muted">Tahun <?= $gelombang['tahun'] ?></div>
                             </div>
                           </div>
                           
-                          <!-- Modal Footer -->
                           <div class="modal-footer border-0">
                             <div class="row g-2 w-100">
                               <div class="col-6">
-                                <button type="button" 
-                                        class="btn btn-secondary w-100" 
-                                        data-bs-dismiss="modal">
-                                  <i class="bi bi-x-lg"></i>
+                                <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">
                                   Batal
                                 </button>
                               </div>
                               <div class="col-6">
-                                <button type="button" 
-                                        class="btn btn-danger w-100" 
-                                        onclick="confirmDelete(<?= $user['id_user'] ?>, '<?= htmlspecialchars($user['username']) ?>')">
-                                  <i class="bi bi-trash"></i>
+                                <a href="?action=hapus&id=<?= $gelombang['id_gelombang'] ?>" 
+                                   class="btn btn-danger w-100">
                                   Hapus
-                                </button>
+                                </a>
                               </div>
                             </div>
                           </div>
-                          
                         </div>
                       </div>
                     </div>
+                    <?php endif; ?>
                   <?php endwhile; ?>
                 <?php else: ?>
                   <tr>
-                    <td colspan="8" class="text-center">
+                    <td colspan="10" class="text-center">
                       <div class="empty-state py-5">
-                        <i class="bi bi-people display-4 text-muted mb-3 d-block"></i>
-                        <h5>Belum Ada Data Pengguna</h5>
-                        <p class="mb-3 text-muted">Mulai tambahkan data pengguna untuk mengelola akses sistem</p>
+                        <i class="bi bi-layers display-4 text-muted mb-3 d-block"></i>
+                        <h5>Belum Ada Gelombang</h5>
+                        <p class="mb-3 text-muted">Mulai dengan membuat gelombang pelatihan pertama</p>
                         <a href="tambah.php" class="btn btn-tambah-soft">
-                          <i class="bi bi-plus-circle me-2"></i>Tambah Pengguna Pertama
+                          <i class="bi bi-plus-circle me-2"></i>Buat Gelombang Pertama
                         </a>
                       </div>
                     </td>
@@ -594,7 +643,6 @@ function buildUrlWithFilters($page) {
             <div class="d-flex justify-content-end align-items-center">
               <nav aria-label="Page navigation">
                 <ul class="pagination pagination-sm mb-0">
-                  <!-- Previous Button -->
                   <li class="page-item <?= ($currentPage <= 1) ? 'disabled' : '' ?>">
                     <a class="page-link" href="<?= ($currentPage > 1) ? buildUrlWithFilters($currentPage - 1) : '#' ?>">
                       <i class="bi bi-chevron-left"></i>
@@ -602,11 +650,9 @@ function buildUrlWithFilters($page) {
                   </li>
                   
                   <?php
-                  // Calculate pagination range
                   $startPage = max(1, $currentPage - 2);
                   $endPage = min($totalPages, $currentPage + 2);
                   
-                  // Adjust range if we're near the beginning or end
                   if ($endPage - $startPage < 4) {
                     if ($startPage == 1) {
                       $endPage = min($totalPages, $startPage + 4);
@@ -616,38 +662,30 @@ function buildUrlWithFilters($page) {
                   }
                   ?>
                   
-                  <!-- First page if not in range -->
                   <?php if ($startPage > 1): ?>
                     <li class="page-item">
                       <a class="page-link" href="<?= buildUrlWithFilters(1) ?>">1</a>
                     </li>
                     <?php if ($startPage > 2): ?>
-                      <li class="page-item disabled">
-                        <span class="page-link">...</span>
-                      </li>
+                      <li class="page-item disabled"><span class="page-link">...</span></li>
                     <?php endif; ?>
                   <?php endif; ?>
                   
-                  <!-- Page numbers -->
                   <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
                     <li class="page-item <?= ($i == $currentPage) ? 'active' : '' ?>">
                       <a class="page-link" href="<?= buildUrlWithFilters($i) ?>"><?= $i ?></a>
                     </li>
                   <?php endfor; ?>
                   
-                  <!-- Last page if not in range -->
                   <?php if ($endPage < $totalPages): ?>
                     <?php if ($endPage < $totalPages - 1): ?>
-                      <li class="page-item disabled">
-                        <span class="page-link">...</span>
-                      </li>
+                      <li class="page-item disabled"><span class="page-link">...</span></li>
                     <?php endif; ?>
                     <li class="page-item">
                       <a class="page-link" href="<?= buildUrlWithFilters($totalPages) ?>"><?= $totalPages ?></a>
                     </li>
                   <?php endif; ?>
                   
-                  <!-- Next Button -->
                   <li class="page-item <?= ($currentPage >= $totalPages) ? 'disabled' : '' ?>">
                     <a class="page-link" href="<?= ($currentPage < $totalPages) ? buildUrlWithFilters($currentPage + 1) : '#' ?>">
                       <i class="bi bi-chevron-right"></i>
@@ -658,18 +696,17 @@ function buildUrlWithFilters($page) {
             </div>
           </div>
           <?php endif; ?>
-
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Scripts - Offline -->
+  <!-- Scripts -->
   <script src="../../../assets/js/bootstrap.bundle.min.js"></script>
   <script src="../../../assets/js/scripts.js"></script>
-
+  
   <script>
-  // Fungsi Cetak PDF - BARU
+  // Fungsi Cetak PDF
   function cetakLaporanPDF() {
     const button = document.getElementById('btnCetakPDF');
     const originalHTML = button.innerHTML;
@@ -679,16 +716,18 @@ function buildUrlWithFilters($page) {
     button.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Generating PDF...';
     
     // Ambil filter yang sedang aktif dari dropdown
-    const filterRole = document.getElementById('filterRole')?.value || '';
+    const filterTahun = document.getElementById('filterTahun')?.value || '';
     const filterStatus = document.getElementById('filterStatus')?.value || '';
+    const filterFormulir = document.getElementById('filterFormulir')?.value || '';
     const searchTerm = document.getElementById('searchInput')?.value || '';
     
     // Build URL parameter untuk cetak laporan
     const params = new URLSearchParams();
     
     // Tambahkan filter yang aktif
-    if (filterRole) params.append('role', filterRole);
+    if (filterTahun) params.append('tahun', filterTahun);
     if (filterStatus) params.append('status', filterStatus);
+    if (filterFormulir) params.append('formulir', filterFormulir);
     if (searchTerm) params.append('search', searchTerm);
     
     // Build URL untuk cetak laporan
@@ -711,22 +750,13 @@ function buildUrlWithFilters($page) {
       button.disabled = false;
       button.innerHTML = originalHTML;
       
-      // Show alert dengan link manual menggunakan SweetAlert2
-      Swal.fire({
-        title: 'Pop-up Diblokir!',
-        html: `Browser memblokir pop-up. Klik tombol di bawah untuk membuka PDF secara manual:<br><br>
-               <a href="${cetakURL}" target="_blank" class="btn btn-danger">
-               <i class="bi bi-file-earmark-pdf"></i> Buka PDF Manual</a>`,
-        icon: 'warning',
-        showConfirmButton: false,
-        showCloseButton: true,
-        allowOutsideClick: true
-      });
+      // Show alert dengan link manual
+      alert('Pop-up diblokir oleh browser. Silakan buka link berikut secara manual: ' + cetakURL);
     }
   }
 
   document.addEventListener('DOMContentLoaded', function() {
-    const table = document.getElementById('penggunaTable');
+    const table = document.getElementById('gelombangTable');
     if (!table) return;
     
     const tbody = table.querySelector('tbody');
@@ -744,7 +774,7 @@ function buildUrlWithFilters($page) {
       if (!hasData) {
         btnCetakPDF.disabled = true;
         btnCetakPDF.innerHTML = '<i class="bi bi-printer me-2"></i>Tidak Ada Data';
-        btnCetakPDF.title = 'Tidak ada data pengguna untuk dicetak';
+        btnCetakPDF.title = 'Tidak ada data gelombang untuk dicetak';
       }
     }
 
@@ -803,27 +833,19 @@ function buildUrlWithFilters($page) {
       
       try {
         switch(type) {
-          case 'username':
+          case 'nama':
             sortedRows = [...rows].sort((a, b) => {
-              const aUsername = (a.cells[1]?.textContent || '').trim().toLowerCase();
-              const bUsername = (b.cells[1]?.textContent || '').trim().toLowerCase();
-              return order === 'asc' ? aUsername.localeCompare(bUsername) : bUsername.localeCompare(aUsername);
+              const aName = (a.cells[1]?.textContent || '').trim().toLowerCase();
+              const bName = (b.cells[1]?.textContent || '').trim().toLowerCase();
+              return order === 'asc' ? aName.localeCompare(bName) : bName.localeCompare(aName);
             });
             break;
             
-          case 'role':
+          case 'tahun':
             sortedRows = [...rows].sort((a, b) => {
-              const aRole = (a.cells[2]?.textContent || '').trim().toLowerCase();
-              const bRole = (b.cells[2]?.textContent || '').trim().toLowerCase();
-              return order === 'asc' ? aRole.localeCompare(bRole) : bRole.localeCompare(aRole);
-            });
-            break;
-            
-          case 'created_at':
-            sortedRows = [...rows].sort((a, b) => {
-              const aDate = (a.cells[6]?.textContent || '').trim();
-              const bDate = (b.cells[6]?.textContent || '').trim();
-              return order === 'desc' ? bDate.localeCompare(aDate) : aDate.localeCompare(bDate);
+              const aTahun = parseInt((a.cells[2]?.textContent || '').trim()) || 0;
+              const bTahun = parseInt((b.cells[2]?.textContent || '').trim()) || 0;
+              return order === 'asc' ? aTahun - bTahun : bTahun - aTahun;
             });
             break;
             
@@ -848,8 +870,9 @@ function buildUrlWithFilters($page) {
 
     // Filter functionality
     const searchInput = document.getElementById('searchInput');
-    const filterRole = document.getElementById('filterRole');
+    const filterTahun = document.getElementById('filterTahun');
     const filterStatus = document.getElementById('filterStatus');
+    const filterFormulir = document.getElementById('filterFormulir');
     const applyFilterBtn = document.getElementById('applyFilter');
     const resetFilterBtn = document.getElementById('resetFilter');
     
@@ -866,44 +889,53 @@ function buildUrlWithFilters($page) {
     
     function applyFilters() {
       const searchTerm = (searchInput?.value || '').toLowerCase().trim();
-      const roleFilter = filterRole?.value || '';
+      const tahunFilter = filterTahun?.value || '';
       const statusFilter = filterStatus?.value || '';
+      const formulirFilter = filterFormulir?.value || '';
       
       let visibleCount = 0;
       activeFilters = 0;
       
-      if (roleFilter) activeFilters++;
+      if (tahunFilter) activeFilters++;
       if (statusFilter) activeFilters++;
+      if (formulirFilter) activeFilters++;
       
       updateFilterBadge();
       
       rows.forEach(row => {
         try {
-          const username = (row.cells[1]?.textContent || '').toLowerCase();
-          const namaLengkap = (row.cells[3]?.textContent || '').toLowerCase();
-          const email = (row.cells[4]?.textContent || '').toLowerCase();
+          const namaGelombang = (row.cells[1]?.textContent || '').toLowerCase();
+          const tahun = (row.cells[2]?.textContent || '').trim();
           
-          // Role (kolom 2 - ambil dari badge)
-          const role = (row.cells[2]?.textContent || '').trim().toLowerCase();
+          // Status gelombang
+          const statusElement = row.cells[4]?.querySelector('.badge');
+          let status = '';
+          if (statusElement) {
+            const statusText = statusElement.textContent.trim().toLowerCase();
+            if (statusText.includes('aktif')) status = 'aktif';
+            else if (statusText.includes('dibuka')) status = 'dibuka';
+            else if (statusText.includes('selesai')) status = 'selesai';
+          }
           
-          // Status (kolom 5 - ambil dari badge)
-          const status = (row.cells[5]?.textContent || '').trim().toLowerCase();
+          // Status formulir
+          const formulirElement = row.cells[7]?.querySelector('.badge');
+          let formulir = '';
+          if (formulirElement) {
+            const formulirText = formulirElement.textContent.trim().toLowerCase();
+            if (formulirText.includes('dibuka')) formulir = 'dibuka';
+            else if (formulirText.includes('ditutup')) formulir = 'ditutup';
+            else if (formulirText.includes('belum diatur')) formulir = 'belum_diatur';
+          }
           
           let showRow = true;
           
-          // Filter search
-          if (searchTerm && 
-              !username.includes(searchTerm) && 
-              !namaLengkap.includes(searchTerm) &&
-              !email.includes(searchTerm)) {
+          if (searchTerm && !namaGelombang.includes(searchTerm) && !tahun.includes(searchTerm)) {
             showRow = false;
           }
           
-          // Filter role
-          if (roleFilter && role !== roleFilter) showRow = false;
-          
-          // Filter status
+          if (tahunFilter && tahun !== tahunFilter) showRow = false;
           if (statusFilter && status !== statusFilter) showRow = false;
+          if (formulirFilter && formulir !== formulirFilter) showRow = false;
           
           row.style.display = showRow ? '' : 'none';
           if (showRow) visibleCount++;
@@ -922,7 +954,7 @@ function buildUrlWithFilters($page) {
         if (visibleCount > 0) {
           btnCetakPDF.disabled = false;
           btnCetakPDF.innerHTML = '<i class="bi bi-printer me-2"></i>Cetak Data';
-          btnCetakPDF.title = `Cetak laporan ${visibleCount} data pengguna`;
+          btnCetakPDF.title = `Cetak laporan ${visibleCount} data gelombang`;
         } else {
           btnCetakPDF.disabled = true;
           btnCetakPDF.innerHTML = '<i class="bi bi-printer me-2"></i>Tidak Ada Data';
@@ -973,8 +1005,9 @@ function buildUrlWithFilters($page) {
         e.preventDefault();
         e.stopPropagation();
         if (searchInput) searchInput.value = '';
-        if (filterRole) filterRole.value = '';
+        if (filterTahun) filterTahun.value = '';
         if (filterStatus) filterStatus.value = '';
+        if (filterFormulir) filterFormulir.value = '';
         applyFilters();
       });
     }
@@ -1039,27 +1072,6 @@ function buildUrlWithFilters($page) {
     window.addEventListener('resize', forceDropdownPositioning);
     window.addEventListener('scroll', forceDropdownPositioning);
   });
-
-  // Fungsi konfirmasi hapus
-  function confirmDelete(id, username) {
-    // Tutup modal Bootstrap terlebih dahulu
-    const modal = bootstrap.Modal.getInstance(document.getElementById('modalHapus' + id));
-    if (modal) {
-      modal.hide();
-    }
-    
-    // Tampilkan loading pada tombol
-    const deleteBtn = document.querySelector(`#modalHapus${id} .btn-danger`);
-    if (deleteBtn) {
-      deleteBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Memproses...';
-      deleteBtn.disabled = true;
-    }
-    
-    // Tunggu modal tertutup, lalu redirect
-    setTimeout(() => {
-      window.location.href = `hapus.php?id=${id}&confirm=delete`;
-    }, 1000);
-  }
   </script>
 </body>
 </html>

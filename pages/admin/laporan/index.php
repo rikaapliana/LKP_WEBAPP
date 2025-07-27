@@ -27,6 +27,16 @@ try {
     $instrukturResult = mysqli_query($conn, $instrukturQuery);
     $stats['instruktur'] = mysqli_fetch_assoc($instrukturResult)['total'] ?? 0;
     
+    // Statistik Gelombang
+    $gelombangQuery = "SELECT COUNT(*) as total FROM gelombang";
+    $gelombangResult = mysqli_query($conn, $gelombangQuery);
+    $stats['gelombang'] = mysqli_fetch_assoc($gelombangResult)['total'] ?? 0;
+    
+    // Statistik Kelas
+    $kelasQuery = "SELECT COUNT(*) as total FROM kelas";
+    $kelasResult = mysqli_query($conn, $kelasQuery);
+    $stats['kelas'] = mysqli_fetch_assoc($kelasResult)['total'] ?? 0;
+    
     // Statistik Absensi (bulan ini)
     $absensiSiswaQuery = "SELECT COUNT(*) as total FROM absensi_siswa WHERE MONTH(waktu_absen) = MONTH(CURRENT_DATE()) AND YEAR(waktu_absen) = YEAR(CURRENT_DATE())";
     $absensiSiswaResult = mysqli_query($conn, $absensiSiswaQuery);
@@ -95,6 +105,8 @@ try {
     .icon-pengguna { background: linear-gradient(135deg, #6f42c1, #8e58d4); }
     .icon-siswa { background: linear-gradient(135deg, #fd7e14, #ff922b); }
     .icon-instruktur { background: linear-gradient(135deg, #dc3545, #e55353); }
+    .icon-gelombang { background: linear-gradient(135deg, #198754, #20c997); }
+    .icon-kelas { background: linear-gradient(135deg, #0dcaf0, #31d2f2); }
     
     .btn-cetak {
       background-color: #0c63e4;
@@ -123,13 +135,14 @@ try {
       font-weight: 600;
     }
     
-    .welcome-header {
-      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-      border-radius: 12px;
-      padding: 2rem;
-      margin-bottom: 2rem;
-      text-align: center;
-    }
+  .welcome-header {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(12, 99, 228, 0.1);
+}
   </style>
 </head>
 
@@ -186,15 +199,35 @@ try {
           </div>
         <?php endif; ?>
 
-        <!-- Welcome Header -->
+       <!-- Welcome Header -->
         <div class="welcome-header">
           <h3 class="mb-2">
-            <i class="bi bi-file-earmark-bar-graph me-2 text-primary"></i>
-            Pusat Laporan LKP
+            <i class="bi bi-file-earmark-bar-graph fs-3 opacity-75"></i>
+            PUSAT LAPORAN LKP
           </h3>
           <p class="text-muted mb-0">
-            Kelola dan cetak berbagai laporan data sistem. Total <strong><?= count($laporanPages ?? []) ?> jenis laporan</strong> tersedia.
+            Kelola dan cetak berbagai laporan data sistem. Total <strong> 11 jenis laporan</strong> tersedia.
           </p>
+        </div>
+
+       <!-- Info Alert -->
+        <div class="alert alert-info alert-dismissible fade show mb-4" role="alert">
+          <div class="d-flex align-items-start">
+            <div class="flex-grow-1">
+              <div class="mb-2">
+                <i class="bi bi-info-circle me-2"></i>
+                <small class="fw-bold">Informasi Laporan</small>
+              </div>
+              <small class="d-block">
+                • Semua laporan akan dibuka di tab baru dalam format PDF<br>
+                • Untuk laporan dengan data lebih spesifik, gunakan filter di halaman masing-masing modul
+              </small>
+            </div>
+            <small class="text-muted ms-3">
+              <i class="bi bi-clock me-1"></i>
+              Terakhir diperbarui: <?= date('d/m/Y H:i') ?>
+            </small>
+          </div>
         </div>
 
         <!-- Laporan Cards - Grid Compact -->
@@ -247,12 +280,12 @@ try {
             </div>
           </div>
 
-          <!-- Laporan Kelas -->
+            <!-- Laporan Kelas -->
           <div class="col-lg-4 col-md-6 mb-3">
             <div class="card laporan-card h-100">
               <div class="card-header py-2">
                 <div class="d-flex align-items-center">
-                  <div class="laporan-icon icon-siswa me-3" style="width: 35px; height: 35px; font-size: 14px;">
+                  <div class="laporan-icon icon-kelas me-3" style="width: 35px; height: 35px; font-size: 14px;">
                     <i class="bi bi-door-open"></i>
                   </div>
                   <div class="flex-grow-1">
@@ -262,7 +295,7 @@ try {
                 </div>
               </div>
               <div class="card-body py-2">
-                <small class="text-muted d-block mb-2">Semua kelas tersedia</small>
+                <small class="text-muted d-block mb-2">Total: <span class="stat-badge"><?= number_format($stats['kelas'] ?? 0) ?> kelas</span></small>
                 <a href="../kelas/cetak_laporan.php" target="_blank" 
                    class="btn btn-cetak-soft btn-sm w-100">
                   <i class="bi bi-printer me-1"></i>Cetak
@@ -271,7 +304,7 @@ try {
             </div>
           </div>
 
-          <!-- Laporan Pendaftar -->
+            <!-- Laporan Pendaftar -->
           <div class="col-lg-4 col-md-6 mb-3">
             <div class="card laporan-card h-100">
               <div class="card-header py-2">
@@ -288,6 +321,31 @@ try {
               <div class="card-body py-2">
                 <small class="text-muted d-block mb-2">Semua periode pendaftaran</small>
                 <a href="../pendaftar/cetak_laporan.php" target="_blank" 
+                   class="btn btn-cetak-soft btn-sm w-100">
+                  <i class="bi bi-printer me-1"></i>Cetak
+                </a>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- BARU: Laporan Gelombang -->
+          <div class="col-lg-4 col-md-6 mb-3">
+            <div class="card laporan-card h-100">
+              <div class="card-header py-2">
+                <div class="d-flex align-items-center">
+                  <div class="laporan-icon icon-gelombang me-3" style="width: 35px; height: 35px; font-size: 14px;">
+                    <i class="bi bi-layers"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <h6 class="mb-0 text-dark fw-bold">Laporan Gelombang</h6>
+                    <small class="text-muted">Data periode pelatihan</small>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body py-2">
+                <small class="text-muted d-block mb-2">Total: <span class="stat-badge"><?= number_format($stats['gelombang'] ?? 0) ?> gelombang</span></small>
+                <a href="../gelombang/cetak_laporan.php" target="_blank" 
                    class="btn btn-cetak-soft btn-sm w-100">
                   <i class="bi bi-printer me-1"></i>Cetak
                 </a>
@@ -417,31 +475,6 @@ try {
                    class="btn btn-cetak-soft btn-sm w-100">
                   <i class="bi bi-graph-up me-1"></i>Lihat
                 </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Info Footer -->
-        <div class="card mt-4">
-          <div class="card-body">
-            <div class="row align-items-center">
-              <div class="col-md-8">
-                <h6 class="mb-2">
-                  <i class="bi bi-info-circle text-primary me-2"></i>
-                  Informasi Laporan
-                </h6>
-                <small class="text-muted">
-                  • Semua laporan akan dibuka di tab baru dalam format PDF<br>
-                  • Filter yang aktif di halaman data akan otomatis diterapkan pada laporan<br>
-                  • Untuk laporan dengan data lebih spesifik, gunakan filter di halaman masing-masing modul
-                </small>
-              </div>
-              <div class="col-md-4 text-md-end">
-                <small class="text-muted">
-                  <i class="bi bi-clock me-1"></i>
-                  Terakhir diperbarui: <?= date('d/m/Y H:i') ?>
-                </small>
               </div>
             </div>
           </div>

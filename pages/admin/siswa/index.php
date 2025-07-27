@@ -195,61 +195,7 @@ function buildUrlWithFilters($page) {
           </div>
           <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
-
-        <!-- Statistics Cards -->
-        <div class="row mb-4">
-          <div class="col-md-4 mb-3">
-            <div class="card stats-card stats-card-mobile">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center stats-card-content">
-                  <div class="flex-grow-1 stats-text-content">
-                    <h6 class="mb-1 stats-title">Total Siswa Terdaftar</h6>
-                    <h3 class="mb-0 stats-number"><?= number_format($totalRecords) ?></h3>
-                    <small class="text-muted stats-subtitle">Keseluruhan siswa</small>
-                  </div>
-                  <div class="stats-icon bg-primary-light stats-icon-mobile">
-                    <i class="bi bi-people text-primary"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="col-md-4 mb-3">
-            <div class="card stats-card stats-card-mobile">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center stats-card-content">
-                  <div class="flex-grow-1 stats-text-content">
-                    <h6 class="mb-1 stats-title">Siswa Aktif</h6>
-                    <h3 class="mb-0 stats-number"><?= number_format($siswaAktif) ?></h3>
-                    <small class="text-muted stats-subtitle">Status aktif</small>
-                  </div>
-                  <div class="stats-icon bg-success-light stats-icon-mobile">
-                    <i class="bi bi-person-check text-success"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="col-md-4 mb-3">
-            <div class="card stats-card stats-card-mobile">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center stats-card-content">
-                  <div class="flex-grow-1 stats-text-content">
-                    <h6 class="mb-1 stats-title">Gelombang Aktif</h6>
-                    <h3 class="mb-0 stats-number"><?= number_format($siswaBaru) ?></h3>
-                    <small class="text-muted stats-subtitle">Siswa gelombang berjalan</small>
-                  </div>
-                  <div class="stats-icon bg-warning-light stats-icon-mobile">
-                    <i class="bi bi-person-plus text-warning"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
+        
         <!-- Main Content Card -->
         <div class="card content-card">
           <div class="section-header">

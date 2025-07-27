@@ -197,6 +197,13 @@ function buildUrlWithFilters($page = null) {
     
     return '?' . http_build_query($params);
 }
+
+// Count active filters
+$activeFilters = 0;
+if (!empty($searchTerm)) $activeFilters++;
+if (!empty($filterKelas)) $activeFilters++;
+if (!empty($filterPeriode)) $activeFilters++;
+if (!empty($filterTanggal)) $activeFilters++;
 ?>
 
 <!DOCTYPE html>
@@ -283,7 +290,6 @@ function buildUrlWithFilters($page = null) {
               </div>
             </div>
           </div>
-        </div>
 
           <!-- Search/Filter Controls -->
           <div class="p-3 border-bottom">
@@ -308,24 +314,23 @@ function buildUrlWithFilters($page = null) {
                       <input type="date" name="filter_tanggal" id="filterTanggal" class="form-control form-control-sm" style="width: 150px;" value="<?= htmlspecialchars($filterTanggal) ?>" />
                     </div>
                     
-                             
                     <!-- Result Info -->
-                  <div class="ms-auto result-info d-flex align-items-center">
-                    <label class="me-2 mb-0 search-label">
-                      <small>Show:</small>
-                    </label>
-                    <div class="info-badge">
-                      <span class="info-count"><?= (($currentPage - 1) * $recordsPerPage) + 1 ?>-<?= min($currentPage * $recordsPerPage, $totalRecords) ?></span>
-                      <span class="info-separator">dari</span>
-                      <span class="info-total"><?= number_format($totalRecords) ?></span>
-                      <span class="info-label">jadwal</span>
+                    <div class="ms-auto result-info d-flex align-items-center">
+                      <label class="me-2 mb-0 search-label">
+                        <small>Show:</small>
+                      </label>
+                      <div class="info-badge">
+                        <span class="info-count"><?= (($currentPage - 1) * $recordsPerPage) + 1 ?>-<?= min($currentPage * $recordsPerPage, $totalRecords) ?></span>
+                        <span class="info-separator">dari</span>
+                        <span class="info-total"><?= number_format($totalRecords) ?></span>
+                        <span class="info-label">jadwal</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </form>
           </div>
-         </div>
           
           <!-- Table -->
           <div class="table-responsive" style="overflow-x: auto; overflow-y: visible;">
@@ -405,11 +410,11 @@ function buildUrlWithFilters($page = null) {
                           </span>
                         <?php endif; ?>
                       </td>  
-                  </tr>
+                    </tr>
                   <?php endwhile; ?>
                 <?php else: ?>
                   <tr>
-                    <td colspan="8" class="text-center">
+                    <td colspan="7" class="text-center">
                       <div class="empty-state py-5">
                         <i class="bi bi-calendar-x display-4 text-muted mb-3 d-block"></i>
                         <h5>
@@ -554,56 +559,53 @@ function buildUrlWithFilters($page = null) {
     } catch (e) {
       console.log('Tooltip initialization skipped');
     }
-    
-    updateCetakButtonState();
   });
+  </script>
 
-  function cetakLaporanPDF() {
-    const btnCetak = document.getElementById('btnCetakPDF');
-    
-    btnCetak.disabled = true;
-    btnCetak.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Memproses...';
-    
-    const form = document.getElementById('filterForm');
-    const formData = new FormData(form);
-    
-    let url = 'cetak_laporan.php?';
-    const params = [];
-    
-    if (formData.get('search')) params.push('search=' + encodeURIComponent(formData.get('search')));
-    if (formData.get('filter_kelas')) params.push('filter_kelas=' + encodeURIComponent(formData.get('filter_kelas')));
-    if (formData.get('filter_periode')) params.push('filter_periode=' + encodeURIComponent(formData.get('filter_periode')));
-    if (formData.get('filter_tanggal')) params.push('filter_tanggal=' + encodeURIComponent(formData.get('filter_tanggal')));
-    
-    url += params.join('&');
-    
-    const pdfWindow = window.open(url, '_blank');
-    
-    setTimeout(() => {
-      btnCetak.disabled = false;
-      btnCetak.innerHTML = '<i class="bi bi-printer me-2"></i>Cetak Jadwal';
-      
-      if (!pdfWindow || pdfWindow.closed || typeof pdfWindow.closed == 'undefined') {
-        alert('Popup diblokir! Silakan izinkan popup untuk mengunduh laporan PDF.');
-      }
-    }, 2000);
+  <style>
+  .search-container {
+    min-width: 200px;
   }
+  
+  .search-input {
+    min-width: 150px;
+  }
+  
+  .controls-container {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .result-info {
+    white-space: nowrap;
+  }
+  
 
-  function updateCetakButtonState() {
-    const btnCetak = document.getElementById('btnCetakPDF');
-    const tableRows = document.querySelectorAll('#jadwalTable tbody tr');
-    const emptyState = document.querySelector('#jadwalTable tbody .empty-state');
-    const hasData = tableRows.length > 0 && !emptyState;
+  .empty-state {
+    opacity: 0.7;
+  }
+  
+  .empty-state:hover {
+    opacity: 1;
+  }
+  
+  @media (max-width: 768px) {
+    .controls-container {
+      justify-content: center;
+    }
     
-    if (!hasData) {
-      btnCetak.disabled = true;
-      btnCetak.title = 'Tidak ada jadwal untuk dicetak';
-    } else {
-      btnCetak.disabled = false;
-      const visibleRows = Array.from(tableRows).filter(row => !row.querySelector('.empty-state'));
-      btnCetak.title = `Cetak ${visibleRows.length} jadwal mengajar`;
+    .result-info {
+      order: -1;
+      flex-basis: 100%;
+      justify-content: center;
+      margin-bottom: 0.5rem;
+    }
+    
+    .search-container {
+      flex-grow: 1;
+      max-width: 200px;
     }
   }
-  </script>
+  </style>
 </body>
 </html>

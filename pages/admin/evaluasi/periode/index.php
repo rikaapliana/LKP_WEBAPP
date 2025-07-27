@@ -19,6 +19,10 @@ $filterStatus = isset($_GET['status']) ? $_GET['status'] : '';
 $filterJenis = isset($_GET['jenis']) ? $_GET['jenis'] : '';
 $filterGelombang = isset($_GET['gelombang']) ? $_GET['gelombang'] : '';
 
+// BARU: Get sort parameters
+$sortBy = isset($_GET['sort']) ? $_GET['sort'] : '';
+$sortOrder = isset($_GET['order']) ? $_GET['order'] : '';
+
 // Build WHERE clause for filters
 $whereConditions = [];
 $params = [];
@@ -54,6 +58,41 @@ if (!empty($whereConditions)) {
     $whereClause = 'WHERE ' . implode(' AND ', $whereConditions);
 }
 
+// BARU: Build ORDER BY clause
+$orderClause = '';
+if (!empty($sortBy) && !empty($sortOrder)) {
+    switch($sortBy) {
+        case 'nama':
+            $orderClause = "ORDER BY pe.nama_evaluasi " . ($sortOrder === 'asc' ? 'ASC' : 'DESC');
+            break;
+        case 'tanggal':
+            $orderClause = "ORDER BY pe.tanggal_buka " . ($sortOrder === 'asc' ? 'ASC' : 'DESC');
+            break;
+        default:
+            // Default ordering
+            $orderClause = "ORDER BY 
+                CASE pe.status 
+                  WHEN 'aktif' THEN 1 
+                  WHEN 'draft' THEN 2 
+                  WHEN 'selesai' THEN 3 
+                  ELSE 4 
+                END ASC,
+                pe.tanggal_buka DESC,
+                pe.created_at DESC";
+    }
+} else {
+    // Default ordering
+    $orderClause = "ORDER BY 
+        CASE pe.status 
+          WHEN 'aktif' THEN 1 
+          WHEN 'draft' THEN 2 
+          WHEN 'selesai' THEN 3 
+          ELSE 4 
+        END ASC,
+        pe.tanggal_buka DESC,
+        pe.created_at DESC";
+}
+
 // Count total filtered records
 $countQuery = "SELECT COUNT(*) as total 
                FROM periode_evaluasi pe 
@@ -83,15 +122,7 @@ $query = "SELECT pe.*,
           LEFT JOIN gelombang g ON pe.id_gelombang = g.id_gelombang 
           LEFT JOIN admin a ON pe.dibuat_oleh = a.id_admin 
           $whereClause
-          ORDER BY 
-            CASE pe.status 
-              WHEN 'aktif' THEN 1 
-              WHEN 'draft' THEN 2 
-              WHEN 'selesai' THEN 3 
-              ELSE 4 
-            END ASC,
-            pe.tanggal_buka DESC,
-            pe.created_at DESC
+          $orderClause
           LIMIT $recordsPerPage OFFSET $offset";
 
 if (!empty($params)) {
@@ -121,9 +152,9 @@ $stats = mysqli_fetch_assoc($statsResult);
 $gelombangQuery = "SELECT id_gelombang, nama_gelombang, tahun, gelombang_ke FROM gelombang ORDER BY tahun DESC, gelombang_ke DESC";
 $gelombangResult = mysqli_query($conn, $gelombangQuery);
 
-// Function to build URL with current filters
+// BARU: Function to build URL with current filters
 function buildFilterUrl($page = 1, $newFilters = []) {
-    global $searchTerm, $filterStatus, $filterJenis, $filterGelombang;
+    global $searchTerm, $filterStatus, $filterJenis, $filterGelombang, $sortBy, $sortOrder;
     
     $params = [];
     
@@ -131,11 +162,15 @@ function buildFilterUrl($page = 1, $newFilters = []) {
     $currentStatus = isset($newFilters['status']) ? $newFilters['status'] : $filterStatus;
     $currentJenis = isset($newFilters['jenis']) ? $newFilters['jenis'] : $filterJenis;
     $currentGelombang = isset($newFilters['gelombang']) ? $newFilters['gelombang'] : $filterGelombang;
+    $currentSort = isset($newFilters['sort']) ? $newFilters['sort'] : $sortBy;
+    $currentOrder = isset($newFilters['order']) ? $newFilters['order'] : $sortOrder;
     
     if (!empty($currentSearch)) $params['search'] = $currentSearch;
     if (!empty($currentStatus)) $params['status'] = $currentStatus;
     if (!empty($currentJenis)) $params['jenis'] = $currentJenis;
     if (!empty($currentGelombang)) $params['gelombang'] = $currentGelombang;
+    if (!empty($currentSort)) $params['sort'] = $currentSort;
+    if (!empty($currentOrder)) $params['order'] = $currentOrder;
     if ($page > 1) $params['page'] = $page;
     
     return '?' . http_build_query($params);
@@ -235,8 +270,6 @@ function formatPeriodeWaktu($tanggal_buka, $tanggal_tutup, $status) {
               </div>
             </div>
 
-
-            
             <div class="d-flex align-items-center">
               <div class="navbar-page-info d-none d-md-block">
                 <small class="text-muted">
@@ -268,7 +301,6 @@ function formatPeriodeWaktu($tanggal_buka, $tanggal_tutup, $status) {
           </div>
           <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
-
 
         <!-- Quick Stats -->
         <div class="row mb-4">
@@ -368,11 +400,13 @@ function formatPeriodeWaktu($tanggal_buka, $tanggal_tutup, $status) {
             </div>
           </div>
 
-          
-
           <!-- Search/Filter Controls -->
           <div class="p-3 border-bottom">
             <form method="GET" id="filterForm">
+              <!-- BARU: Hidden inputs untuk sort -->
+              <input type="hidden" name="sort" value="<?= htmlspecialchars($sortBy) ?>">
+              <input type="hidden" name="order" value="<?= htmlspecialchars($sortOrder) ?>">
+              
               <div class="row align-items-center g-2">  
                 <div class="col-12">
                   <div class="d-flex flex-wrap align-items-center gap-2 controls-container">
@@ -386,6 +420,46 @@ function formatPeriodeWaktu($tanggal_buka, $tanggal_tutup, $status) {
                              name="search"
                              value="<?= htmlspecialchars($searchTerm) ?>"
                              class="form-control form-control-sm search-input" />
+                    </div>
+                    
+                    <!-- BARU: Sort Button -->
+                    <div class="dropdown">
+                      <button class="btn btn-light btn-icon position-relative control-btn" 
+                              type="button" 
+                              data-bs-toggle="dropdown" 
+                              data-bs-display="static"
+                              aria-expanded="false"
+                              title="Sort">
+                        <i class="bi bi-arrow-down-up"></i>
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="min-width: 200px;">
+                        <li><h6 class="dropdown-header">Sort by</h6></li>
+                        <li>
+                          <a class="dropdown-item sort-option <?= ($sortBy === 'nama' && $sortOrder === 'asc') ? 'active' : '' ?>" 
+                             href="<?= buildFilterUrl($currentPage, ['sort' => 'nama', 'order' => 'asc']) ?>">
+                            <i class="bi bi-sort-alpha-down me-2"></i>Nama A-Z
+                          </a>
+                        </li>
+                        <li>
+                          <a class="dropdown-item sort-option <?= ($sortBy === 'nama' && $sortOrder === 'desc') ? 'active' : '' ?>" 
+                             href="<?= buildFilterUrl($currentPage, ['sort' => 'nama', 'order' => 'desc']) ?>">
+                            <i class="bi bi-sort-alpha-up me-2"></i>Nama Z-A
+                          </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                          <a class="dropdown-item sort-option <?= ($sortBy === 'tanggal' && $sortOrder === 'desc') ? 'active' : '' ?>" 
+                             href="<?= buildFilterUrl($currentPage, ['sort' => 'tanggal', 'order' => 'desc']) ?>">
+                            <i class="bi bi-calendar-check me-2"></i>Terbaru
+                          </a>
+                        </li>
+                        <li>
+                          <a class="dropdown-item sort-option <?= ($sortBy === 'tanggal' && $sortOrder === 'asc') ? 'active' : '' ?>" 
+                             href="<?= buildFilterUrl($currentPage, ['sort' => 'tanggal', 'order' => 'asc']) ?>">
+                            <i class="bi bi-calendar-x me-2"></i>Terlama
+                          </a>
+                        </li>
+                      </ul>
                     </div>
                     
                     <!-- Filter Button -->
@@ -729,6 +803,58 @@ function formatPeriodeWaktu($tanggal_buka, $tanggal_tutup, $status) {
       e.stopPropagation();
     });
     
+    // BARU: Sort dropdown handling
+    document.querySelectorAll('.sort-option').forEach(item => {
+      item.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Visual feedback
+        document.querySelectorAll('.sort-option').forEach(opt => {
+          opt.classList.remove('active');
+          opt.style.backgroundColor = '';
+          opt.style.color = '';
+        });
+        
+        this.classList.add('active');
+        this.style.backgroundColor = '#0d6efd';
+        this.style.color = 'white';
+        
+        // Navigate to sorted URL
+        setTimeout(() => {
+          window.location.href = this.href;
+        }, 150);
+      });
+    });
+    
+    // Force dropdown positioning untuk sort
+    function forceDropdownPositioning() {
+      document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.style.setProperty('position', 'absolute', 'important');
+        menu.style.setProperty('top', '100%', 'important');
+        menu.style.setProperty('bottom', 'auto', 'important');
+        menu.style.setProperty('transform', 'none', 'important');
+        menu.style.setProperty('z-index', '1055', 'important');
+        menu.style.setProperty('margin-top', '2px', 'important');
+        
+        if (menu.classList.contains('dropdown-menu-end')) {
+          menu.style.setProperty('right', '0', 'important');
+          menu.style.setProperty('left', 'auto', 'important');
+        }
+      });
+    }
+
+    // Event listeners untuk dropdown positioning
+    document.addEventListener('show.bs.dropdown', function (e) {
+      forceDropdownPositioning();
+    });
+    
+    document.addEventListener('shown.bs.dropdown', function (e) {
+      forceDropdownPositioning();
+    });
+
+    // Initialize positioning
+    forceDropdownPositioning();
+    
     // Show active filters
     const activeFilters = <?= $activeFilters ?>;
     if (activeFilters > 0) {
@@ -843,31 +969,20 @@ function formatPeriodeWaktu($tanggal_buka, $tanggal_tutup, $status) {
     white-space: nowrap;
   }
   
-  .info-badge {
-    background-color: #f8f9fa;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.375rem;
-    border: 1px solid #dee2e6;
-    font-size: 0.875rem;
+
+  /* BARU: Style untuk sort active */
+  .sort-option.active {
+    background-color: #0d6efd !important;
+    color: white !important;
   }
   
-  .info-count {
-    font-weight: 600;
-    color: #495057;
+  .sort-option:hover {
+    background-color: #e9ecef;
   }
   
-  .info-separator {
-    margin: 0 0.25rem;
-    color: #6c757d;
-  }
-  
-  .info-total {
-    font-weight: 600;
-    color: #495057;
-  }
-  
-  .info-label {
-    color: #6c757d;
+  .sort-option.active:hover {
+    background-color: #0b5ed7 !important;
+    color: white !important;
   }
   
   @media (max-width: 768px) {
@@ -875,17 +990,7 @@ function formatPeriodeWaktu($tanggal_buka, $tanggal_tutup, $status) {
       justify-content: center;
     }
     
-    .result-info {
-      order: -1;
-      flex-basis: 100%;
-      justify-content: center;
-      margin-bottom: 0.5rem;
-    }
     
-    .search-container {
-      flex-grow: 1;
-      max-width: 200px;
-    }
     
     .periode-info {
       max-width: 200px;

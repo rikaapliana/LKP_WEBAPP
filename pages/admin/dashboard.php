@@ -388,7 +388,6 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
                 <div class="stats-icon bg-secondary text-white mb-2">
                   <i class="bi bi-bar-chart-line-fill"></i>
                 </div>
-                <h4 class="fw-bold mb-1"><?= number_format($pendaftarGelombangAktif) ?></h4>
                 <p class="text-muted mb-0 small">Grafik Pendaftar</p>
                 <small class="text-info">
                   <i class="bi bi-people-fill"></i> 
@@ -406,7 +405,6 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
                   <div class="stats-icon bg-info text-white mb-2">
                     <i class="bi bi-graph-up"></i>
                   </div>
-                  <h4 class="fw-bold mb-1"><?= $avgNilai ?></h4>
                   <p class="text-muted mb-0 small">Analisis Hasil Evaluasi</p>
                   <small class="text-primary"><i class="bi bi-bar-chart"></i> Hasil evaluasi</small>
                 </div>
@@ -415,13 +413,12 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
           </div>
 
          <div class="col-6 col-lg-3">
-            <a href="pengaturan/gelombang/" class="text-decoration-none">
+            <a href="gelombang/" class="text-decoration-none">
               <div class="card stats-card stats-card-clickable">
                 <div class="card-body text-center p-3">
                   <div class="stats-icon bg-purple text-white mb-2">
                     <i class="bi bi-layers-fill"></i>
                   </div>
-                  <h4 class="fw-bold mb-1"><?= ($gelombangAktif + $gelombangDibuka) ?></h4>
                   <p class="text-muted mb-0 small">Gelombang Aktif</p>
                   <small class="text-success"><i class="bi bi-play-circle"></i> <?= $gelombangAktif ?> Gelombang aktif</small>
                 </div>
@@ -430,14 +427,13 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
           </div>
           
           <div class="col-6 col-lg-3">
-            <a href="pengaturan/formulir/" class="text-decoration-none">
+            <a href="../../pendaftaran.php" class="text-decoration-none">
               <div class="card stats-card stats-card-clickable">
                 <div class="card-body text-center p-3">
                   <div class="stats-icon bg-teal text-white mb-2">
                     <i class="bi bi-clipboard-data-fill"></i>
                   </div>
-                  <h4 class="fw-bold mb-1"><?= $formulirAktif ?></h4>
-                  <p class="text-muted mb-0 small">Formulir Aktif</p>
+                  <p class="text-muted mb-0 small">Formulir Pendaftaran</p>
                   <small class="text-<?= $formulirAktif > 0 ? 'success' : 'warning' ?>">
                     <i class="bi bi-<?= $formulirAktif > 0 ? 'toggle-on' : 'toggle-off' ?>"></i> 
                     <?= $formulirAktif > 0 ? 'Pendaftaran dibuka' : 'Pendaftaran ditutup' ?>

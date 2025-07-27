@@ -19,6 +19,10 @@ $filterJenis = isset($_GET['jenis']) ? $_GET['jenis'] : '';
 $filterMateri = isset($_GET['materi']) ? $_GET['materi'] : '';
 $filterTipe = isset($_GET['tipe']) ? $_GET['tipe'] : '';
 
+// BARU: Get sort parameters
+$sortBy = isset($_GET['sort']) ? $_GET['sort'] : '';
+$sortOrder = isset($_GET['order']) ? $_GET['order'] : '';
+
 // Build WHERE clause for filters (tanpa aspek)
 $whereConditions = [];
 $params = [];
@@ -60,6 +64,39 @@ if (!empty($whereConditions)) {
     $whereClause = 'WHERE ' . implode(' AND ', $whereConditions);
 }
 
+// BARU: Build ORDER BY clause
+$orderClause = '';
+if (!empty($sortBy) && !empty($sortOrder)) {
+    switch($sortBy) {
+        case 'pertanyaan':
+            $orderClause = "ORDER BY pertanyaan " . ($sortOrder === 'asc' ? 'ASC' : 'DESC');
+            break;
+        case 'created':
+            $orderClause = "ORDER BY created_at " . ($sortOrder === 'asc' ? 'ASC' : 'DESC');
+            break;
+        default:
+            // Default ordering
+            $orderClause = "ORDER BY 
+                jenis_evaluasi DESC,
+                CASE 
+                  WHEN materi_terkait IS NULL OR materi_terkait = '' THEN 'ZZZZ' 
+                  ELSE materi_terkait 
+                END ASC,
+                question_order ASC,
+                id_pertanyaan ASC";
+    }
+} else {
+    // Default ordering
+    $orderClause = "ORDER BY 
+        jenis_evaluasi DESC,
+        CASE 
+          WHEN materi_terkait IS NULL OR materi_terkait = '' THEN 'ZZZZ' 
+          ELSE materi_terkait 
+        END ASC,
+        question_order ASC,
+        id_pertanyaan ASC";
+}
+
 // Count total filtered records
 $countQuery = "SELECT COUNT(*) as total FROM pertanyaan_evaluasi $whereClause";
 if (!empty($params)) {
@@ -78,14 +115,7 @@ $totalPages = ceil($totalRecords / $recordsPerPage);
 // Ambil data pertanyaan dengan pagination dan filter
 $query = "SELECT * FROM pertanyaan_evaluasi 
           $whereClause
-          ORDER BY 
-            jenis_evaluasi DESC,
-            CASE 
-              WHEN materi_terkait IS NULL OR materi_terkait = '' THEN 'ZZZZ' 
-              ELSE materi_terkait 
-            END ASC,
-            question_order ASC,
-            id_pertanyaan ASC
+          $orderClause
           LIMIT $recordsPerPage OFFSET $offset";
 
 if (!empty($params)) {
@@ -123,9 +153,9 @@ $materiQuery = "SELECT DISTINCT materi_terkait FROM pertanyaan_evaluasi
                 ORDER BY materi_terkait";
 $materiFilterResult = mysqli_query($conn, $materiQuery);
 
-// Function to build URL with current filters (tanpa aspek)
+// BARU: Function to build URL with current filters (termasuk sort)
 function buildFilterUrl($page = 1, $newFilters = []) {
-    global $searchTerm, $filterJenis, $filterMateri, $filterTipe;
+    global $searchTerm, $filterJenis, $filterMateri, $filterTipe, $sortBy, $sortOrder;
     
     $params = [];
     
@@ -133,11 +163,15 @@ function buildFilterUrl($page = 1, $newFilters = []) {
     $currentJenis = isset($newFilters['jenis']) ? $newFilters['jenis'] : $filterJenis;
     $currentMateri = isset($newFilters['materi']) ? $newFilters['materi'] : $filterMateri;
     $currentTipe = isset($newFilters['tipe']) ? $newFilters['tipe'] : $filterTipe;
+    $currentSort = isset($newFilters['sort']) ? $newFilters['sort'] : $sortBy;
+    $currentOrder = isset($newFilters['order']) ? $newFilters['order'] : $sortOrder;
     
     if (!empty($currentSearch)) $params['search'] = $currentSearch;
     if (!empty($currentJenis)) $params['jenis'] = $currentJenis;
     if (!empty($currentMateri)) $params['materi'] = $currentMateri;
     if (!empty($currentTipe)) $params['tipe'] = $currentTipe;
+    if (!empty($currentSort)) $params['sort'] = $currentSort;
+    if (!empty($currentOrder)) $params['order'] = $currentOrder;
     if ($page > 1) $params['page'] = $page;
     
     return '?' . http_build_query($params);
@@ -235,76 +269,6 @@ function getPilihanJawaban($pilihan_jawaban) {
           <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
 
-        <!-- Statistics Cards -->
-        <div class="row mb-4">
-          <div class="col-md-3 mb-3">
-            <div class="card stats-card stats-card-mobile">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center stats-card-content">
-                  <div class="flex-grow-1 stats-text-content">
-                    <h6 class="mb-1 stats-title">Total Bank Soal</h6>
-                    <h3 class="mb-0 stats-number"><?= number_format($stats['total_pertanyaan'] ?? 0) ?></h3>
-                    <small class="text-muted stats-subtitle">Pertanyaan tersedia</small>
-                  </div>
-                  <div class="stats-icon bg-primary-light stats-icon-mobile">
-                    <i class="bi bi-collection text-primary"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="col-md-3 mb-3">
-            <div class="card stats-card stats-card-mobile">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center stats-card-content">
-                  <div class="flex-grow-1 stats-text-content">
-                    <h6 class="mb-1 stats-title">Per Materi</h6>
-                    <h3 class="mb-0 stats-number"><?= number_format($stats['per_materi'] ?? 0) ?></h3>
-                    <small class="text-muted stats-subtitle">Evaluasi pembelajaran</small>
-                  </div>
-                  <div class="stats-icon bg-success-light stats-icon-mobile">
-                    <i class="bi bi-book text-success"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="col-md-3 mb-3">
-            <div class="card stats-card stats-card-mobile">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center stats-card-content">
-                  <div class="flex-grow-1 stats-text-content">
-                    <h6 class="mb-1 stats-title">Akhir Kursus</h6>
-                    <h3 class="mb-0 stats-number"><?= number_format($stats['akhir_kursus'] ?? 0) ?></h3>
-                    <small class="text-muted stats-subtitle">Evaluasi menyeluruh</small>
-                  </div>
-                  <div class="stats-icon bg-info-light stats-icon-mobile">
-                    <i class="bi bi-award text-info"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="col-md-3 mb-3">
-            <div class="card stats-card stats-card-mobile">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center stats-card-content">
-                  <div class="flex-grow-1 stats-text-content">
-                    <h6 class="mb-1 stats-title">Aspek Dinilai</h6>
-                    <h3 class="mb-0 stats-number"><?= mysqli_num_rows($aspekResult) ?></h3>
-                    <small class="text-muted stats-subtitle">Kategori evaluasi</small>
-                  </div>
-                  <div class="stats-icon bg-warning-light stats-icon-mobile">
-                    <i class="bi bi-tags text-warning"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <!-- Main Content Card -->
         <div class="card content-card">
@@ -331,6 +295,10 @@ function getPilihanJawaban($pilihan_jawaban) {
           <!-- Search/Filter Controls -->
           <div class="p-3 border-bottom">
             <form method="GET" id="filterForm">
+              <!-- BARU: Hidden inputs untuk sort -->
+              <input type="hidden" name="sort" value="<?= htmlspecialchars($sortBy) ?>">
+              <input type="hidden" name="order" value="<?= htmlspecialchars($sortOrder) ?>">
+              
               <div class="row align-items-center g-2">  
                 <div class="col-12">
                   <div class="d-flex flex-wrap align-items-center gap-2 controls-container">
@@ -345,6 +313,46 @@ function getPilihanJawaban($pilihan_jawaban) {
                              value="<?= htmlspecialchars($searchTerm) ?>"
                              class="form-control form-control-sm search-input" 
                              />
+                    </div>
+                    
+                    <!-- BARU: Sort Button -->
+                    <div class="dropdown">
+                      <button class="btn btn-light btn-icon position-relative control-btn" 
+                              type="button" 
+                              data-bs-toggle="dropdown" 
+                              data-bs-display="static"
+                              aria-expanded="false"
+                              title="Sort">
+                        <i class="bi bi-arrow-down-up"></i>
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="min-width: 200px;">
+                        <li><h6 class="dropdown-header">Sort by</h6></li>
+                        <li>
+                          <a class="dropdown-item sort-option <?= ($sortBy === 'pertanyaan' && $sortOrder === 'asc') ? 'active' : '' ?>" 
+                             href="<?= buildFilterUrl($currentPage, ['sort' => 'pertanyaan', 'order' => 'asc']) ?>">
+                            <i class="bi bi-sort-alpha-down me-2"></i>Pertanyaan A-Z
+                          </a>
+                        </li>
+                        <li>
+                          <a class="dropdown-item sort-option <?= ($sortBy === 'pertanyaan' && $sortOrder === 'desc') ? 'active' : '' ?>" 
+                             href="<?= buildFilterUrl($currentPage, ['sort' => 'pertanyaan', 'order' => 'desc']) ?>">
+                            <i class="bi bi-sort-alpha-up me-2"></i>Pertanyaan Z-A
+                          </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                          <a class="dropdown-item sort-option <?= ($sortBy === 'created' && $sortOrder === 'desc') ? 'active' : '' ?>" 
+                             href="<?= buildFilterUrl($currentPage, ['sort' => 'created', 'order' => 'desc']) ?>">
+                            <i class="bi bi-calendar-check me-2"></i>Terbaru
+                          </a>
+                        </li>
+                        <li>
+                          <a class="dropdown-item sort-option <?= ($sortBy === 'created' && $sortOrder === 'asc') ? 'active' : '' ?>" 
+                             href="<?= buildFilterUrl($currentPage, ['sort' => 'created', 'order' => 'asc']) ?>">
+                            <i class="bi bi-calendar-x me-2"></i>Terlama
+                          </a>
+                        </li>
+                      </ul>
                     </div>
                     
                     <!-- Filter Button -->
@@ -457,8 +465,8 @@ function getPilihanJawaban($pilihan_jawaban) {
                   $currentJenis = '';
                   $currentMateri = '';
                   while ($pertanyaan = mysqli_fetch_assoc($result)): 
-                    // Materi separator for per_materi
-                    if ($currentJenis == 'per_materi' && $currentMateri != $pertanyaan['materi_terkait']) {
+                    // Materi separator for per_materi (hanya jika tidak ada sort aktif)
+                    if (empty($sortBy) && $currentJenis == 'per_materi' && $currentMateri != $pertanyaan['materi_terkait']) {
                       $currentMateri = $pertanyaan['materi_terkait'];
                       echo '<tr class="table-sub-header">';
                       echo '<td colspan="7" class="text-start bg-light-subtle py-1 ps-4">';
@@ -737,6 +745,58 @@ function getPilihanJawaban($pilihan_jawaban) {
       e.stopPropagation();
     });
     
+    // BARU: Sort dropdown handling
+    document.querySelectorAll('.sort-option').forEach(item => {
+      item.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Visual feedback
+        document.querySelectorAll('.sort-option').forEach(opt => {
+          opt.classList.remove('active');
+          opt.style.backgroundColor = '';
+          opt.style.color = '';
+        });
+        
+        this.classList.add('active');
+        this.style.backgroundColor = '#0d6efd';
+        this.style.color = 'white';
+        
+        // Navigate to sorted URL
+        setTimeout(() => {
+          window.location.href = this.href;
+        }, 150);
+      });
+    });
+    
+    // Force dropdown positioning untuk sort
+    function forceDropdownPositioning() {
+      document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.style.setProperty('position', 'absolute', 'important');
+        menu.style.setProperty('top', '100%', 'important');
+        menu.style.setProperty('bottom', 'auto', 'important');
+        menu.style.setProperty('transform', 'none', 'important');
+        menu.style.setProperty('z-index', '1055', 'important');
+        menu.style.setProperty('margin-top', '2px', 'important');
+        
+        if (menu.classList.contains('dropdown-menu-end')) {
+          menu.style.setProperty('right', '0', 'important');
+          menu.style.setProperty('left', 'auto', 'important');
+        }
+      });
+    }
+
+    // Event listeners untuk dropdown positioning
+    document.addEventListener('show.bs.dropdown', function (e) {
+      forceDropdownPositioning();
+    });
+    
+    document.addEventListener('shown.bs.dropdown', function (e) {
+      forceDropdownPositioning();
+    });
+
+    // Initialize positioning
+    forceDropdownPositioning();
+    
     // Show active filters
     const activeFilters = <?= $activeFilters ?>;
     if (activeFilters > 0) {
@@ -888,39 +948,23 @@ function getPilihanJawaban($pilihan_jawaban) {
     gap: 0.5rem;
   }
   
-  .result-info {
-    white-space: nowrap;
-  }
-  
-  .info-badge {
-    background-color: #f8f9fa;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.375rem;
-    border: 1px solid #dee2e6;
-    font-size: 0.875rem;
-  }
-  
-  .info-count {
-    font-weight: 600;
-    color: #495057;
-  }
-  
-  .info-separator {
-    margin: 0 0.25rem;
-    color: #6c757d;
-  }
-  
-  .info-total {
-    font-weight: 600;
-    color: #495057;
-  }
-  
-  .info-label {
-    color: #6c757d;
-  }
-  
   .pagination-info {
     flex-grow: 1;
+  }
+
+  /* BARU: Style untuk sort active */
+  .sort-option.active {
+    background-color: #0d6efd !important;
+    color: white !important;
+  }
+  
+  .sort-option:hover {
+    background-color: #e9ecef;
+  }
+  
+  .sort-option.active:hover {
+    background-color: #0b5ed7 !important;
+    color: white !important;
   }
   
   @media (max-width: 768px) {

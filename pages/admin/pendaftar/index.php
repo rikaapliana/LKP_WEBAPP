@@ -163,7 +163,7 @@ function buildUrlWithFilters($page) {
                       <a href="../dashboard.php">Dashboard</a>
                     </li>
                     <li class="breadcrumb-item">
-                      <a href="#">Manajemen Siswa</a>
+                      <a href="#">Data Pendaftaran</a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">Data Pendaftar</li>
                   </ol>
@@ -204,78 +204,7 @@ function buildUrlWithFilters($page) {
           </div>
           <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
-
-        <!-- Statistics Cards -->
-        <div class="row mb-4">
-          <div class="col-md-3 mb-3">
-            <div class="card stats-card stats-card-mobile">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center stats-card-content">
-                  <div class="flex-grow-1 stats-text-content">
-                    <h6 class="mb-1 stats-title">Total Pendaftar</h6>
-                    <h3 class="mb-0 stats-number"><?= number_format($totalRecords) ?></h3>
-                    <small class="text-muted stats-subtitle">Keseluruhan pendaftar</small>
-                  </div>
-                  <div class="stats-icon bg-info-light stats-icon-mobile">
-                    <i class="bi bi-person-plus text-info"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="col-md-3 mb-3">
-            <div class="card stats-card stats-card-mobile">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center stats-card-content">
-                  <div class="flex-grow-1 stats-text-content">
-                    <h6 class="mb-1 stats-title">Belum Verifikasi</h6>
-                    <h3 class="mb-0 stats-number"><?= number_format($pendaftarBelumVerifikasi) ?></h3>
-                    <small class="text-muted stats-subtitle">Menunggu review</small>
-                  </div>
-                  <div class="stats-icon bg-warning-light stats-icon-mobile">
-                    <i class="bi bi-clock text-warning"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="col-md-3 mb-3">
-            <div class="card stats-card stats-card-mobile">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center stats-card-content">
-                  <div class="flex-grow-1 stats-text-content">
-                    <h6 class="mb-1 stats-title">Terverifikasi</h6>
-                    <h3 class="mb-0 stats-number"><?= number_format($pendaftarTerverifikasi) ?></h3>
-                    <small class="text-muted stats-subtitle">Siap jadi siswa</small>
-                  </div>
-                  <div class="stats-icon bg-success-light stats-icon-mobile">
-                    <i class="bi bi-shield-check text-success"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-3 mb-3">
-            <div class="card stats-card stats-card-mobile">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center stats-card-content">
-                  <div class="flex-grow-1 stats-text-content">
-                    <h6 class="mb-1 stats-title">Diterima</h6>
-                    <h3 class="mb-0 stats-number"><?= number_format($pendaftarDiterima) ?></h3>
-                    <small class="text-muted stats-subtitle">Sudah jadi siswa</small>
-                  </div>
-                  <div class="stats-icon bg-primary-light stats-icon-mobile">
-                    <i class="bi bi-person-check text-primary"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
+        
         <!-- Main Content Card -->
         <div class="card content-card">
           <div class="section-header">

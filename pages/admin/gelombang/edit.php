@@ -1,11 +1,11 @@
 <?php
 session_start();
-require_once '../../../../includes/auth.php';
+require_once '../../../includes/auth.php';
 requireAdminAuth();
 
-include '../../../../includes/db.php';
-$activePage = 'pengaturan';
-$baseURL = '../../';
+include '../../../includes/db.php';
+$activePage = 'gelombang';
+$baseURL = '../';
 
 // Ambil ID gelombang dari URL
 if (!isset($_GET['id']) || empty($_GET['id'])) {
@@ -35,7 +35,10 @@ $jumlahKelas = mysqli_fetch_assoc($cekKelas)['total'];
 $cekPengaturan = mysqli_query($conn, "SELECT COUNT(*) as total FROM pengaturan_pendaftaran WHERE id_gelombang = $id_gelombang");
 $jumlahPengaturan = mysqli_fetch_assoc($cekPengaturan)['total'];
 
-$isBeingUsed = ($jumlahKelas > 0 || $jumlahPengaturan > 0);
+$cekPendaftar = mysqli_query($conn, "SELECT COUNT(*) as total FROM pendaftar WHERE id_gelombang = $id_gelombang");
+$jumlahPendaftar = mysqli_fetch_assoc($cekPendaftar)['total'];
+
+$isBeingUsed = ($jumlahKelas > 0 || $jumlahPengaturan > 0 || $jumlahPendaftar > 0);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Sanitize input
@@ -108,16 +111,16 @@ $currentYear = date('Y');
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Edit Gelombang - LKP Pradata Komputer</title>
-  <link rel="icon" type="image/png" href="../../../../assets/img/favicon.png"/>
-  <link rel="stylesheet" href="../../../../assets/css/bootstrap.min.css" />
-  <link rel="stylesheet" href="../../../../assets/css/bootstrap-icons.css" />
-  <link rel="stylesheet" href="../../../../assets/css/fonts.css" />
-  <link rel="stylesheet" href="../../../../assets/css/styles.css" />
+  <link rel="icon" type="image/png" href="../../../assets/img/favicon.png"/>
+  <link rel="stylesheet" href="../../../assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="../../../assets/css/bootstrap-icons.css" />
+  <link rel="stylesheet" href="../../../assets/css/fonts.css" />
+  <link rel="stylesheet" href="../../../assets/css/styles.css" />
 </head>
 
 <body>
   <div class="d-flex">
-    <?php include '../../../../includes/sidebar/admin.php'; ?>
+    <?php include '../../../includes/sidebar/admin.php'; ?>
 
     <div class="flex-fill main-content">
       <!-- TOP NAVBAR -->
@@ -137,10 +140,10 @@ $currentYear = date('Y');
                       <a href="../../dashboard.php">Dashboard</a>
                     </li>
                     <li class="breadcrumb-item">
-                      <a href="../index.php">Pengaturan</a>
+                      <a href="#">Data Pendaftaran</a>
                     </li>
                     <li class="breadcrumb-item">
-                      <a href="index.php">Kelola Gelombang</a>
+                      <a href="index.php">Data Gelombang</a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">Edit Gelombang</li>
                   </ol>
@@ -178,8 +181,8 @@ $currentYear = date('Y');
         <!-- Warning jika sedang digunakan -->
         <?php if ($isBeingUsed): ?>
           <div class="alert alert-info alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle me-2"></i>
-            <strong>Perhatian:</strong> Gelombang ini sedang digunakan oleh <?= $jumlahKelas ?> kelas dan <?= $jumlahPengaturan ?> pengaturan pendaftaran. 
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Informasi:</strong> Gelombang ini sedang digunakan oleh <?= $jumlahKelas ?> kelas, <?= $jumlahPendaftar ?> pendaftar, dan <?= $jumlahPengaturan ?> pengaturan. 
             Beberapa field tidak dapat diubah untuk menjaga konsistensi data.
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
           </div>
@@ -223,7 +226,9 @@ $currentYear = date('Y');
                         </select>
                         <?php if ($isBeingUsed): ?>
                           <input type="hidden" name="tahun" value="<?= $gelombang['tahun'] ?>">
-                          <div class="form-text text-warning">Tidak dapat diubah karena sedang digunakan</div>
+                          <div class="form-text text-warning">
+                            <i class="bi bi-lock me-1"></i>Tidak dapat diubah karena sedang digunakan
+                          </div>
                         <?php else: ?>
                           <div class="form-text">Tahun pelaksanaan gelombang</div>
                         <?php endif; ?>
@@ -244,7 +249,9 @@ $currentYear = date('Y');
                         </select>
                         <?php if ($isBeingUsed): ?>
                           <input type="hidden" name="gelombang_ke" value="<?= $gelombang['gelombang_ke'] ?>">
-                          <div class="form-text text-warning">Tidak dapat diubah karena sedang digunakan</div>
+                          <div class="form-text text-warning">
+                            <i class="bi bi-lock me-1"></i>Tidak dapat diubah karena sedang digunakan
+                          </div>
                         <?php else: ?>
                           <div class="form-text">Urutan gelombang dalam tahun tersebut</div>
                         <?php endif; ?>
@@ -286,32 +293,6 @@ $currentYear = date('Y');
 
           <!-- Info Panel -->
           <div class="col-lg-4">
-            
-            <!-- Usage Info -->
-            <?php if ($isBeingUsed): ?>
-            <div class="card content-card mb-3">
-              <div class="section-header">
-                <h6 class="mb-0 text-dark">
-                  <i class="bi bi-graph-up me-2"></i>Penggunaan Data
-                </h6>
-              </div>
-              <div class="card-body">
-                <div class="row g-3">
-                  <div class="col-6">
-                    <strong>Kelas:</strong><br>
-                    <span class="badge bg-primary"><?= $jumlahKelas ?> kelas</span>
-                  </div>
-                  <div class="col-6">
-                    <strong>Pengaturan:</strong><br>
-                    <span class="badge bg-info"><?= $jumlahPengaturan ?> item</span>
-                  </div>
-                </div>
-                <small class="text-muted mt-2 d-block">
-                  Data ini membatasi perubahan tahun dan nomor gelombang
-                </small>
-              </div>
-            </div>
-            <?php endif; ?>
 
             <!-- Tips -->
             <div class="card content-card">
@@ -321,16 +302,20 @@ $currentYear = date('Y');
                 </h6>
               </div>
               <div class="card-body">
-                <div class="alert alert-info">
+                <div class="alert alert-info mb-0">
                   <ul class="mb-0 small">
                     <li>Nama gelombang dapat diubah kapan saja</li>
                     <li>Status dapat disesuaikan dengan kondisi terkini</li>
                     <?php if ($isBeingUsed): ?>
-                      <li class="text-warning">Tahun dan nomor gelombang dikunci karena sudah digunakan</li>
+                      <li class="text-warning">
+                        <i class="bi bi-lock me-1"></i>
+                        Tahun dan nomor gelombang dikunci karena sudah digunakan
+                      </li>
                     <?php else: ?>
                       <li>Pastikan tidak ada duplikasi tahun dan nomor gelombang</li>
                     <?php endif; ?>
                     <li>Perubahan status akan mempengaruhi tampilan sistem</li>
+                    <li>Gunakan status "Aktif" untuk gelombang yang sedang berjalan</li>
                   </ul>
                 </div>
               </div>
@@ -342,8 +327,8 @@ $currentYear = date('Y');
   </div>
 
   <!-- Scripts -->
-  <script src="../../../../assets/js/bootstrap.bundle.min.js"></script>
-  <script src="../../../../assets/js/scripts.js"></script>
+  <script src="../../../assets/js/bootstrap.bundle.min.js"></script>
+  <script src="../../../assets/js/scripts.js"></script>
   
   <script>
   document.addEventListener('DOMContentLoaded', function() {
@@ -371,8 +356,26 @@ $currentYear = date('Y');
       
       // Show loading state
       const submitBtn = form.querySelector('button[type="submit"]');
+      const originalHTML = submitBtn.innerHTML;
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Memperbarui...';
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memperbarui...';
+      
+      // Reset after timeout in case of error
+      setTimeout(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalHTML;
+      }, 10000);
+    });
+    
+    // Auto-hide alerts
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+      if (alert.classList.contains('alert-success')) {
+        setTimeout(() => {
+          const bsAlert = new bootstrap.Alert(alert);
+          bsAlert.close();
+        }, 5000);
+      }
     });
   });
   </script>

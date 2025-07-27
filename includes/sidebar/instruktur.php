@@ -4,21 +4,21 @@ $baseURL = $baseURL ?? './'; // default: jika tidak di-set, gunakan './'
 ?>
 
 <div class="sidebar p-3">
-    <!-- Sidebar Header -->
-    <div class="sidebar-header text-center mb-2 p-2 rounded" style="background: linear-gradient(135deg, #667eea 0%,rgb(170, 133, 207) 100%); box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-        <div class="logo-container mb-1">
-            <img src="<?= $baseURL ?>../../assets/img/favicon.png" 
-                 alt="Logo LKP" 
-                 style="width: 45px; height: 45px; object-fit: contain; border-radius: 8px; background: rgba(255,255,255,0.1); padding: 5px;" 
-                 class="logo-img">
-        </div>
-        <div class="fw-bold text-white" style="font-size: 10px; line-height: 2; letter-spacing: 0.5px;">
-            LKP PRADATA KOMPUTER<br>
-        </div>
-        <div class="text-white" style="font-size: 8px; line-height: 1.1; letter-spacing: 0.5px;">
-            Kabupaten Tabalong<br>
-        </div>
+   <!-- Sidebar Header -->
+<div class="sidebar-header text-center mb-2 p-2 rounded" style="background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%); box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+    <div class="logo-container mb-1">
+        <img src="<?= $baseURL ?>../../assets/img/favicon.png" 
+            alt="Logo LKP" 
+            style="width: 45px; height: 45px; object-fit: contain; border-radius: 8px; background: white; padding: 5px;" 
+            class="logo-img">
     </div>
+    <div class="fw-bold text-white" style="font-size: 10px; line-height: 2; letter-spacing: 0.5px;">
+        LKP PRADATA KOMPUTER<br>
+    </div>
+    <div class="text-white" style="font-size: 8px; line-height: 1.1; letter-spacing: 0.5px;">
+        Kabupaten Tabalong<br>
+    </div>
+</div>
 
     <ul class="nav flex-column">
         <!-- MAIN MENU Category -->

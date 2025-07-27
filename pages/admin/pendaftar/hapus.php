@@ -38,13 +38,6 @@ try {
     
     $pendaftar = mysqli_fetch_assoc($result);
     
-    // Validasi: tidak bisa hapus jika sudah diterima (sudah jadi siswa)
-    if ($pendaftar['status_pendaftaran'] === 'Diterima') {
-        $_SESSION['error'] = 'Tidak dapat menghapus pendaftar yang sudah diterima sebagai siswa';
-        header('Location: index.php');
-        exit();
-    }
-    
     // Mulai transaksi
     mysqli_autocommit($conn, false);
     

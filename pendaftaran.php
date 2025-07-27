@@ -169,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
             )";
             
             if (mysqli_query($conn, $insertQuery)) {
-                $success = "Pendaftaran berhasil untuk " . $gelombangAktif['nama_gelombang'] . "!";
+                $success = "Pendaftaran berhasil! Berkas akan dicek admin terlebih dahulu. Apabila diterima maka akan mendapatkan email paling lambat 1 minggu sebelum kelas dimulai.";
                 $pendaftar_id = mysqli_insert_id($conn);
                 
                 // Reset form
@@ -210,10 +210,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
     
     <style>
         .registration-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 3rem 0;
+            background: white;
+            border-radius: 12px;
             margin-bottom: 2rem;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .header-content {
+            padding: 2rem;
+            text-align: left;
+            border-top: 4px solid #0c63e4;
+        }
+
+        .header-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-subtitle {
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 0;
         }
         
         .registration-form {
@@ -261,80 +288,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
             background-color: #e7f3ff;
         }
         
-        .progress-steps {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 2rem;
-        }
+        /* Clean Closed Registration Component - REMOVED */
         
-        .progress-step {
-            flex: 1;
-            text-align: center;
-            position: relative;
-        }
-        
-        .progress-step:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            top: 20px;
-            right: -50%;
-            width: 100%;
-            height: 2px;
-            background: #dee2e6;
-        }
-        
-        .progress-step.active::after {
-            background: #007bff;
-        }
-        
-        .progress-step-circle {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #dee2e6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 0.5rem;
-            font-weight: bold;
-            color: #6c757d;
-        }
-        
-        .progress-step.active .progress-step-circle {
-            background: #007bff;
-            color: white;
-        }
-        
-        .closed-registration {
-            text-align: center;
-            padding: 4rem 2rem;
-            background: #f8f9fa;
-            border-radius: 12px;
-            margin: 2rem 0;
-        }
-        
-        .closed-registration i {
-            font-size: 4rem;
-            color: #ffc107;
-            margin-bottom: 1rem;
+        .container-form {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
         }
         
         @media (max-width: 768px) {
             .registration-header {
-                padding: 2rem 0;
+                margin-bottom: 1.5rem;
+            }
+
+            .header-image {
+                height: 150px;
+            }
+
+            .header-content {
+                padding: 1.5rem;
+            }
+
+            .header-title {
+                font-size: 1.5rem;
             }
             
             .registration-form {
                 padding: 1.5rem;
             }
-            
-            .progress-steps {
-                flex-direction: column;
-                gap: 1rem;
+
+            .container-form {
+                padding: 0 10px;
             }
             
-            .progress-step:not(:last-child)::after {
-                display: none;
+            .closed-registration {
+                margin: 1rem;
+                padding: 2rem 1.5rem;
+                border-radius: 15px;
+            }
+            
+            .closed-registration h3 {
+                font-size: 2rem;
+            }
+            
+            .closed-registration .main-icon {
+                font-size: 3rem;
+            }
+            
+            .info-section {
+                padding: 1.5rem;
+            }
+            
+            .contact-item {
+                flex-direction: column;
+                text-align: center;
+                padding: 1rem;
+            }
+            
+            .contact-item i {
+                margin-right: 0;
+                margin-bottom: 0.5rem;
             }
         }
     </style>
@@ -342,27 +355,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
 
 <body>
     <div class="container-fluid">
-        <!-- Header -->
-        <div class="registration-header">
-            <div class="container">
-                <div class="row">
-                    <div class="col-12 text-center">
-                        <h1><i class="bi bi-mortarboard me-3"></i>Pendaftaran LKP Pradata Komputer</h1>
-                        <p class="lead mb-0">Bergabunglah dengan program kursus komputer terbaik</p>
-                    </div>
+        <div class="container-form">
+            <!-- Header -->
+            <div class="registration-header mt-4">
+                <img src="assets/img/OPENING.jpg" alt="LKP Pradata Komputer" class="header-image">
+                <div class="header-content">
+                    <h1 class="header-title">Form Pendaftaran LKP Pradata Komputer Kabupaten Tabalong</h1>
+                    <p class="header-subtitle">Program Tabalong Smart - Menciptakan SDM Unggul melalui Pelatihan Komputer dan Aplikasi Perkantoran</p>
                 </div>
             </div>
-        </div>
 
-        <div class="container">
             <?php if (isset($success)): ?>
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     <i class="bi bi-check-circle me-2"></i>
                     <?= $success ?>
-                    <br>
-                    <strong>Nomor Pendaftaran:</strong> <?= str_pad($pendaftar_id, 6, '0', STR_PAD_LEFT) ?>
-                    <br>
-                    <small>Silakan catat nomor pendaftaran ini untuk keperluan verifikasi.</small>
+                    <?php if(isset($pendaftar_id)): ?>
+                        <br>
+                        <strong>Nomor Pendaftaran:</strong> <?= str_pad($pendaftar_id, 6, '0', STR_PAD_LEFT) ?>
+                        <br>
+                        <small>Silakan catat nomor pendaftaran ini untuk keperluan verifikasi.</small>
+                    <?php endif; ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
@@ -379,7 +391,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                 <!-- Informasi Gelombang -->
                 <div class="gelombang-info">
                     <div class="row align-items-center">
-                        <div class="col-md-8">
+                        <div class="col-12">
                             <h4 class="mb-1">
                                 <i class="bi bi-calendar-event me-2"></i>
                                 <?= $gelombangAktif['nama_gelombang'] ?>
@@ -389,18 +401,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                 <span class="badge bg-info me-2">Gelombang ke-<?= $gelombangAktif['gelombang_ke'] ?></span>
                                 <span class="badge bg-success">Pendaftaran Dibuka</span>
                             </p>
-                        </div>
-                        <div class="col-md-4 text-md-end">
-                            <?php if ($gelombangAktif['kuota_maksimal'] > 0): ?>
-                                <div class="mb-1">
-                                    <strong>Kuota Pendaftaran:</strong>
-                                </div>
-                                <div class="progress" style="height: 20px;">
-                                    <div class="progress-bar" style="width: <?= ($totalPendaftar / $gelombangAktif['kuota_maksimal']) * 100 ?>%">
-                                        <?= $totalPendaftar ?> / <?= $gelombangAktif['kuota_maksimal'] ?>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
                         </div>
                     </div>
                     
@@ -419,22 +419,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                     <?php endif; ?>
                 </div>
 
-                <!-- Progress Steps -->
-                <div class="progress-steps">
-                    <div class="progress-step active">
-                        <div class="progress-step-circle">1</div>
-                        <div>Data Diri</div>
-                    </div>
-                    <div class="progress-step">
-                        <div class="progress-step-circle">2</div>
-                        <div>Dokumen</div>
-                    </div>
-                    <div class="progress-step">
-                        <div class="progress-step-circle">3</div>
-                        <div>Konfirmasi</div>
-                    </div>
-                </div>
-
                 <!-- Form Pendaftaran -->
                 <div class="registration-form">
                     <form method="POST" enctype="multipart/form-data" id="registrationForm">
@@ -451,7 +435,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                         <input type="text" name="nik" class="form-control" maxlength="16" 
                                                pattern="[0-9]{16}" value="<?= isset($_POST['nik']) ? htmlspecialchars($_POST['nik']) : '' ?>" 
                                                required>
-                                        <div class="form-text">16 digit angka sesuai KTP</div>
+                                        <div class="form-text">Nomor Induk Kependudukan sesuai KTP (16 digit angka)</div>
                                     </div>
                                 </div>
                                 
@@ -461,6 +445,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                         <input type="text" name="nama_pendaftar" class="form-control" 
                                                value="<?= isset($_POST['nama_pendaftar']) ? htmlspecialchars($_POST['nama_pendaftar']) : '' ?>" 
                                                required>
+                                        <div class="form-text">Nama lengkap sesuai KTP</div>
                                     </div>
                                 </div>
                             </div>
@@ -472,6 +457,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                         <input type="text" name="tempat_lahir" class="form-control" 
                                                value="<?= isset($_POST['tempat_lahir']) ? htmlspecialchars($_POST['tempat_lahir']) : '' ?>" 
                                                required>
+                                        <div class="form-text">Tempat lahir sesuai KTP</div>
                                     </div>
                                 </div>
                                 
@@ -481,6 +467,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                         <input type="date" name="tanggal_lahir" class="form-control" 
                                                value="<?= isset($_POST['tanggal_lahir']) ? $_POST['tanggal_lahir'] : '' ?>" 
                                                required>
+                                        <div class="form-text">Tanggal lahir sesuai KTP</div>
                                     </div>
                                 </div>
                             </div>
@@ -494,6 +481,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                             <option value="Laki-Laki" <?= isset($_POST['jenis_kelamin']) && $_POST['jenis_kelamin'] == 'Laki-Laki' ? 'selected' : '' ?>>Laki-Laki</option>
                                             <option value="Perempuan" <?= isset($_POST['jenis_kelamin']) && $_POST['jenis_kelamin'] == 'Perempuan' ? 'selected' : '' ?>>Perempuan</option>
                                         </select>
+                                        <div class="form-text">Pilih jenis kelamin sesuai KTP</div>
                                     </div>
                                 </div>
                                 
@@ -503,14 +491,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                         <select name="pendidikan_terakhir" class="form-select" required>
                                             <option value="">Pilih Pendidikan Terakhir</option>
                                             <option value="SD" <?= isset($_POST['pendidikan_terakhir']) && $_POST['pendidikan_terakhir'] == 'SD' ? 'selected' : '' ?>>SD</option>
-                                            <option value="SLTP" <?= isset($_POST['pendidikan_terakhir']) && $_POST['pendidikan_terakhir'] == 'SLTP' ? 'selected' : '' ?>>SLTP</option>
-                                            <option value="SLTA" <?= isset($_POST['pendidikan_terakhir']) && $_POST['pendidikan_terakhir'] == 'SLTA' ? 'selected' : '' ?>>SLTA</option>
+                                            <option value="SLTP" <?= isset($_POST['pendidikan_terakhir']) && $_POST['pendidikan_terakhir'] == 'SLTP' ? 'selected' : '' ?>>SLTP (SMP)</option>
+                                            <option value="SLTA" <?= isset($_POST['pendidikan_terakhir']) && $_POST['pendidikan_terakhir'] == 'SLTA' ? 'selected' : '' ?>>SLTA (SMA/SMK)</option>
                                             <option value="D1" <?= isset($_POST['pendidikan_terakhir']) && $_POST['pendidikan_terakhir'] == 'D1' ? 'selected' : '' ?>>D1</option>
                                             <option value="D2" <?= isset($_POST['pendidikan_terakhir']) && $_POST['pendidikan_terakhir'] == 'D2' ? 'selected' : '' ?>>D2</option>
                                             <option value="S1" <?= isset($_POST['pendidikan_terakhir']) && $_POST['pendidikan_terakhir'] == 'S1' ? 'selected' : '' ?>>S1</option>
                                             <option value="S2" <?= isset($_POST['pendidikan_terakhir']) && $_POST['pendidikan_terakhir'] == 'S2' ? 'selected' : '' ?>>S2</option>
                                             <option value="S3" <?= isset($_POST['pendidikan_terakhir']) && $_POST['pendidikan_terakhir'] == 'S3' ? 'selected' : '' ?>>S3</option>
                                         </select>
+                                        <div class="form-text">Pendidikan formal terakhir yang ditempuh</div>
                                     </div>
                                 </div>
                             </div>
@@ -528,7 +517,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                                pattern="[0-9]{10,15}" 
                                                value="<?= isset($_POST['no_hp']) ? htmlspecialchars($_POST['no_hp']) : '' ?>" 
                                                required>
-                                        <div class="form-text">Contoh: 08123456789</div>
+                                        <div class="form-text">Nomor yang dapat dihubungi via WhatsApp (contoh: 08123456789)</div>
                                     </div>
                                 </div>
                                 
@@ -538,6 +527,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                         <input type="email" name="email" class="form-control" 
                                                value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>" 
                                                required>
+                                        <div class="form-text">Email aktif untuk menerima informasi pendaftaran</div>
                                     </div>
                                 </div>
                             </div>
@@ -547,6 +537,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                 <textarea name="alamat_lengkap" class="form-control" rows="3" 
                                           placeholder="Masukkan alamat lengkap beserta RT/RW, Kelurahan, Kecamatan, Kota/Kabupaten" 
                                           required><?= isset($_POST['alamat_lengkap']) ? htmlspecialchars($_POST['alamat_lengkap']) : '' ?></textarea>
+                                <div class="form-text">Alamat domisili saat ini (tidak harus sesuai KTP)</div>
                             </div>
                         </div>
                         
@@ -571,7 +562,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                     <option value="20.00 - 21.00" <?= isset($_POST['jam_pilihan']) && $_POST['jam_pilihan'] == '20.00 - 21.00' ? 'selected' : '' ?>>20.00 - 21.00</option>
                                     <option value="21.00 - 22.00" <?= isset($_POST['jam_pilihan']) && $_POST['jam_pilihan'] == '21.00 - 22.00' ? 'selected' : '' ?>>21.00 - 22.00</option>
                                 </select>
-                                <div class="form-text">Pilih waktu yang sesuai dengan jadwal Anda</div>
+                                <div class="form-text">Pilih waktu yang sesuai dengan jadwal Anda (dapat disesuaikan kemudian)</div>
                             </div>
                         </div>
                         
@@ -583,9 +574,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                 <i class="bi bi-info-circle me-2"></i>
                                 <strong>Penting:</strong> 
                                 <ul class="mb-0 mt-2">
-                                    <li>Pas foto: Format gambar JPG/PNG</li>
-                                    <li>KTP, Kartu Keluarga, Ijazah: <strong>Harus format PDF</strong></li>
-                                    <li>Semua file maksimal 5MB</li>
+                                    <li>Pas foto: Format gambar JPG/PNG maksimal 5MB</li>
+                                    <li>KTP, Kartu Keluarga, Ijazah: <strong>Harus format PDF maksimal 5MB</strong></li>
+                                    <li>Pastikan dokumen terlihat jelas dan dapat dibaca</li>
                                 </ul>
                             </div>
                             
@@ -599,9 +590,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                             <div class="mt-2">
                                                 <i class="bi bi-camera display-6 text-muted"></i>
                                                 <p class="mb-0"><strong>Format: JPG, PNG</strong></p>
-                                                <small class="text-muted">Maksimal 5MB</small>
                                             </div>
                                         </div>
+                                        <div class="form-text">Foto formal terbaru dengan latar belakang putih atau merah</div>
                                     </div>
                                 </div>
                                 
@@ -614,9 +605,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                             <div class="mt-2">
                                                 <i class="bi bi-file-pdf display-6 text-danger"></i>
                                                 <p class="mb-0"><strong>Format: PDF</strong></p>
-                                                <small class="text-muted">Maksimal 5MB</small>
                                             </div>
                                         </div>
+                                        <div class="form-text">Scan/foto KTP yang sudah dikonversi ke PDF</div>
                                     </div>
                                 </div>
                             </div>
@@ -631,9 +622,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                             <div class="mt-2">
                                                 <i class="bi bi-file-pdf display-6 text-danger"></i>
                                                 <p class="mb-0"><strong>Format: PDF</strong></p>
-                                                <small class="text-muted">Maksimal 5MB</small>
                                             </div>
                                         </div>
+                                        <div class="form-text">Scan/foto Kartu Keluarga yang sudah dikonversi ke PDF</div>
                                     </div>
                                 </div>
                                 
@@ -646,9 +637,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                             <div class="mt-2">
                                                 <i class="bi bi-file-pdf display-6 text-danger"></i>
                                                 <p class="mb-0"><strong>Format: PDF</strong></p>
-                                                <small class="text-muted">Maksimal 5MB</small>
                                             </div>
                                         </div>
+                                        <div class="form-text">Scan/foto ijazah pendidikan terakhir yang sudah dikonversi ke PDF</div>
                                     </div>
                                 </div>
                             </div>
@@ -665,33 +656,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                     semua aturan dan ketentuan yang berlaku di LKP Pradata Komputer.
                                 </label>
                             </div>
+                            <div class="form-text">Dengan mencentang kotak ini, Anda menyetujui syarat dan ketentuan</div>
                         </div>
                         
                         <!-- Submit Button -->
-                        <div class="text-center">
-                            <a href="index.php" class="btn btn-kembali px-3">
-                            Kembali
+                        <div class="text-center mt-4">
+                            <a href="index.php" class="btn btn-kembali me-1">
+                               Kembali
                             </a>
-                            <button type="submit" class="btn btn-primary btn-lg px-3">
-                                <i class="bi bi-send me-2"></i>
-                                Daftar ke <?= $gelombangAktif['nama_gelombang'] ?>
+                            <button type="submit" class="btn btn-kirim-soft btn-lg px-4">
+                                <i class="bi bi-send me-1"></i>Daftar Sekarang
                             </button>
                         </div>
                     </form>
                 </div>
             <?php else: ?>
-                <!-- Pesan Pendaftaran Tutup -->
-                <div class="closed-registration">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
-                    <h3>Pendaftaran Ditutup</h3>
-                    <p class="lead"><?= $pesanTutup ?></p>
-                    <div class="mt-4">
-                        <h5>Informasi Lebih Lanjut:</h5>
-                        <p>
-                            <i class="bi bi-telephone me-2"></i><strong>Telp:</strong> (0517) 123456<br>
-                            <i class="bi bi-envelope me-2"></i><strong>Email:</strong> info@lkppradata.com<br>
-                            <i class="bi bi-geo-alt me-2"></i><strong>Alamat:</strong> Jl. Contoh No. 123, Kota Anda
+                <!-- Alert Pendaftaran Ditutup -->
+                <?php 
+                // Cek apakah ditutup karena kuota penuh
+                $isKuotaPenuh = ($gelombangAktif && $gelombangAktif['kuota_maksimal'] > 0 && $totalPendaftar >= $gelombangAktif['kuota_maksimal']);
+                ?>
+                
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <h4 class="alert-heading">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Pendaftaran Ditutup
+                    </h4>
+                    <p class="mb-3"><?= $pesanTutup ?></p>
+                    
+                    <?php if ($isKuotaPenuh): ?>
+                        <hr>
+                        <p class="mb-3">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Jangan khawatir!</strong> Kami akan segera membuka pendaftaran untuk gelombang berikutnya. 
+                            Pastikan Anda mendaftar lebih awal di gelombang selanjutnya.
                         </p>
+                    <?php endif; ?>
+                    
+                    <div class="mb-3">
+                        <strong>Informasi lebih lanjut:</strong><br>
+                        <i class="bi bi-telephone me-1"></i> <strong>Telp:</strong> (0526) 2023798<br> 
+                        <i class="bi bi-envelope me-1"></i> <strong>Email:</strong>awiekpradata@gmail.com<br>
+                        <i class="bi bi-geo-alt me-1"></i> <strong>Alamat:</strong> Jl. Ketimun S. 21 No. 3A Komplek Pertamina. Tanjung - Tabalong - Kalimantan Selatan 71571
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <a href="index.php" class="btn btn-kembali">
+                            Kembali ke Beranda
+                        </a>
+                        <?php if ($isKuotaPenuh): ?>
+                            <button type="button" class="btn btn-success" onclick="alert('Fitur notifikasi gelombang baru akan segera tersedia!')">
+                                <i class="bi bi-bell me-1"></i>Beritahu Saya Gelombang Baru
+                            </button>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endif; ?>
@@ -703,14 +719,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Auto-hide alerts
+            // Auto-hide success alerts
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(alert => {
                 if (alert.classList.contains('alert-success')) {
                     setTimeout(() => {
                         const bsAlert = new bootstrap.Alert(alert);
                         bsAlert.close();
-                    }, 10000);
+                    }, 15000); // 15 detik untuk membaca pesan sukses
                 }
             });
             
@@ -743,49 +759,80 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
             
             // Form validation
             const form = document.getElementById('registrationForm');
-            form.addEventListener('submit', function(e) {
-                const submitBtn = form.querySelector('button[type="submit"]');
-                
-                // Show loading state
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mendaftar...';
-                
-                // Validate file sizes
-                const fileInputs = form.querySelectorAll('input[type="file"]');
-                const maxSize = 5 * 1024 * 1024; // 5MB
-                
-                for (let input of fileInputs) {
-                    if (input.files[0] && input.files[0].size > maxSize) {
-                        e.preventDefault();
-                        alert('File ' + input.name + ' terlalu besar. Maksimal 5MB.');
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = '<i class="bi bi-send me-2"></i>Daftar ke <?= $gelombangAktif['nama_gelombang'] ?>';
-                        return;
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    
+                    // Show loading state
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mendaftar...';
+                    
+                    // Validate file sizes
+                    const fileInputs = form.querySelectorAll('input[type="file"]');
+                    const maxSize = 5 * 1024 * 1024; // 5MB
+                    
+                    for (let input of fileInputs) {
+                        if (input.files[0] && input.files[0].size > maxSize) {
+                            e.preventDefault();
+                            alert('File ' + input.name + ' terlalu besar. Maksimal 5MB.');
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = '<i class="bi bi-send me-2"></i>Daftar Sekarang';
+                            return;
+                        }
                     }
-                }
-                
-                // Re-enable after 5 seconds (fallback)
-                setTimeout(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="bi bi-send me-2"></i>Daftar ke <?= $gelombangAktif['nama_gelombang'] ?>';
-                }, 5000);
-            });
+                    
+                    // Re-enable after 5 seconds (fallback)
+                    setTimeout(() => {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="bi bi-send me-2"></i>Daftar Sekarang';
+                    }, 5000);
+                });
+            }
             
-            // NIK validation
+            // NIK validation - only numbers, max 16 digits
             const nikInput = document.querySelector('input[name="nik"]');
             if (nikInput) {
                 nikInput.addEventListener('input', function() {
                     this.value = this.value.replace(/[^0-9]/g, '');
+                    if (this.value.length > 16) {
+                        this.value = this.value.slice(0, 16);
+                    }
                 });
             }
             
-            // Phone number validation
+            // Phone number validation - only numbers, max 15 digits
             const phoneInput = document.querySelector('input[name="no_hp"]');
             if (phoneInput) {
                 phoneInput.addEventListener('input', function() {
                     this.value = this.value.replace(/[^0-9]/g, '');
+                    if (this.value.length > 15) {
+                        this.value = this.value.slice(0, 15);
+                    }
                 });
             }
+
+            // File input change events for better UX
+            const fileInputs = document.querySelectorAll('input[type="file"]');
+            fileInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    const upload = this.closest('.file-upload');
+                    const fileName = this.files[0] ? this.files[0].name : '';
+                    
+                    if (fileName) {
+                        upload.style.borderColor = '#28a745';
+                        upload.style.backgroundColor = '#f8fff9';
+                        
+                        // Add file name display
+                        let fileNameDisplay = upload.querySelector('.file-name-display');
+                        if (!fileNameDisplay) {
+                            fileNameDisplay = document.createElement('small');
+                            fileNameDisplay.className = 'file-name-display text-success mt-1 d-block';
+                            upload.appendChild(fileNameDisplay);
+                        }
+                        fileNameDisplay.innerHTML = '<i class="bi bi-check-circle me-1"></i>' + fileName;
+                    }
+                });
+            });
         });
     </script>
 </body>

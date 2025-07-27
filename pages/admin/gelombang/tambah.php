@@ -1,11 +1,11 @@
 <?php
 session_start();
-require_once '../../../../includes/auth.php';
+require_once '../../../includes/auth.php';
 requireAdminAuth();
 
-include '../../../../includes/db.php';
-$activePage = 'pengaturan';
-$baseURL = '../../';
+include '../../../includes/db.php';
+$activePage = 'gelombang';
+$baseURL = '../';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Sanitize input
@@ -67,6 +67,10 @@ $suggestedGelombang = $lastGelombang + 1;
 
 // Generate suggested name
 $suggestedName = "Gelombang $suggestedGelombang Tahun $currentYear";
+
+// Get recent gelombang for reference
+$recentQuery = "SELECT * FROM gelombang ORDER BY tahun DESC, gelombang_ke DESC LIMIT 3";
+$recentResult = mysqli_query($conn, $recentQuery);
 ?>
 
 <!DOCTYPE html>
@@ -75,16 +79,16 @@ $suggestedName = "Gelombang $suggestedGelombang Tahun $currentYear";
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tambah Gelombang Baru - LKP Pradata Komputer</title>
-  <link rel="icon" type="image/png" href="../../../../assets/img/favicon.png"/>
-  <link rel="stylesheet" href="../../../../assets/css/bootstrap.min.css" />
-  <link rel="stylesheet" href="../../../../assets/css/bootstrap-icons.css" />
-  <link rel="stylesheet" href="../../../../assets/css/fonts.css" />
-  <link rel="stylesheet" href="../../../../assets/css/styles.css" />
+  <link rel="icon" type="image/png" href="../../../assets/img/favicon.png"/>
+  <link rel="stylesheet" href="../../../assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="../../../assets/css/bootstrap-icons.css" />
+  <link rel="stylesheet" href="../../../assets/css/fonts.css" />
+  <link rel="stylesheet" href="../../../assets/css/styles.css" />
 </head>
 
 <body>
   <div class="d-flex">
-    <?php include '../../../../includes/sidebar/admin.php'; ?>
+    <?php include '../../../includes/sidebar/admin.php'; ?>
 
     <div class="flex-fill main-content">
       <!-- TOP NAVBAR -->
@@ -104,10 +108,10 @@ $suggestedName = "Gelombang $suggestedGelombang Tahun $currentYear";
                       <a href="../../dashboard.php">Dashboard</a>
                     </li>
                     <li class="breadcrumb-item">
-                      <a href="../index.php">Pengaturan</a>
+                      <a href="#">Data Pendaftaran</a>
                     </li>
                     <li class="breadcrumb-item">
-                      <a href="index.php">Kelola Gelombang</a>
+                      <a href="index.php">Data Gelombang</a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">Tambah Gelombang</li>
                   </ol>
@@ -150,7 +154,7 @@ $suggestedName = "Gelombang $suggestedGelombang Tahun $currentYear";
           <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
 
-<!-- Main Form Card -->
+        <!-- Main Form Card -->
         <div class="row">
           <!-- Form Tambah -->
           <div class="col-lg-8">
@@ -177,7 +181,7 @@ $suggestedName = "Gelombang $suggestedGelombang Tahun $currentYear";
                     <div class="col-md-6">
                       <div class="mb-4">
                         <label class="form-label required">Tahun</label>
-                        <select name="tahun" class="form-select" required>
+                        <select name="tahun" class="form-select" required id="selectTahun">
                           <option value="">Pilih Tahun</option>
                           <?php for ($year = $currentYear; $year <= $currentYear + 2; $year++): ?>
                             <option value="<?= $year ?>" 
@@ -199,7 +203,7 @@ $suggestedName = "Gelombang $suggestedGelombang Tahun $currentYear";
                     <div class="col-md-6">
                       <div class="mb-4">
                         <label class="form-label required">Gelombang Ke</label>
-                        <select name="gelombang_ke" class="form-select" required>
+                        <select name="gelombang_ke" class="form-select" required id="selectGelombang">
                           <option value="">Pilih Gelombang Ke</option>
                           <?php for ($i = 1; $i <= 10; $i++): ?>
                             <option value="<?= $i ?>" 
@@ -228,13 +232,13 @@ $suggestedName = "Gelombang $suggestedGelombang Tahun $currentYear";
                         Selesai - Gelombang sudah berakhir
                       </option>
                     </select>
-                    <div class="form-text">Status dapat diubah kemudian</div>
+                    <div class="form-text">Status dapat diubah kemudian setelah gelombang dibuat</div>
                   </div>
 
                   <!-- Button Action -->
                   <div class="d-flex justify-content-end gap-3 pt-4 mt-4 border-top">
                     <a href="index.php" class="btn btn-kembali px-3">
-                      Kembali
+                     Kembali
                     </a>
                     <button type="submit" class="btn btn-simpan px-4">
                       <i class="bi bi-check-lg me-1"></i>Simpan
@@ -247,39 +251,68 @@ $suggestedName = "Gelombang $suggestedGelombang Tahun $currentYear";
 
           <!-- Info Panel -->
           <div class="col-lg-4">
-            <div class="card content-card">
+
+            <!-- Gelombang Terbaru -->
+            <?php if (mysqli_num_rows($recentResult) > 0): ?>
+            <div class="card content-card mb-3">
               <div class="section-header">
                 <h6 class="mb-0 text-dark">
-                  <i class="bi bi-info-circle me-2"></i>Informasi Penting
+                  <i class="bi bi-clock-history me-2"></i>Gelombang Terbaru
                 </h6>
               </div>
               <div class="card-body">
-                <div class="alert alert-info">
-                  <h6 class="alert-heading">
-                    <i class="bi bi-lightbulb me-2"></i>Tips Tambah Gelombang
-                  </h6>
+                <?php while ($recent = mysqli_fetch_assoc($recentResult)): ?>
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                      <div class="fw-medium"><?= htmlspecialchars($recent['nama_gelombang']) ?></div>
+                      <small class="text-muted">
+                        <?= $recent['tahun'] ?> - Gelombang ke-<?= $recent['gelombang_ke'] ?>
+                      </small>
+                    </div>
+                    <span class="badge bg-<?= $recent['status'] === 'aktif' ? 'success' : ($recent['status'] === 'dibuka' ? 'primary' : 'secondary') ?>">
+                      <?= ucfirst($recent['status']) ?>
+                    </span>
+                  </div>
+                <?php endwhile; ?>
+              </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- Tips -->
+            <div class="card content-card">
+              <div class="section-header">
+                <h6 class="mb-0 text-dark">
+                  <i class="bi bi-lightbulb me-2"></i>Tips Tambah Gelombang
+                </h6>
+              </div>
+              <div class="card-body">
+                <div class="alert alert-info mb-0">
                   <ul class="mb-0 small">
                     <li>Gunakan nama yang jelas dan mudah diidentifikasi</li>
-                    <li>Pastikan tidak ada duplikasi gelombang</li>
-                    <li>Status "Aktif" biasanya pilihan terbaik untuk gelombang baru</li>
+                    <li>Pastikan tidak ada duplikasi tahun dan gelombang ke</li>
+                    <li>Status "Aktif" adalah pilihan terbaik untuk gelombang baru</li>
                     <li>Anda dapat mengatur formulir pendaftaran setelah gelombang dibuat</li>
+                    <li>Tahun dan nomor gelombang tidak dapat diubah setelah ada data</li>
                   </ul>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Scripts -->
-  <script src="../../../../assets/js/bootstrap.bundle.min.js"></script>
-  <script src="../../../../assets/js/scripts.js"></script>
+  <script src="../../../assets/js/bootstrap.bundle.min.js"></script>
+  <script src="../../../assets/js/scripts.js"></script>
   
   <script>
   document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('formTambahGelombang');
     const namaInput = document.querySelector('input[name="nama_gelombang"]');
-    const tahunSelect = document.querySelector('select[name="tahun"]');
-    const gelombangSelect = document.querySelector('select[name="gelombang_ke"]');
+    const tahunSelect = document.getElementById('selectTahun');
+    const gelombangSelect = document.getElementById('selectGelombang');
     const statusSelect = document.querySelector('select[name="status"]');
     
     // Preview elements
@@ -338,22 +371,6 @@ $suggestedName = "Gelombang $suggestedGelombang Tahun $currentYear";
     namaInput.addEventListener('input', updatePreview);
     statusSelect.addEventListener('change', updatePreview);
     
-    // Reset button (removed from UI but keep functionality for potential future use)
-    // const btnReset = document.getElementById('btnReset');
-    // if (btnReset) {
-    //   btnReset.addEventListener('click', function() {
-    //     if (confirm('Yakin ingin mereset form? Semua data yang diisi akan hilang.')) {
-    //       form.reset();
-    //       // Restore default values
-    //       tahunSelect.value = '<?= $currentYear ?>';
-    //       gelombangSelect.value = '<?= $suggestedGelombang ?>';
-    //       statusSelect.value = 'aktif';
-    //       namaInput.value = '<?= $suggestedName ?>';
-    //       updatePreview();
-    //     }
-    //   });
-    // }
-    
     // Form validation
     form.addEventListener('submit', function(e) {
       const requiredFields = form.querySelectorAll('[required]');
@@ -376,8 +393,26 @@ $suggestedName = "Gelombang $suggestedGelombang Tahun $currentYear";
       
       // Show loading state
       const submitBtn = form.querySelector('button[type="submit"]');
+      const originalHTML = submitBtn.innerHTML;
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Menyimpan...';
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...';
+      
+      // Reset after timeout in case of error
+      setTimeout(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalHTML;
+      }, 10000);
+    });
+    
+    // Auto-hide alerts
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+      if (alert.classList.contains('alert-success')) {
+        setTimeout(() => {
+          const bsAlert = new bootstrap.Alert(alert);
+          bsAlert.close();
+        }, 5000);
+      }
     });
     
     // Initialize preview
