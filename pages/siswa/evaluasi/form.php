@@ -84,7 +84,7 @@ if (empty($pertanyaanTerpilih)) {
     exit();
 }
 
-// PERBAIKAN: Ambil detail pertanyaan dari database dengan urutan yang benar
+// Ambil detail pertanyaan dari database dengan urutan yang benar
 $pertanyaanIds = implode(',', array_map('intval', $pertanyaanTerpilih));
 $pertanyaanQuery = "SELECT * FROM pertanyaan_evaluasi WHERE id_pertanyaan IN ($pertanyaanIds)";
 $pertanyaanResult = $conn->query($pertanyaanQuery);
@@ -116,7 +116,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         $id_evaluasi = $conn->insert_id;
         
-        // PERBAIKAN: Insert jawaban sesuai urutan pertanyaan yang benar
+        // Insert jawaban sesuai urutan pertanyaan yang benar
         $insertJawaban = "INSERT INTO jawaban_evaluasi (id_evaluasi, id_pertanyaan, id_siswa, jawaban) VALUES (?, ?, ?, ?)";
         $jawabanStmt = $conn->prepare($insertJawaban);
         
@@ -174,6 +174,7 @@ function getNamaMateri($materi) {
   <link rel="stylesheet" href="../../../assets/css/bootstrap-icons.css" />
   <link rel="stylesheet" href="../../../assets/css/fonts.css" />
   <link rel="stylesheet" href="../../../assets/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -305,7 +306,7 @@ function getNamaMateri($materi) {
                         <div class="row text-center">
                           <?php for ($i = 1; $i <= 5; $i++): ?>
                             <div class="col">
-                              <div class="scale-option">
+                              <div class="scale-option" onclick="selectScale(<?= $pertanyaan['id_pertanyaan'] ?>, <?= $i ?>)">
                                 <input type="radio" 
                                        name="jawaban_<?= $pertanyaan['id_pertanyaan'] ?>" 
                                        id="skala_<?= $pertanyaan['id_pertanyaan'] ?>_<?= $i ?>" 
@@ -328,19 +329,19 @@ function getNamaMateri($materi) {
                       </div>
 
                     <?php elseif ($pertanyaan['tipe_jawaban'] == 'pilihan_ganda'): ?>
-                      <!-- PERBAIKAN: Pilihan Ganda -->
+                      <!-- Pilihan Ganda -->
                       <?php $pilihan = getPilihanJawaban($pertanyaan['pilihan_jawaban']); ?>
                       <?php if (!empty($pilihan)): ?>
                         <div class="multiple-choice-options">
                           <?php foreach ($pilihan as $pilIndex => $option): ?>
-                            <div class="form-check mb-2">
+                            <div class="form-check mb-2 choice-option" onclick="selectChoice(<?= $pertanyaan['id_pertanyaan'] ?>, <?= $pilIndex ?>)">
                               <input class="form-check-input" 
                                      type="radio" 
                                      name="jawaban_<?= $pertanyaan['id_pertanyaan'] ?>" 
                                      id="pilihan_<?= $pertanyaan['id_pertanyaan'] ?>_<?= $pilIndex ?>" 
                                      value="<?= htmlspecialchars($option) ?>" 
                                      required>
-                              <label class="form-check-label" for="pilihan_<?= $pertanyaan['id_pertanyaan'] ?>_<?= $pilIndex ?>">
+                              <label class="form-check-label w-100" for="pilihan_<?= $pertanyaan['id_pertanyaan'] ?>_<?= $pilIndex ?>">
                                 <strong><?= chr(65 + $pilIndex) ?>.</strong> <?= htmlspecialchars($option) ?>
                               </label>
                             </div>
@@ -391,14 +392,12 @@ function getNamaMateri($materi) {
             <!-- Action Buttons -->
             <div class="card-footer">
               <div class="d-flex justify-content-between align-items-center">
-                <a href="index.php" class="btn btn-outline-secondary">
-                  <i class="bi bi-arrow-left me-1"></i>Kembali
+                <a href="index.php" class="btn btn-kembali">
+                  Kembali
                 </a>
                 
                 <div class="d-flex gap-2">
-                  <button type="button" class="btn btn-warning" id="btnDraft">
-                    <i class="bi bi-save me-1"></i>Simpan Draft
-                  </button>
+                 
                   <button type="submit" class="btn btn-success" id="btnSubmit">
                     <i class="bi bi-check-lg me-1"></i>Kirim Evaluasi
                   </button>
@@ -422,7 +421,36 @@ function getNamaMateri($materi) {
     const totalQuestions = <?= count($pertanyaanList) ?>;
     const waktuTutup = new Date('<?= $periodeData['tanggal_tutup'] ?>').getTime();
 
-    // PERBAIKAN: Update progress yang lebih akurat
+    // Function untuk menampilkan alert dengan SweetAlert2
+    function showAlert(title, text, icon = 'warning') {
+      Swal.fire({
+        title: title,
+        text: text,
+        icon: icon,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#0d6efd'
+      });
+    }
+
+    // Function untuk menampilkan konfirmasi
+    function showConfirm(title, text, callback) {
+      Swal.fire({
+        title: title,
+        text: text,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#198754',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Kirim',
+        cancelButtonText: 'Batal'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          callback();
+        }
+      });
+    }
+
+    // Function untuk update progress
     function updateProgress() {
       let answeredCount = 0;
       
@@ -454,26 +482,16 @@ function getNamaMateri($materi) {
       }
     }
 
-    // Update countdown timer
-    function updateCountdown() {
-      const now = new Date().getTime();
-      const timeLeft = waktuTutup - now;
-      
-      if (timeLeft > 0) {
-        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-        
-        document.getElementById('waktuTersisa').textContent = 
-          hours > 0 ? `${hours}j ${minutes}m tersisa` : `${minutes} menit tersisa`;
+minutes} menit tersisa`;
       } else {
         document.getElementById('waktuTersisa').textContent = 'Waktu habis';
         // Disable form
         form.querySelectorAll('input, textarea, button').forEach(el => el.disabled = true);
-        alert('Waktu evaluasi telah habis. Form akan dikunci.');
+        showAlert('Waktu Habis', 'Waktu evaluasi telah habis. Form akan dikunci.');
       }
     }
 
-    // Character counter for textareas
+    // Function untuk character counter
     function updateCharCount() {
       document.querySelectorAll('.answer-textarea').forEach(textarea => {
         const counter = document.querySelector(`[data-target="${textarea.id}"]`);
@@ -492,17 +510,7 @@ function getNamaMateri($materi) {
       }
     });
 
-    // Smooth scroll to question on focus
-    form.querySelectorAll('input, textarea').forEach(input => {
-      input.addEventListener('focus', function() {
-        const questionCard = this.closest('.question-card');
-        if (questionCard) {
-          questionCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      });
-    });
-
-    // PERBAIKAN: Form submission validation
+    // Form submission dengan konfirmasi modal
     form.addEventListener('submit', function(e) {
       e.preventDefault();
       
@@ -522,26 +530,46 @@ function getNamaMateri($materi) {
       <?php endforeach; ?>
       
       if (unanswered.length > 0) {
-        alert(`Mohon jawab pertanyaan nomor: ${unanswered.join(', ')}`);
+        showAlert('Pertanyaan Belum Lengkap', `Mohon jawab pertanyaan nomor: ${unanswered.join(', ')}`);
         // Scroll to first unanswered
         const firstUnanswered = document.querySelector(`[data-question="${unanswered[0]}"]`);
         if (firstUnanswered) {
-          firstUnanswered.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => {
+            firstUnanswered.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 500);
         }
         return;
       }
       
-      // Final confirmation
-      if (confirm('Apakah Anda yakin ingin mengirim evaluasi ini? Evaluasi tidak dapat diubah setelah dikirim.')) {
-        // Show loading
-        const submitBtn = document.getElementById('btnSubmit');
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Mengirim...';
-        
-        // Submit form
-        form.submit();
-      }
+      // Show confirmation
+      showConfirm(
+        'Konfirmasi Kirim Evaluasi',
+        'Apakah Anda yakin ingin mengirim evaluasi ini? Evaluasi tidak dapat diubah setelah dikirim.',
+        function() {
+          // Show loading
+          const submitBtn = document.getElementById('btnSubmit');
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Mengirim...';
+          
+          // Submit form
+          form.submit();
+        }
+      );
     });
+
+    // Konfirmasi submit - hapus karena sudah diganti SweetAlert2
+    // document.getElementById('confirmSubmit').addEventListener('click', function() {
+    //   // Close modal
+    //   bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+    //   
+    //   // Show loading
+    //   const submitBtn = document.getElementById('btnSubmit');
+    //   submitBtn.disabled = true;
+    //   submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Mengirim...';
+    //   
+    //   // Submit form
+    //   form.submit();
+    // });
 
     // Initialize
     updateProgress();
@@ -552,7 +580,14 @@ function getNamaMateri($materi) {
     setInterval(updateCountdown, 60000);
 
     // Prevent accidental page leave
+    let formSubmitted = false;
+    
     window.addEventListener('beforeunload', function(e) {
+      // Jangan tampilkan peringatan jika form sudah berhasil dikirim
+      if (formSubmitted) {
+        return;
+      }
+      
       let hasAnswers = false;
       
       <?php foreach ($pertanyaanList as $pertanyaan): ?>
@@ -569,19 +604,31 @@ function getNamaMateri($materi) {
       
       if (hasAnswers) {
         e.preventDefault();
-        e.returnValue = '';
+        e.returnValue = 'Anda memiliki jawaban yang belum tersimpan. Yakin ingin meninggalkan halaman?';
+        return e.returnValue;
       }
     });
 
-    // Auto-save draft functionality (optional)
-    let autoSaveTimer;
-    form.addEventListener('input', function() {
-      clearTimeout(autoSaveTimer);
-      autoSaveTimer = setTimeout(function() {
-        console.log('Auto-saving draft...');
-      }, 5000);
+    // Set flag saat form berhasil dikirim
+    form.addEventListener('submit', function() {
+      // Set flag bahwa form sedang/akan dikirim
+      formSubmitted = true;
     });
   });
+
+  // Function untuk select scale (satu klik)
+  function selectScale(idPertanyaan, nilai) {
+    const radio = document.getElementById(`skala_${idPertanyaan}_${nilai}`);
+    radio.checked = true;
+    radio.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  // Function untuk select choice (satu klik)
+  function selectChoice(idPertanyaan, index) {
+    const radio = document.getElementById(`pilihan_${idPertanyaan}_${index}`);
+    radio.checked = true;
+    radio.dispatchEvent(new Event('change', { bubbles: true }));
+  }
   </script>
 
   <style>
@@ -612,6 +659,7 @@ function getNamaMateri($materi) {
   .scale-option {
     position: relative;
     margin-bottom: 1rem;
+    cursor: pointer;
   }
   
   .scale-input {
@@ -626,17 +674,21 @@ function getNamaMateri($materi) {
     padding: 1rem;
     border: 2px solid #e9ecef;
     border-radius: 0.5rem;
+    user-select: none;
   }
   
-  .scale-label:hover {
+  .scale-option:hover .scale-label {
     border-color: #0d6efd;
     background-color: #f8f9fa;
+    transform: translateY(-2px);
   }
   
   .scale-input:checked + .scale-label {
     border-color: #0d6efd;
     background-color: #0d6efd;
     color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3);
   }
   
   .scale-number {
@@ -649,17 +701,19 @@ function getNamaMateri($materi) {
     font-size: 0.875rem;
   }
   
-  .multiple-choice-options .form-check {
-    border: 1px solid #e9ecef;
-    border-radius: 0.375rem;
+  .multiple-choice-options .choice-option {
+    border: 2px solid #e9ecef;
+    border-radius: 0.5rem;
     padding: 0.75rem 1rem;
     transition: all 0.3s ease;
     cursor: pointer;
+    user-select: none;
   }
   
-  .multiple-choice-options .form-check:hover {
+  .multiple-choice-options .choice-option:hover {
     border-color: #0d6efd;
     background-color: #f8f9fa;
+    transform: translateX(5px);
   }
   
   .multiple-choice-options .form-check-input:checked + .form-check-label {
@@ -670,6 +724,12 @@ function getNamaMateri($materi) {
   .multiple-choice-options .form-check-input:checked {
     background-color: #0d6efd;
     border-color: #0d6efd;
+  }
+  
+  .choice-option:has(.form-check-input:checked) {
+    border-color: #0d6efd !important;
+    background-color: #e7f3ff !important;
+    transform: translateX(5px);
   }
   
   .answer-textarea {
@@ -699,6 +759,8 @@ function getNamaMateri($materi) {
     transition: width 0.3s ease;
   }
   
+  /* Modal Styling - Hapus karena sudah pakai SweetAlert2 */
+  
   @media (max-width: 768px) {
     .scale-options .col {
       margin-bottom: 0.5rem;
@@ -712,8 +774,16 @@ function getNamaMateri($materi) {
       font-size: 1rem;
     }
     
-    .multiple-choice-options .form-check {
+    .multiple-choice-options .choice-option {
       padding: 0.5rem 0.75rem;
+    }
+    
+    .choice-option:hover {
+      transform: none;
+    }
+    
+    .choice-option:has(.form-check-input:checked) {
+      transform: none;
     }
   }
   </style>

@@ -1,7 +1,12 @@
 <?php
 session_start();
 require_once '../../../includes/auth.php';
-requireSiswaAuth(); // Hanya siswa yang bisa akses
+
+// Cek apakah user sudah login dan role-nya siswa
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'siswa') {
+    header("Location: ../../../auth/login.php");
+    exit();
+}
 
 include '../../../includes/db.php';
 $activePage = 'evaluasi'; 
@@ -18,8 +23,8 @@ $stmt->bind_param("i", $_SESSION['user_id']);
 $stmt->execute();
 $siswaData = $stmt->get_result()->fetch_assoc();
 
-if (!$siswaData || !$siswaData['id_kelas']) {
-    $_SESSION['error'] = "Data siswa atau kelas tidak ditemukan!";
+if (!$siswaData) {
+    $_SESSION['error'] = "Data siswa tidak ditemukan!";
     header("Location: ../dashboard.php");
     exit();
 }
@@ -130,6 +135,7 @@ function getNamaMateri($materi) {
   <link rel="stylesheet" href="../../../assets/css/bootstrap-icons.css" />
   <link rel="stylesheet" href="../../../assets/css/fonts.css" />
   <link rel="stylesheet" href="../../../assets/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -153,7 +159,7 @@ function getNamaMateri($materi) {
                     <li class="breadcrumb-item">
                       <a href="../dashboard.php">Dashboard</a>
                     </li>
-                    <li class="breadcrumb-item active" aria-current="page">Evaluasi Pembelajaran</li>
+                    <li class="breadcrumb-item active" aria-current="page">Form Evaluasi</li>
                   </ol>
                 </nav>
               </div>
@@ -174,21 +180,35 @@ function getNamaMateri($materi) {
       <div class="container-fluid mt-4">
         <!-- Alert Success -->
         <?php if (isset($_SESSION['success'])): ?>
-          <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-2"></i>
-            <?= $_SESSION['success'] ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-          </div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              Swal.fire({
+                title: 'Berhasil!',
+                text: '<?= htmlspecialchars($_SESSION['success']) ?>',
+                icon: 'success',
+                timer: 3000,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end'
+              });
+            });
+          </script>
           <?php unset($_SESSION['success']); ?>
         <?php endif; ?>
 
         <!-- Alert Error -->
         <?php if (isset($_SESSION['error'])): ?>
-          <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle me-2"></i>
-            <?= $_SESSION['error'] ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-          </div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              Swal.fire({
+                title: 'Error!',
+                text: '<?= htmlspecialchars($_SESSION['error']) ?>',
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#dc3545'
+              });
+            });
+          </script>
           <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
 
@@ -265,9 +285,13 @@ function getNamaMateri($materi) {
                                     <i class="bi bi-check-circle me-1"></i>Sudah Dikerjakan
                                   </span>
                                 <?php else: ?>
-                                  <a href="form.php?id=<?= $evaluasi['id_periode'] ?>" class="btn btn-primary btn-sm">
+                                  <button type="button" class="btn btn-primary btn-sm start-evaluation-btn" 
+                                          data-id="<?= $evaluasi['id_periode'] ?>" 
+                                          data-name="<?= htmlspecialchars($evaluasi['nama_evaluasi']) ?>"
+                                          data-type="<?= $evaluasi['jenis_evaluasi'] == 'per_materi' ? 'Per Materi' : 'Akhir Kursus' ?>"
+                                          data-materi="<?= $evaluasi['materi_terkait'] ? getNamaMateri($evaluasi['materi_terkait']) : '' ?>">
                                     <i class="bi bi-play-circle me-1"></i>Mulai Evaluasi
-                                  </a>
+                                  </button>
                                 <?php endif; ?>
                               <?php else: ?>
                                 <span class="btn btn-secondary btn-sm disabled">
@@ -409,28 +433,125 @@ function getNamaMateri($materi) {
     </div>
   </div>
 
+  <!-- Modal Konfirmasi Mulai Evaluasi -->
+  <div class="modal fade" id="confirmStartModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header border-0 bg-gradient-primary text-white">
+          <h5 class="modal-title">
+            <i class="bi bi-play-circle me-2"></i>Konfirmasi Mulai Evaluasi
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-footer border-0 justify-content-center">
+          <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
+            <i class="bi bi-x-lg me-1"></i>Batal
+          </button>
+          <button type="button" class="btn btn-primary px-4" id="confirmStartBtn">
+            <i class="bi bi-play-circle me-1"></i>Ya, Mulai Sekarang
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="../../../assets/js/bootstrap.bundle.min.js"></script>
   <script src="../../../assets/js/scripts.js"></script>
 
   <script>
   document.addEventListener('DOMContentLoaded', function() {
-    // Auto refresh untuk update status evaluasi setiap 5 menit
-    setInterval(function() {
-      // Bisa tambahkan AJAX untuk update status tanpa reload penuh
-    }, 300000);
+    let selectedEvaluationId = null;
     
-    // Konfirmasi sebelum mulai evaluasi
-    const startButtons = document.querySelectorAll('a[href*="form.php"]');
-    startButtons.forEach(button => {
-      button.addEventListener('click', function(e) {
-        const evaluasiName = this.closest('.card-body').querySelector('h6').textContent;
+    // Event listener untuk tombol mulai evaluasi
+    document.querySelectorAll('.start-evaluation-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        selectedEvaluationId = this.dataset.id;
+        const evaluationName = this.dataset.name;
+        const evaluationType = this.dataset.type;
+        const evaluationMateri = this.dataset.materi || 'Semua Materi';
         
-        if (!confirm(`Apakah Anda yakin ingin memulai evaluasi "${evaluasiName}"?\n\nEvaluasi hanya bisa dikerjakan sekali dan tidak dapat diulang.`)) {
-          e.preventDefault();
-        }
+        // Tampilkan konfirmasi dengan SweetAlert2
+        Swal.fire({
+          title: '<i class="bi bi-play-circle me-2"></i>Konfirmasi Mulai Evaluasi',
+          html: `
+            <div class="text-center">
+              <div class="mb-4">
+                <i class="bi bi-clipboard-check-fill text-primary" style="font-size: 4rem;"></i>
+              </div>
+              
+            
+          `,
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#198754',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: '<i class="bi bi-play-circle me-1"></i>Ya, Mulai Sekarang',
+          cancelButtonText: '<i class="bi bi-x-lg me-1"></i>Batal',
+          customClass: {
+            popup: 'swal-wide'
+          },
+          showLoaderOnConfirm: true,
+          preConfirm: () => {
+            if (selectedEvaluationId) {
+              window.location.href = `form.php?id=${selectedEvaluationId}`;
+            }
+          }
+        });
       });
     });
+    
+    // Auto refresh untuk update status evaluasi setiap 5 menit
+    setInterval(function() {
+      console.log('Checking for evaluation updates...');
+    }, 300000);
   });
   </script>
+
+  <style>
+  .swal-wide {
+    width: 600px !important;
+  }
+  
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .card.border {
+    transition: all 0.3s ease;
+  }
+  
+  .card.border:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  }
+  
+  .start-evaluation-btn {
+    transition: all 0.3s ease;
+  }
+  
+  .start-evaluation-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0.25rem 0.5rem rgba(13, 110, 253, 0.3);
+  }
+  
+  .alert-warning {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+  }
+  
+  @media (max-width: 768px) {
+    .swal-wide {
+      width: 95% !important;
+    }
+    
+    .card.border:hover {
+      transform: none;
+    }
+    
+    .start-evaluation-btn:hover {
+      transform: none;
+    }
+  }
+  </style>
 </body>
 </html>

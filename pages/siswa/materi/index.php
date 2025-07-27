@@ -26,18 +26,29 @@ if (!$siswaData || !$siswaData['id_kelas']) {
 
 // Filter parameters
 $searchTerm = isset($_GET['search']) ? $_GET['search'] : '';
+$filterType = isset($_GET['filter_type']) ? $_GET['filter_type'] : 'all';
 
 // Build WHERE clause for filters
 $whereConditions = ["m.id_kelas = ?"];
 $params = [$siswaData['id_kelas']];
 
 if (!empty($searchTerm)) {
-    $whereConditions[] = "(m.judul LIKE ? OR m.deskripsi LIKE ?)";
+    $whereConditions[] = "(m.judul LIKE ? OR m.deskripsi LIKE ? OR i.nama LIKE ?)";
+    $params[] = "%$searchTerm%";
     $params[] = "%$searchTerm%";
     $params[] = "%$searchTerm%";
 }
 
+if ($filterType != 'all') {
+    if ($filterType == 'with_file') {
+        $whereConditions[] = "m.file_materi IS NOT NULL AND m.file_materi != ''";
+    } elseif ($filterType == 'without_file') {
+        $whereConditions[] = "(m.file_materi IS NULL OR m.file_materi = '')";
+    }
+}
+
 $whereClause = 'WHERE ' . implode(' AND ', $whereConditions);
+$orderClause = "ORDER BY m.id_materi DESC";
 
 // Get materi data
 $query = "SELECT m.*, 
@@ -49,7 +60,7 @@ $query = "SELECT m.*,
           FROM materi m 
           LEFT JOIN instruktur i ON m.id_instruktur = i.id_instruktur
           $whereClause
-          ORDER BY m.id_materi DESC";
+          $orderClause";
 
 $stmt = mysqli_prepare($conn, $query);
 if ($stmt) {
@@ -61,6 +72,19 @@ if ($stmt) {
 } else {
     $result = false;
 }
+
+// Statistik materi untuk siswa
+$statsQuery = "SELECT 
+    COUNT(*) as total_materi,
+    SUM(CASE WHEN m.file_materi IS NOT NULL AND m.file_materi != '' THEN 1 ELSE 0 END) as dengan_file,
+    SUM(CASE WHEN m.file_materi IS NULL OR m.file_materi = '' THEN 1 ELSE 0 END) as tanpa_file
+    FROM materi m
+    WHERE m.id_kelas = ?";
+
+$statsStmt = $conn->prepare($statsQuery);
+$statsStmt->bind_param("i", $siswaData['id_kelas']);
+$statsStmt->execute();
+$statsData = $statsStmt->get_result()->fetch_assoc();
 
 // Function untuk mendapatkan icon file
 function getFileIcon($filename) {
@@ -201,90 +225,117 @@ function isNewFile($id_materi, $siswaKelas) {
           <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
 
-        <!-- Main Content Card -->
+        <!-- Main Content -->
         <div class="card content-card">
-          <div class="section-header">
-            <div class="row align-items-center">
-              <div class="col-md-6">
-                <h5 class="mb-0 text-dark">
-                  <i class="bi bi-files me-2"></i>Materi Pembelajaran
-                </h5>
-              </div>
-              <div class="col-md-6 text-end">
-                <small class="text-muted">
-                  Kelas: <strong><?= htmlspecialchars($siswaData['nama_kelas']) ?></strong>
-                  <?php if($siswaData['nama_gelombang']): ?>
-                    (<?= htmlspecialchars($siswaData['nama_gelombang']) ?>)
-                  <?php endif; ?>
-                </small>
-              </div>
-            </div>
-          </div>
-
-          <!-- Search Controls -->
-          <div class="p-3 border-bottom">
-            <form method="GET" id="filterForm">
-              <div class="row align-items-center">
-                <div class="col-md-8">
-                  <div class="d-flex align-items-center search-container">
-                    <label for="searchInput" class="me-2 mb-0">
-                      <small class="text-muted">Search:</small>
-                    </label>
-                    <input type="search" name="search" id="searchInput" class="form-control form-control-sm" value="<?= htmlspecialchars($searchTerm) ?>"/>
+          <!-- Materi Card -->
+              <div class="card content-card">
+              <div class="section-header">
+                <div class="row align-items-center">
+                  <div class="col-md-6">
+                    <h5 class="mb-0 text-dark">
+                      <i class="bi bi-files me-2"></i>Materi Pembelajaran
+                    </h5>
                   </div>
                 </div>
-            </form>
-          </div>
+              </div>
 
-          <!-- Materi List -->
-          <div class="card-body p-0">
-            <?php if ($result && mysqli_num_rows($result) > 0): ?>
-              <div class="list-group list-group-flush">
-                <?php while ($materi = mysqli_fetch_assoc($result)): ?>
-                  <div class="list-group-item border-0 py-3">
-                    <div class="row align-items-center">
-                      <div class="col-auto">
-                        <div class="file-icon-container text-center" style="width: 50px;">
-                          <i class="<?= getFileIcon($materi['file_materi']) ?> fs-1"></i>
+              <!-- Filter Controls -->
+              <div class="p-3 border-bottom">
+                <form method="GET" id="filterForm">
+                  <div class="row align-items-center">
+                    <div class="col-md-8">
+                      <div class="d-flex align-items-center gap-3">
+                        <div class="d-flex align-items-center">
+                          <label for="searchInput" class="me-2 mb-0">
+                            <small class="text-muted">Cari:</small>
+                          </label>
+                          <input type="search" name="search" id="searchInput" class="form-control form-control-sm" style="width: 200px;" value="<?= htmlspecialchars($searchTerm) ?>"/>
+                        </div>
+                        
+                        <div class="d-flex align-items-center">
+                          <label for="filterType" class="me-2 mb-0">
+                            <small class="text-muted">Filter:</small>
+                          </label>
+                          <select class="form-select form-select-sm" name="filter_type" id="filterType" style="width: auto;">
+                            <option value="all" <?= ($filterType == 'all') ? 'selected' : '' ?>>Semua Materi</option>
+                            <option value="with_file" <?= ($filterType == 'with_file') ? 'selected' : '' ?>>Ada File</option>
+                            <option value="without_file" <?= ($filterType == 'without_file') ? 'selected' : '' ?>>Tanpa File</option>
+                          </select>
                         </div>
                       </div>
-                      
-                      <div class="col">
-                        <div class="d-flex align-items-start justify-content-between">
-                          <div class="flex-grow-1">
-                            <div class="d-flex align-items-center gap-2 mb-1">
-                              <h6 class="mb-0 fw-medium"><?= htmlspecialchars($materi['judul']) ?></h6>
-                              
-                              <?php if(isNewFile($materi['id_materi'], $siswaData['id_kelas'])): ?>
-                                <span class="badge bg-success px-2 py-1 small">
-                                  <i class="bi bi-star-fill me-1"></i>Baru
-                                </span>
-                              <?php endif; ?>
-                            </div>
-                            
-                            <?php if($materi['deskripsi']): ?>
-                              <p class="text-muted mb-2 small"><?= htmlspecialchars($materi['deskripsi']) ?></p>
-                            <?php endif; ?>
-                            
-                            <div class="d-flex align-items-center gap-3 small text-muted">
-                              <span>
-                                <i class="bi bi-person me-1"></i>
-                                <?= htmlspecialchars($materi['nama_instruktur']) ?>
-                              </span>
-                              <span>
-                                <i class="bi bi-hash me-1"></i>
-                                ID: <?= $materi['id_materi'] ?>
-                              </span>
-                              <?php if($materi['file_materi'] && $materi['file_materi'] != ''): ?>
-                                <span>
-                                  <i class="bi bi-hdd me-1"></i>
-                                  <?= formatFileSize($materi['file_materi']) ?>
-                                </span>
-                              <?php endif; ?>
-                            </div>
-                          </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Materi Table -->
+              <div class="table-responsive">
+                <table class="custom-table mb-0">
+                  <thead>
+                    <tr>
+                      <th width="5%">No</th>
+                      <th width="40%">Judul Materi</th>
+                      <th width="25%">Instruktur</th>
+                      <th width="15%">Format File</th>
+                      <th width="15%">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php if ($result && mysqli_num_rows($result) > 0): ?>
+                      <?php $no = 1; ?>
+                      <?php while ($materi = mysqli_fetch_assoc($result)): ?>
+                        <tr>
+                          <td class="align-middle">
+                            <span class="fw-medium text-muted"><?= $no++ ?></span>
+                          </td>
                           
-                          <div class="flex-shrink-0 ms-3">
+                          <td class="align-middle">
+                            <div>
+                              <div class="d-flex align-items-center gap-2 mb-1">
+                                <h6 class="mb-0 fw-medium text-dark"><?= htmlspecialchars($materi['judul']) ?></h6>
+                                
+                                <?php if(isNewFile($materi['id_materi'], $siswaData['id_kelas'])): ?>
+                                  <span class="badge bg-success px-2 py-1">
+                                    <i class="bi bi-star-fill me-1"></i>Baru
+                                  </span>
+                                <?php endif; ?>
+                              </div>
+                              
+                              <?php if($materi['deskripsi']): ?>
+                                <small class="text-muted d-block">
+                                  <?= htmlspecialchars(strlen($materi['deskripsi']) > 80 ? substr($materi['deskripsi'], 0, 80) . '...' : $materi['deskripsi']) ?>
+                                </small>
+                              <?php endif; ?>
+                            </div>
+                          </td>
+                          
+                          <td class="align-middle">
+                            <div class="d-flex align-items-center">
+                              <i class="bi bi-person-circle me-2 text-muted"></i>
+                              <span><?= htmlspecialchars($materi['nama_instruktur']) ?></span>
+                            </div>
+                          </td>
+                          
+                          <td class="align-middle">
+                            <?php if($materi['file_materi'] && $materi['file_materi'] != ''): ?>
+                              <?php
+                              $extension = strtolower(pathinfo($materi['file_materi'], PATHINFO_EXTENSION));
+                              $extensionUpper = strtoupper($extension);
+                              ?>
+                              <div class="d-flex align-items-center">
+                                <i class="<?= getFileIcon($materi['file_materi']) ?> me-2 fs-5"></i>
+                                <span class="badge bg-primary px-2 py-1">
+                                  <?= $extensionUpper ?>
+                                </span>
+                              </div>
+                            <?php else: ?>
+                              <span class="badge bg-secondary px-2 py-1">
+                                <i class="bi bi-file-earmark-x me-1"></i>Tidak Ada
+                              </span>
+                            <?php endif; ?>
+                          </td>
+                          
+                          <td class="align-middle">
                             <?php if($materi['file_materi'] && $materi['file_materi'] != ''): ?>
                               <a href="../../../uploads/materi/<?= htmlspecialchars($materi['file_materi']) ?>" 
                                  target="_blank" 
@@ -294,43 +345,40 @@ function isNewFile($id_materi, $siswaKelas) {
                                 Download
                               </a>
                             <?php else: ?>
-                              <span class="badge bg-secondary px-2 py-1">
-                                <i class="bi bi-file-earmark-x me-1"></i>Tidak Ada File
-                              </span>
+                              <span class="text-muted small">-</span>
                             <?php endif; ?>
+                          </td>
+                        </tr>
+                      <?php endwhile; ?>
+                    <?php else: ?>
+                      <tr>
+                        <td colspan="5" class="text-center">
+                          <div class="empty-state py-5">
+                            <i class="bi bi-files display-4 text-muted mb-3 d-block"></i>
+                            <h5>
+                              <?php if (!empty($searchTerm) || $filterType != 'all'): ?>
+                                Tidak Ada Materi yang Sesuai Filter
+                              <?php else: ?>
+                                Belum Ada Materi
+                              <?php endif; ?>
+                            </h5>
+                            <p class="mb-3 text-muted">
+                              <?php if (!empty($searchTerm) || $filterType != 'all'): ?>
+                                Coba ubah filter atau kata kunci pencarian
+                              <?php else: ?>
+                                Materi pembelajaran belum tersedia untuk kelas Anda
+                              <?php endif; ?>
+                            </p>
+                            <a href="?" class="btn btn-primary">
+                              <i class="bi bi-arrow-clockwise me-2"></i>Lihat Semua Materi
+                            </a>
                           </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                <?php endwhile; ?>
-              </div>
-            <?php else: ?>
-              <div class="text-center py-5">
-                <div class="empty-state">
-                  <i class="bi bi-files display-4 text-muted mb-3 d-block"></i>
-                  <h5>
-                    <?php if (!empty($searchTerm)): ?>
-                      Tidak Ada Materi yang Sesuai Pencarian
-                    <?php else: ?>
-                      Belum Ada Materi
+                        </td>
+                      </tr>
                     <?php endif; ?>
-                  </h5>
-                  <p class="mb-3 text-muted">
-                    <?php if (!empty($searchTerm)): ?>
-                      Coba ubah kata kunci pencarian untuk hasil yang lebih tepat
-                    <?php else: ?>
-                      Materi pembelajaran belum tersedia untuk kelas Anda. Hubungi instruktur untuk informasi lebih lanjut.
-                    <?php endif; ?>
-                  </p>
-                  <div class="btn-group">
-                    <a href="../dashboard.php" class="btn btn-primary">
-                      <i class="bi bi-house me-2"></i>Kembali ke Dashboard
-                    </a>
-                  </div>
-                </div>
+                  </tbody>
+                </table>
               </div>
-            <?php endif; ?>
           </div>
         </div>
       </div>
@@ -344,6 +392,7 @@ function isNewFile($id_materi, $siswaKelas) {
   document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('filterForm');
     const searchInput = document.getElementById('searchInput');
+    const filterType = document.getElementById('filterType');
     
     let searchTimeout;
     
@@ -357,12 +406,18 @@ function isNewFile($id_materi, $siswaKelas) {
       });
     }
     
+    // Auto submit when filter changes
+    if (filterType) {
+      filterType.addEventListener('change', function() {
+        form.submit();
+      });
+    }
+    
     // Download tracking
     const downloadLinks = document.querySelectorAll('a[href*="uploads/materi/"]');
     downloadLinks.forEach(function(link) {
       link.addEventListener('click', function() {
         console.log('File downloaded:', this.href);
-        showDownloadNotification();
       });
     });
   });

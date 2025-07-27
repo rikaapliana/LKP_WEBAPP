@@ -350,11 +350,32 @@ function getPilihanJawaban($pilihan_jawaban) {
                   <!-- Jawaban -->
                   <div class="answer-section ms-5">
                     <?php if ($jawaban['tipe_jawaban'] == 'pilihan_ganda'): ?>
-                      <!-- Pilihan Ganda -->
+                      <!-- Multiple Choice Answer - LOGIKA DIPERBAIKI -->
                       <?php 
                       $pilihan = getPilihanJawaban($jawaban['pilihan_jawaban']);
-                      $jawabanIndex = (int)$jawaban['jawaban'];
-                      $jawabanText = isset($pilihan[$jawabanIndex]) ? $pilihan[$jawabanIndex] : 'Jawaban tidak valid';
+                      $jawabanText = $jawaban['jawaban']; // Ambil jawaban langsung dari database
+                      
+                      // Cari index jawaban dengan pencocokan yang lebih robust
+                      $jawabanIndex = array_search($jawabanText, $pilihan);
+                      
+                      // Jika tidak ketemu, coba cari dengan trim dan case-insensitive
+                      if ($jawabanIndex === false) {
+                          foreach ($pilihan as $index => $option) {
+                              if (trim(strtolower($option)) === trim(strtolower($jawabanText))) {
+                                  $jawabanIndex = $index;
+                                  break;
+                              }
+                          }
+                      }
+                      
+                      // Jika masih tidak ketemu, set sebagai jawaban tidak valid
+                      if ($jawabanIndex === false) {
+                          $jawabanIndex = 0; // Default ke A
+                          $jawabanText = 'Jawaban tidak valid: ' . $jawabanText;
+                      } else {
+                          $jawabanText = $pilihan[$jawabanIndex]; // Pastikan menggunakan text dari pilihan
+                      }
+                      
                       $jawabanLabel = chr(65 + $jawabanIndex); // A, B, C, D
                       ?>
                       <div class="multiple-choice-answer">
@@ -372,7 +393,6 @@ function getPilihanJawaban($pilihan_jawaban) {
                             </div>
                           </div>
                         </div>
-                      </div>
 
                     <?php elseif ($jawaban['tipe_jawaban'] == 'skala'): ?>
                       <!-- Rating Skala -->

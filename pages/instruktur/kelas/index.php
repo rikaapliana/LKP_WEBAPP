@@ -126,7 +126,7 @@ function buildUrlWithFilters($page) {
                   </ol>
                 </nav>
               </div>
-            
+            </div>
             
             <!-- Right: Optional Info -->
             <div class="d-flex align-items-center">

@@ -128,7 +128,7 @@ $mataPelajaran = [
                     <li class="breadcrumb-item">
                       <a href="../dashboard.php">Dashboard</a>
                     </li>
-                    <li class="breadcrumb-item active" aria-current="page">Nilai Saya</li>
+                    <li class="breadcrumb-item active" aria-current="page">Nilai Kelas</li>
                   </ol>
                 </nav>
               </div>

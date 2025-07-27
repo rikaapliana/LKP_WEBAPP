@@ -21,11 +21,11 @@ $baseURL = $baseURL ?? './';
     </div>
 
     <ul class="nav flex-column">
-        <!-- MAIN MENU Category -->
+        <!-- MENU UTAMA Category -->
         <li class="nav-item mb-1">
             <div class="menu-category">
                 <small class="menu-category-label">
-                    MAIN MENU
+                    MENU UTAMA
                 </small>
             </div>
         </li>
@@ -36,11 +36,11 @@ $baseURL = $baseURL ?? './';
             </a>
         </li>
 
-        <!-- AKADEMIK Category -->
+        <!-- DATA AKADEMIK Category -->
         <li class="nav-item mb-1 mt-3">
             <div class="menu-category">
                 <small class="menu-category-label">
-                    AKADEMIK
+                    DATA AKADEMIK
                 </small>
             </div>
         </li>
@@ -53,10 +53,9 @@ $baseURL = $baseURL ?? './';
 
          <li class="nav-item">
             <a class="nav-link <?= ($activePage == 'absensi-saya') ? 'active' : '' ?>" href="<?= $baseURL ?>absensi/index.php">
-                <i class="bi bi-person-check me-2"></i> Absensi Saya
+                <i class="bi bi-person-check me-2"></i> Absensi Kelas
             </a>
         </li>
-
 
         <li class="nav-item">
             <a class="nav-link <?= ($activePage == 'materi-kelas') ? 'active' : '' ?>" href="<?= $baseURL ?>materi/index.php">
@@ -66,12 +65,11 @@ $baseURL = $baseURL ?? './';
 
         <li class="nav-item">
             <a class="nav-link <?= ($activePage == 'nilai-saya') ? 'active' : '' ?>" href="<?= $baseURL ?>nilai/index.php">
-                <i class="bi bi-award me-2"></i> Nilai Saya
+                <i class="bi bi-award me-2"></i> Nilai Kelas
             </a>
         </li>
 
-      
-        <!-- EVALUASI Category -->
+        <!-- MANAJEMEN EVALUASI Category -->
         <li class="nav-item mb-1 mt-3">
             <div class="menu-category">
                 <small class="menu-category-label">
@@ -82,7 +80,7 @@ $baseURL = $baseURL ?? './';
 
         <li class="nav-item">
             <a class="nav-link <?= ($activePage == 'evaluasi-pembelajaran') ? 'active' : '' ?>" href="<?= $baseURL ?>evaluasi/index.php">
-                <i class="bi bi-clipboard-check-fill me-2"></i> Evaluasi & Feedback
+                <i class="bi bi-clipboard-check-fill me-2"></i> Form Evaluasi
             </a>
         </li>
 

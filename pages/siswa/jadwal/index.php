@@ -256,7 +256,6 @@ function buildUrlWithFilters() {
                       <th width="20%">Waktu</th>
                       <th width="25%">Instruktur</th>
                       <th width="15%">Status</th>
-                      <th width="13%">Waktu Tersisa</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -315,33 +314,6 @@ function buildUrlWithFilters() {
                               <span class="badge bg-secondary px-2 py-1">
                                 <i class="bi bi-calendar-check me-1"></i>Terjadwal
                               </span>
-                            <?php endif; ?>
-                          </td>
-                          
-                          <td class="align-middle">
-                            <?php if($isPast): ?>
-                              <small class="text-muted">-</small>
-                            <?php elseif($isToday && $timeDiff > 0): ?>
-                              <small class="text-primary fw-medium">
-                                <?php
-                                $hours = floor($timeDiff / 3600);
-                                $minutes = floor(($timeDiff % 3600) / 60);
-                                if($hours > 0) {
-                                  echo $hours . "j " . $minutes . "m";
-                                } else {
-                                  echo $minutes . " menit";
-                                }
-                                ?>
-                              </small>
-                            <?php elseif($isToday && $timeDiff <= 0): ?>
-                              <small class="text-warning fw-bold">Berlangsung</small>
-                            <?php else: ?>
-                              <small class="text-muted">
-                                <?php
-                                $daysDiff = ceil($timeDiff / (24 * 3600));
-                                echo $daysDiff . " hari";
-                                ?>
-                              </small>
                             <?php endif; ?>
                           </td>
                         </tr>

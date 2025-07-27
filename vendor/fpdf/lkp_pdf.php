@@ -164,7 +164,7 @@ class LKP_PDF extends FPDF
             
             $this->Cell(30, 5, 'Total Record', 0, 0, 'L');
             $this->Cell(5, 5, ':', 0, 0, 'C');
-            $this->Cell(0, 5, $this->total_records . ' (' . $this->terbilang($this->total_records) . ') siswa', 0, 1, 'L');
+            $this->Cell(0, 5, $this->total_records . ' (' . $this->terbilang($this->total_records) . ') Data', 0, 1, 'L');
             
             // Filter Information - jika ada
             if (!empty($this->filter_info)) {
@@ -490,5 +490,9 @@ class LKP_ReportFactory
     public static function createCompactReport() {
         return new LKP_PDF('P', 'mm', 'A4');
     }
+
+    public static function createAbsensiReport() {
+     return LKP_PDF::createAuto(7);
+}
 }
 ?>
