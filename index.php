@@ -613,9 +613,9 @@
                             <i class="bi bi-pencil-square"></i>
                             Daftar Sekarang
                         </a>
-                        <a href="#about" class="btn-hero btn-hero-secondary">
+                        <a href="#program" class="btn-hero btn-hero-secondary">
                             <i class="bi bi-info-circle"></i>
-                            Lihat Program
+                            Cek Persyaratan
                         </a>
                     </div>
                 </div>
@@ -666,7 +666,7 @@
             
             <div class="stats-grid">
                 <div class="stat-item">
-                    <div class="stat-number">20,000+</div>
+                    <div class="stat-number">10,000+</div>
                     <div class="stat-label">Alumni Sukses</div>
                 </div>
                 <div class="stat-item">
@@ -705,7 +705,7 @@
                 </div>
                 
                 <div class="requirement-card">
-                    <h4><i class="bi bi-file-earmark-text"></i>Dokumen yang Diperlukan</h4>
+                    <h4><i class="bi bi-file-earmark-text"></i>Dokumen</h4>
                     <ul class="requirement-list">
                         <li><i class="bi bi-check-circle-fill"></i>Fotocopy ijazah terakhir</li>
                         <li><i class="bi bi-check-circle-fill"></i>Fotocopy KTP/Kartu Pelajar</li>
@@ -837,7 +837,7 @@
                         </div>
                         <div class="contact-details">
                             <h6>Alamat Kantor</h6>
-                            <p>Jl. A. Yani No. 123<br>Tanjung, Tabalong<br>Kalimantan Selatan 71571</p>
+                            <p> Jl. Ketimun S. 21 No. 3A<br>Komplek Pertamina. Tanjung - Tabalong <br>Kalimantan Selatan 71571</p>
                         </div>
                     </div>
                     
@@ -847,7 +847,7 @@
                         </div>
                         <div class="contact-details">
                             <h6>Telepon & WhatsApp</h6>
-                            <p>+62 518-123456<br>+62 812-3456-7890</p>
+                            <p>(0526) 2023798 / 0822-1359-4215</p>
                         </div>
                     </div>
                 </div>
@@ -861,7 +861,7 @@
                         </div>
                         <div class="contact-details">
                             <h6>Email</h6>
-                            <p>info@lkppradata.com<br>admin@lkppradata.com</p>
+                            <p>info@lkppradata.com<br>awiekpradata@gmail.com</p>
                         </div>
                     </div>
                     
@@ -871,7 +871,7 @@
                         </div>
                         <div class="contact-details">
                             <h6>Jam Operasional</h6>
-                            <p>Senin - Jumat: 08.00 - 21.00<br>Sabtu: 08.00 - 17.00<br>Minggu: Tutup</p>
+                            <p>Senin - Jumat: 08.00 - 21.00<br>Sabtu - Minggu: Tutup</p>
                         </div>
                     </div>
                 </div>
@@ -895,7 +895,7 @@
                         </div>
                         <div class="contact-details">
                             <h6>Instagram</h6>
-                            <p>@lkppradata_tabalong</p>
+                            <p>@jikamaka_bisa</p>
                         </div>
                     </div>
                     
@@ -912,7 +912,7 @@
     </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2024 LKP Pradata Komputer Tabalong. All rights reserved. | Developed by Rika Apliana</p>
+                <p>&copy; 2025 LKP Pradata Komputer Tabalong | Developed by Rika Apliana</p>
             </div>
         </div>
     </footer>

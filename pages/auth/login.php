@@ -562,7 +562,7 @@ if (isset($_GET['error'])) {
                         <div class="stats-title">Pencapaian Kami</div>
                         <div class="stats-grid">
                             <div class="stat-item">
-                                <span class="stat-number">20K+</span>
+                                <span class="stat-number">10K+</span>
                                 <span class="stat-label">Alumni</span>
                             </div>
                             <div class="stat-item">
@@ -637,7 +637,7 @@ if (isset($_GET['error'])) {
                 </form>
                 
                 <div class="footer-text">
-                    &copy; <?= date('Y') ?> Pradata School of Computer
+                    &copy; <?= date('Y') ?> LKP Pradata Komputer Tabalong | Developed by Rika Apliana
                 </div>
             </div>
         </div>

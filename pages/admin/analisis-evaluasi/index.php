@@ -1,4 +1,7 @@
 <?php
+// PERBAIKAN BAGIAN DATA PROCESSING
+// Ganti bagian mulai dari baris ke-30 sampai sebelum HTML
+
 session_start();  
 require_once '../../../includes/auth.php';  
 requireAdminAuth();
@@ -31,7 +34,7 @@ while ($periode = mysqli_fetch_assoc($periodeResult)) {
 $selectedPeriode = isset($_GET['periode']) ? (int)$_GET['periode'] : ($periodeList[0]['id_periode'] ?? 0);
 
 if ($selectedPeriode > 0) {
-    // Get detailed data for selected periode
+    // IMPROVED: Get detailed data with more metrics
     $detailQuery = "SELECT 
                         pe.*,
                         g.nama_gelombang,
@@ -41,7 +44,10 @@ if ($selectedPeriode > 0) {
                         (SELECT COUNT(DISTINCT s.id_siswa) 
                          FROM siswa s 
                          JOIN kelas k ON s.id_kelas = k.id_kelas 
-                         WHERE k.id_gelombang = pe.id_gelombang AND s.status_aktif = 'aktif') as total_siswa_aktif
+                         WHERE k.id_gelombang = pe.id_gelombang AND s.status_aktif = 'aktif') as total_siswa_aktif,
+                        (SELECT COUNT(DISTINCT k.id_kelas)
+                         FROM kelas k 
+                         WHERE k.id_gelombang = pe.id_gelombang) as total_kelas
                      FROM periode_evaluasi pe
                      LEFT JOIN gelombang g ON pe.id_gelombang = g.id_gelombang
                      LEFT JOIN evaluasi e ON pe.id_periode = e.id_periode
@@ -51,7 +57,7 @@ if ($selectedPeriode > 0) {
     $detailResult = mysqli_query($conn, $detailQuery);
     $currentPeriode = mysqli_fetch_assoc($detailResult);
 
-    // Get questions for this periode (FIXED: sesuai struktur database)
+    // Get questions for this periode
     $pertanyaanData = [];
     if ($currentPeriode && $currentPeriode['pertanyaan_terpilih']) {
         $pertanyaan_terpilih = json_decode($currentPeriode['pertanyaan_terpilih'], true);
@@ -60,7 +66,7 @@ if ($selectedPeriode > 0) {
             $pertanyaanQuery = "SELECT p.id_pertanyaan, p.pertanyaan, p.aspek_dinilai, p.tipe_jawaban, p.pilihan_jawaban
                                 FROM pertanyaan_evaluasi p
                                 WHERE p.id_pertanyaan IN ($pertanyaan_ids)
-                                ORDER BY p.aspek_dinilai, p.id_pertanyaan";
+                                ORDER BY p.aspek_dinilai, p.question_order, p.id_pertanyaan";
             
             $pertanyaanResult = mysqli_query($conn, $pertanyaanQuery);
             while ($pertanyaan = mysqli_fetch_assoc($pertanyaanResult)) {
@@ -69,112 +75,214 @@ if ($selectedPeriode > 0) {
         }
     }
 
-    // Get all answers for analysis (FIXED: menggunakan struktur tabel yang benar)
-    $jawabanData = [];
+    // IMPROVED: Get comprehensive evaluation data with demographics
+    $evaluationData = [];
     if (!empty($pertanyaanData)) {
-        $jawabanQuery = "SELECT 
+        $evaluationQuery = "SELECT 
                            je.id_pertanyaan,
                            je.jawaban,
                            je.answered_at,
                            s.nama as nama_siswa,
                            s.nik,
+                           s.jenis_kelamin,
+                           s.pendidikan_terakhir,
+                           s.tempat_lahir,
+                           YEAR(CURDATE()) - YEAR(s.tanggal_lahir) as usia,
                            k.nama_kelas,
-                           e.id_evaluasi
+                           k.id_kelas,
+                           e.id_evaluasi,
+                           e.tanggal_evaluasi,
+                           i.nama as nama_instruktur
                          FROM jawaban_evaluasi je
                          JOIN evaluasi e ON je.id_evaluasi = e.id_evaluasi
                          JOIN siswa s ON je.id_siswa = s.id_siswa
                          JOIN kelas k ON s.id_kelas = k.id_kelas
+                         LEFT JOIN instruktur i ON k.id_instruktur = i.id_instruktur
                          WHERE e.id_periode = ? AND e.status_evaluasi = 'selesai'
                          ORDER BY je.answered_at DESC";
         
-        $stmt = mysqli_prepare($conn, $jawabanQuery);
+        $stmt = mysqli_prepare($conn, $evaluationQuery);
         mysqli_stmt_bind_param($stmt, "i", $selectedPeriode);
         mysqli_stmt_execute($stmt);
-        $jawabanResult = mysqli_stmt_get_result($stmt);
+        $evaluationResult = mysqli_stmt_get_result($stmt);
         
-        while ($jawaban = mysqli_fetch_assoc($jawabanResult)) {
-            $jawabanData[] = $jawaban;
+        while ($row = mysqli_fetch_assoc($evaluationResult)) {
+            $evaluationData[] = $row;
         }
     }
 
-    // Process data for charts (FIXED: sesuai dengan format jawaban yang sebenarnya)
-    $ratingData = [];
-    $multipleChoiceData = [];
-    $feedbackData = [];
-    $classPerformance = [];
-    $aspectPerformance = [];
+    // IMPROVED: Enhanced data processing with statistical analysis
+    $analytics = [
+        'rating_analysis' => [],
+        'demographic_insights' => [],
+        'class_performance' => [],
+        'aspect_performance' => [],
+        'satisfaction_levels' => [],
+        'response_patterns' => [],
+        'improvement_areas' => []
+    ];
 
+    // Enhanced processing functions
+    function calculateStatistics($ratings) {
+        if (empty($ratings)) return null;
+        
+        sort($ratings);
+        $count = count($ratings);
+        $sum = array_sum($ratings);
+        $mean = $sum / $count;
+        
+        // Median
+        $middle = floor($count / 2);
+        $median = $count % 2 ? $ratings[$middle] : ($ratings[$middle - 1] + $ratings[$middle]) / 2;
+        
+        // Mode
+        $frequency = array_count_values($ratings);
+        $maxFreq = max($frequency);
+        $mode = array_keys($frequency, $maxFreq)[0];
+        
+        // Standard Deviation
+        $variance = array_sum(array_map(function($x) use ($mean) {
+            return pow($x - $mean, 2);
+        }, $ratings)) / $count;
+        $stdDev = sqrt($variance);
+        
+        // Distribution
+        $distribution = array_count_values($ratings);
+        
+        // Satisfaction metrics
+        $satisfied = ($distribution[4] ?? 0) + ($distribution[5] ?? 0);
+        $neutral = $distribution[3] ?? 0;
+        $dissatisfied = ($distribution[1] ?? 0) + ($distribution[2] ?? 0);
+        
+        return [
+            'count' => $count,
+            'mean' => round($mean, 2),
+            'median' => $median,
+            'mode' => $mode,
+            'std_dev' => round($stdDev, 2),
+            'distribution' => $distribution,
+            'satisfaction_rate' => round(($satisfied / $count) * 100, 1),
+            'neutral_rate' => round(($neutral / $count) * 100, 1),
+            'dissatisfaction_rate' => round(($dissatisfied / $count) * 100, 1)
+        ];
+    }
+
+    // Group data by question for enhanced analysis
+    $questionGroups = [];
+    foreach ($evaluationData as $data) {
+        $questionGroups[$data['id_pertanyaan']][] = $data;
+    }
+
+    // Process each question type with improved analytics
     foreach ($pertanyaanData as $pertanyaan) {
         $id_pertanyaan = $pertanyaan['id_pertanyaan'];
-        $answers = array_filter($jawabanData, function($j) use ($id_pertanyaan) {
-            return $j['id_pertanyaan'] == $id_pertanyaan;
-        });
+        $responses = $questionGroups[$id_pertanyaan] ?? [];
+        
+        if (empty($responses)) continue;
 
         if ($pertanyaan['tipe_jawaban'] == 'skala') {
-            // FIXED: Rating data processing
+            // ENHANCED: Rating analysis with demographic breakdown
             $ratings = [];
-            foreach ($answers as $answer) {
-                $rating = (int)trim($answer['jawaban']);
+            $classRatings = [];
+            $genderRatings = ['Laki-Laki' => [], 'Perempuan' => []];
+            $educationRatings = [];
+            $ageGroupRatings = ['18-25' => [], '26-35' => [], '36-45' => [], '46+' => []];
+            
+            foreach ($responses as $response) {
+                $rating = (int)trim($response['jawaban']);
                 if ($rating >= 1 && $rating <= 5) {
                     $ratings[] = $rating;
+                    
+                    // Class breakdown
+                    $classRatings[$response['nama_kelas']][] = $rating;
+                    
+                    // Gender breakdown
+                    if (isset($genderRatings[$response['jenis_kelamin']])) {
+                        $genderRatings[$response['jenis_kelamin']][] = $rating;
+                    }
+                    
+                    // Education breakdown
+                    $educationRatings[$response['pendidikan_terakhir']][] = $rating;
+                    
+                    // Age group breakdown
+                    $age = (int)$response['usia'];
+                    if ($age <= 25) $ageGroupRatings['18-25'][] = $rating;
+                    elseif ($age <= 35) $ageGroupRatings['26-35'][] = $rating;
+                    elseif ($age <= 45) $ageGroupRatings['36-45'][] = $rating;
+                    else $ageGroupRatings['46+'][] = $rating;
                 }
             }
             
-            if (!empty($ratings)) {
-                $average = round(array_sum($ratings) / count($ratings), 1);
-                $ratingData[] = [
+            $stats = calculateStatistics($ratings);
+            if ($stats) {
+                $analytics['rating_analysis'][] = [
                     'aspect' => $pertanyaan['aspek_dinilai'],
-                    'pertanyaan' => $pertanyaan['pertanyaan'],
-                    'average' => $average,
-                    'count' => count($ratings),
-                    'detail' => array_count_values($ratings) // Distribusi rating 1-5
+                    'question' => $pertanyaan['pertanyaan'],
+                    'id_pertanyaan' => $id_pertanyaan,
+                    'statistics' => $stats,
+                    'demographics' => [
+                        'by_class' => array_map(function($classRatings) {
+                            return calculateStatistics($classRatings);
+                        }, array_filter($classRatings)),
+                        'by_gender' => array_map(function($genderRatings) {
+                            return empty($genderRatings) ? null : calculateStatistics($genderRatings);
+                        }, $genderRatings),
+                        'by_education' => array_map(function($eduRatings) {
+                            return calculateStatistics($eduRatings);
+                        }, array_filter($educationRatings)),
+                        'by_age' => array_map(function($ageRatings) {
+                            return empty($ageRatings) ? null : calculateStatistics($ageRatings);
+                        }, $ageGroupRatings)
+                    ]
                 ];
                 
-                // Group by aspect for overall performance
-                if (!isset($aspectPerformance[$pertanyaan['aspek_dinilai']])) {
-                    $aspectPerformance[$pertanyaan['aspek_dinilai']] = [];
+                // Aspect performance summary
+                if (!isset($analytics['aspect_performance'][$pertanyaan['aspek_dinilai']])) {
+                    $analytics['aspect_performance'][$pertanyaan['aspek_dinilai']] = [
+                        'ratings' => [],
+                        'questions_count' => 0
+                    ];
                 }
-                $aspectPerformance[$pertanyaan['aspek_dinilai']] = array_merge(
-                    $aspectPerformance[$pertanyaan['aspek_dinilai']], 
+                $analytics['aspect_performance'][$pertanyaan['aspek_dinilai']]['ratings'] = array_merge(
+                    $analytics['aspect_performance'][$pertanyaan['aspek_dinilai']]['ratings'], 
                     $ratings
                 );
+                $analytics['aspect_performance'][$pertanyaan['aspek_dinilai']]['questions_count']++;
             }
             
         } elseif ($pertanyaan['tipe_jawaban'] == 'pilihan_ganda') {
-            // FIXED: Multiple choice data processing - jawaban berupa text, bukan index
-            $pilihan = [];
-            if (!empty($pertanyaan['pilihan_jawaban'])) {
-                $pilihan = json_decode($pertanyaan['pilihan_jawaban'], true);
-                if (!is_array($pilihan)) $pilihan = [];
-            }
-            
+            // ENHANCED: Multiple choice analysis with cross-tabulation
+            $choices = json_decode($pertanyaan['pilihan_jawaban'], true) ?: [];
             $distribution = [];
-            foreach ($answers as $answer) {
-                $jawabanText = trim($answer['jawaban']);
+            $classDistribution = [];
+            $genderDistribution = ['Laki-Laki' => [], 'Perempuan' => []];
+            
+            foreach ($responses as $response) {
+                $answer = trim($response['jawaban']);
+                $choiceIndex = array_search($answer, $choices);
                 
-                // Cari index jawaban berdasarkan text
-                $choiceIndex = array_search($jawabanText, $pilihan);
                 if ($choiceIndex !== false) {
-                    $choiceLabel = chr(65 + $choiceIndex); // A, B, C, D, E
-                    if (!isset($distribution[$choiceLabel])) {
-                        $distribution[$choiceLabel] = [
-                            'count' => 0,
-                            'text' => $jawabanText
-                        ];
+                    $choiceLabel = chr(65 + $choiceIndex);
+                    $distribution[$choiceLabel] = ($distribution[$choiceLabel] ?? 0) + 1;
+                    
+                    // Class distribution
+                    $kelas = $response['nama_kelas'];
+                    if (!isset($classDistribution[$kelas])) {
+                        $classDistribution[$kelas] = [];
                     }
-                    $distribution[$choiceLabel]['count']++;
+                    $classDistribution[$kelas][$choiceLabel] = ($classDistribution[$kelas][$choiceLabel] ?? 0) + 1;
+                    
+                    // Gender distribution
+                    $gender = $response['jenis_kelamin'];
+                    if (isset($genderDistribution[$gender])) {
+                        $genderDistribution[$gender][$choiceLabel] = ($genderDistribution[$gender][$choiceLabel] ?? 0) + 1;
+                    }
                 } else {
-                    // Jika tidak ditemukan exact match, coba partial match
-                    foreach ($pilihan as $idx => $option) {
-                        if (stripos($option, $jawabanText) !== false || stripos($jawabanText, $option) !== false) {
+                    // Partial match fallback
+                    foreach ($choices as $idx => $option) {
+                        if (stripos($option, $answer) !== false || stripos($answer, $option) !== false) {
                             $choiceLabel = chr(65 + $idx);
-                            if (!isset($distribution[$choiceLabel])) {
-                                $distribution[$choiceLabel] = [
-                                    'count' => 0,
-                                    'text' => $option
-                                ];
-                            }
-                            $distribution[$choiceLabel]['count']++;
+                            $distribution[$choiceLabel] = ($distribution[$choiceLabel] ?? 0) + 1;
                             break;
                         }
                     }
@@ -182,69 +290,224 @@ if ($selectedPeriode > 0) {
             }
             
             if (!empty($distribution)) {
-                $multipleChoiceData[] = [
+                $totalResponses = array_sum($distribution);
+                $dominantChoice = array_keys($distribution, max($distribution))[0] ?? null;
+                
+                $analytics['multiple_choice'][] = [
                     'aspect' => $pertanyaan['aspek_dinilai'],
-                    'pertanyaan' => $pertanyaan['pertanyaan'],
+                    'question' => $pertanyaan['pertanyaan'],
+                    'id_pertanyaan' => $id_pertanyaan,
+                    'choices' => $choices,
                     'distribution' => $distribution,
-                    'total_responses' => count($answers)
+                    'percentages' => array_map(function($count) use ($totalResponses) {
+                        return round(($count / $totalResponses) * 100, 1);
+                    }, $distribution),
+                    'demographics' => [
+                        'by_class' => $classDistribution,
+                        'by_gender' => array_filter($genderDistribution)
+                    ],
+                    'total_responses' => $totalResponses,
+                    'dominant_choice' => $dominantChoice,
+                    'consensus_level' => $dominantChoice ? round((max($distribution) / $totalResponses) * 100, 1) : 0
                 ];
             }
             
         } elseif ($pertanyaan['tipe_jawaban'] == 'isian') {
-            // FIXED: Text answers processing
-            $texts = [];
-            foreach ($answers as $answer) {
-                $text = trim($answer['jawaban']);
-                if (!empty($text) && strlen($text) > 3) { // Filter jawaban yang bermakna
-                    $texts[] = $text;
+            // ENHANCED: Text analysis with sentiment and keywords
+            $textResponses = [];
+            $wordCounts = [];
+            $sentimentAnalysis = ['positive' => 0, 'negative' => 0, 'neutral' => 0];
+            $keywordFrequency = [];
+            
+            // Enhanced sentiment keywords (Indonesian)
+            $sentimentWords = [
+                'positive' => ['baik', 'bagus', 'sangat', 'membantu', 'jelas', 'mudah', 'senang', 'puas', 'excellent', 'mantap', 'oke', 'memuaskan', 'hebat'],
+                'negative' => ['sulit', 'susah', 'kurang', 'tidak', 'buruk', 'jelek', 'bingung', 'kecewa', 'lambat', 'ribet', 'membosankan']
+            ];
+            
+            // Common stopwords (Indonesian)
+            $stopwords = ['dan', 'atau', 'yang', 'untuk', 'dari', 'dengan', 'pada', 'di', 'ke', 'oleh', 'ini', 'itu', 'adalah', 'akan', 'telah', 'sudah', 'saya', 'kami', 'kita'];
+            
+            foreach ($responses as $response) {
+                $text = trim($response['jawaban']);
+                if (strlen($text) > 5) {
+                    $wordCount = str_word_count($text);
+                    $wordCounts[] = $wordCount;
+                    
+                    // Simple sentiment analysis
+                    $sentiment = 'neutral';
+                    $positiveCount = 0;
+                    $negativeCount = 0;
+                    
+                    foreach ($sentimentWords['positive'] as $word) {
+                        if (stripos($text, $word) !== false) $positiveCount++;
+                    }
+                    foreach ($sentimentWords['negative'] as $word) {
+                        if (stripos($text, $word) !== false) $negativeCount++;
+                    }
+                    
+                    if ($positiveCount > $negativeCount) {
+                        $sentiment = 'positive';
+                        $sentimentAnalysis['positive']++;
+                    } elseif ($negativeCount > $positiveCount) {
+                        $sentiment = 'negative';
+                        $sentimentAnalysis['negative']++;
+                    } else {
+                        $sentimentAnalysis['neutral']++;
+                    }
+                    
+                    // Extract keywords (simple approach)
+                    $words = array_filter(
+                        array_map('trim', explode(' ', strtolower($text))),
+                        function($word) use ($stopwords) {
+                            return strlen($word) > 3 && !in_array($word, $stopwords);
+                        }
+                    );
+                    
+                    foreach ($words as $word) {
+                        $keywordFrequency[$word] = ($keywordFrequency[$word] ?? 0) + 1;
+                    }
+                    
+                    $textResponses[] = [
+                        'text' => $text,
+                        'word_count' => $wordCount,
+                        'sentiment' => $sentiment,
+                        'class' => $response['nama_kelas'],
+                        'student' => $response['nama_siswa'],
+                        'gender' => $response['jenis_kelamin']
+                    ];
                 }
             }
             
-            if (!empty($texts)) {
-                $feedbackData[] = [
+            if (!empty($textResponses)) {
+                // Get top keywords
+                arsort($keywordFrequency);
+                $topKeywords = array_slice($keywordFrequency, 0, 10, true);
+                
+                $analytics['text_feedback'][] = [
                     'aspect' => $pertanyaan['aspek_dinilai'],
-                    'pertanyaan' => $pertanyaan['pertanyaan'],
-                    'responses' => $texts,
-                    'count' => count($texts)
+                    'question' => $pertanyaan['pertanyaan'],
+                    'id_pertanyaan' => $id_pertanyaan,
+                    'responses' => $textResponses,
+                    'statistics' => [
+                        'total_responses' => count($textResponses),
+                        'avg_word_count' => empty($wordCounts) ? 0 : round(array_sum($wordCounts) / count($wordCounts), 1),
+                        'sentiment_distribution' => $sentimentAnalysis,
+                        'response_quality' => [
+                            'short' => count(array_filter($wordCounts, function($c) { return $c < 5; })),
+                            'medium' => count(array_filter($wordCounts, function($c) { return $c >= 5 && $c < 15; })),
+                            'detailed' => count(array_filter($wordCounts, function($c) { return $c >= 15; }))
+                        ]
+                    ],
+                    'top_keywords' => $topKeywords,
+                    'sentiment_percentage' => [
+                        'positive' => round(($sentimentAnalysis['positive'] / count($textResponses)) * 100, 1),
+                        'negative' => round(($sentimentAnalysis['negative'] / count($textResponses)) * 100, 1),
+                        'neutral' => round(($sentimentAnalysis['neutral'] / count($textResponses)) * 100, 1)
+                    ]
                 ];
             }
         }
+    }
 
-        // Class performance for rating questions (FIXED)
-        if ($pertanyaan['tipe_jawaban'] == 'skala') {
-            foreach ($answers as $answer) {
-                $kelas = $answer['nama_kelas'];
-                $rating = (int)trim($answer['jawaban']);
-                
-                if ($rating >= 1 && $rating <= 5) {
-                    if (!isset($classPerformance[$kelas])) {
-                        $classPerformance[$kelas] = [];
-                    }
-                    $classPerformance[$kelas][] = $rating;
-                }
+    // Calculate enhanced overall metrics
+    $overallMetrics = [];
+    
+    // Overall satisfaction calculation
+    $allRatings = [];
+    foreach ($analytics['rating_analysis'] as $ratingData) {
+        $stats = $ratingData['statistics'];
+        for ($i = 1; $i <= 5; $i++) {
+            $count = $stats['distribution'][$i] ?? 0;
+            $allRatings = array_merge($allRatings, array_fill(0, $count, $i));
+        }
+    }
+    
+    if (!empty($allRatings)) {
+        $overallStats = calculateStatistics($allRatings);
+        $overallMetrics['satisfaction'] = $overallStats;
+    }
+
+    // Prepare simplified data for existing charts (backward compatibility)
+    $ratingData = [];
+    $multipleChoiceData = [];
+    $feedbackData = [];
+    $classAverages = [];
+    $aspectAverages = [];
+
+    // Convert enhanced data back to simple format for charts
+    foreach ($analytics['rating_analysis'] as $data) {
+        $ratingData[] = [
+            'aspect' => $data['aspect'],
+            'pertanyaan' => $data['question'],
+            'average' => $data['statistics']['mean'],
+            'count' => $data['statistics']['count'],
+            'detail' => $data['statistics']['distribution']
+        ];
+    }
+
+    if (isset($analytics['multiple_choice'])) {
+        foreach ($analytics['multiple_choice'] as $data) {
+            $distribution = [];
+            foreach ($data['distribution'] as $choice => $count) {
+                $distribution[$choice] = [
+                    'count' => $count,
+                    'text' => $data['choices'][ord($choice) - 65] ?? $choice
+                ];
+            }
+            
+            $multipleChoiceData[] = [
+                'aspect' => $data['aspect'],
+                'pertanyaan' => $data['question'],
+                'distribution' => $distribution,
+                'total_responses' => $data['total_responses']
+            ];
+        }
+    }
+
+    if (isset($analytics['text_feedback'])) {
+        foreach ($analytics['text_feedback'] as $data) {
+            $feedbackData[] = [
+                'aspect' => $data['aspect'],
+                'pertanyaan' => $data['question'],
+                'responses' => array_column($data['responses'], 'text'),
+                'count' => $data['statistics']['total_responses']
+            ];
+        }
+    }
+
+    // Calculate class and aspect averages
+    foreach ($analytics['rating_analysis'] as $data) {
+        $aspect = $data['aspect'];
+        if (!isset($aspectAverages[$aspect])) {
+            $aspectAverages[$aspect] = [];
+        }
+        $aspectAverages[$aspect][] = $data['statistics']['mean'];
+        
+        foreach ($data['demographics']['by_class'] as $className => $classStats) {
+            if ($classStats && !isset($classAverages[$className])) {
+                $classAverages[$className] = [];
+            }
+            if ($classStats) {
+                $classAverages[$className][] = $classStats['mean'];
             }
         }
     }
 
-    // Calculate class averages (FIXED)
-    $classAverages = [];
-    foreach ($classPerformance as $kelas => $ratings) {
-        if (!empty($ratings)) {
-            $classAverages[$kelas] = round(array_sum($ratings) / count($ratings), 1);
-        }
+    // Average the averages
+    foreach ($aspectAverages as $aspect => $means) {
+        $aspectAverages[$aspect] = round(array_sum($means) / count($means), 1);
     }
-    
-    // Calculate aspect averages (FIXED)
-    $aspectAverages = [];
-    foreach ($aspectPerformance as $aspect => $ratings) {
-        if (!empty($ratings)) {
-            $aspectAverages[$aspect] = round(array_sum($ratings) / count($ratings), 1);
-        }
+
+    foreach ($classAverages as $class => $means) {
+        $classAverages[$class] = round(array_sum($means) / count($means), 1);
     }
 
 } else {
     $currentPeriode = null;
     $pertanyaanData = [];
+    $analytics = [];
+    $overallMetrics = [];
     $ratingData = [];
     $multipleChoiceData = [];
     $feedbackData = [];

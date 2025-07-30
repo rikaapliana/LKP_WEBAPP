@@ -519,6 +519,9 @@ $resultTahun = mysqli_query($conn, $queryTahun);
     const alertContainer = document.getElementById('alertContainer');
     const statsContainer = document.getElementById('statsContainer');
 
+
+
+    
     // Utility functions
     function showLoading(chartId) {
         const loadingEl = document.getElementById(`loading${chartId}`);

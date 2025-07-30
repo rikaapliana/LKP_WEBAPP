@@ -479,7 +479,7 @@ if (isset($_GET['error'])) {
                 </div>
                 
                 <div class="footer-text">
-                    &copy; <?= date('Y') ?> Pradata School of Computer
+                    &copy; <?= date('Y') ?> LKP Pradata Komputer Tabalong | Developed by Rika Apliana
                 </div>
             </div>
         </div>
