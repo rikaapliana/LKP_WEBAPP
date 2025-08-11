@@ -445,38 +445,36 @@ function buildUrlWithFilters($page) {
                       <td class="text-center align-middle"><?= $no++ ?></td>
                       
                       <!-- Periode Evaluasi -->
-                      <td class="align-middle">
+                      <td class="align-middle text-nowrap">
                         <div class="fw-medium"><?= htmlspecialchars($periode['nama_evaluasi']) ?></div>
-                        <small class="text-muted">ID: <?= $periode['id_periode'] ?></small>
                       </td>
                       
                       <!-- Jenis & Materi -->
-                      <td class="align-middle">
+                      <td class="align-middle text-nowrap">
                         <div class="d-flex flex-column">
                           <?php if($periode['jenis_evaluasi'] == 'per_materi'): ?>
-                            <span class="badge bg-info-subtle text-info mb-1">Per Materi</span>
+                            <span>Per Materi</span>
                             <?php 
                             $materi_label = [
-                              'word' => 'Microsoft Word',
-                              'excel' => 'Microsoft Excel', 
-                              'ppt' => 'Microsoft PowerPoint',
-                              'internet' => 'Internet & Email'
+                              'word' => '(Microsoft Word)',
+                              'excel' => '(Microsoft Excel)', 
+                              'ppt' => '(Microsoft PowerPoint)',
+                              'internet' => '(Internet & Email)'
                             ];
                             ?>
                             <small class="text-muted">
                               <?= $materi_label[$periode['materi_terkait']] ?? ucfirst($periode['materi_terkait']) ?>
                             </small>
                           <?php else: ?>
-                            <span class="badge bg-primary-subtle text-primary">Akhir Kursus</span>
+                            <span>Akhir Kursus</span>
                             <small class="text-muted">Evaluasi komprehensif</small>
                           <?php endif; ?>
                         </div>
                       </td>
                       
                       <!-- Gelombang -->
-                      <td class="align-middle">
+                      <td class="align-middle text-nowrap">
                         <div class="fw-medium"><?= htmlspecialchars($periode['nama_gelombang']) ?></div>
-                        <small class="text-muted">Tahun <?= $periode['tahun'] ?></small>
                       </td>
                       
                       <!-- Tanggal Periode -->

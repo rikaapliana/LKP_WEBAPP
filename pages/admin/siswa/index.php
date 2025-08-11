@@ -447,7 +447,7 @@ function buildUrlWithFilters($page) {
                       </td>
                       
                       <!-- Tempat Lahir -->
-                      <td class="align-middle">
+                      <td class="align-middle text-nowrap">
                         <small><?= htmlspecialchars($siswa['tempat_lahir']) ?></small>
                       </td>
                       

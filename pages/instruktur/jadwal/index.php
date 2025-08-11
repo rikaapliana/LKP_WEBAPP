@@ -384,13 +384,12 @@ if (!empty($filterTanggal)) $activeFilters++;
                       <td class="align-middle">
                         <div class="fw-medium"><?= htmlspecialchars($jadwal['nama_kelas']) ?></div>
                         <?php if($jadwal['nama_gelombang']): ?>
-                          <small class="text-muted"><?= htmlspecialchars($jadwal['nama_gelombang']) ?></small>
+                          <small class="text-muted">(<?= htmlspecialchars($jadwal['nama_gelombang']) ?>)</small>
                         <?php endif; ?>
                       </td>
                       
-                      <td class="text-center align-middle">
-                        <span class="badge bg-info px-2 py-1">
-                          <i class="bi bi-people me-1"></i>
+                      <td class="align-middle">
+                        <span>
                           <?= $jadwal['jumlah_siswa'] ?> siswa
                         </span>
                       </td>

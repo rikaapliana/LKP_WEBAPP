@@ -65,7 +65,7 @@ if (!$admin_data) {
                     <li class="breadcrumb-item">
                       <a href="../dashboard.php">Dashboard</a>
                     </li>
-                    <li class="breadcrumb-item active" aria-current="page">Profil</li>
+                    <li class="breadcrumb-item active" aria-current="page">Profil Saya</li>
                   </ol>
                 </nav>
               </div>

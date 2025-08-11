@@ -246,21 +246,7 @@ $bankSoal = mysqli_fetch_assoc($bankSoalResult);
       <!-- Info Bank Soal -->
       <div class="row mb-4">
         <div class="col-12">
-          <div class="alert alert-info">
-            <div class="row align-items-center">
-              <div class="col-md-8">
-                <h6 class="mb-1"><i class="bi bi-info-circle me-2"></i>Bank Soal Tersedia</h6>
-                <small>
-                  <strong>Per Materi:</strong> <?= $bankSoal['per_materi'] ?> soal 
-                  (Word: <?= $bankSoal['word'] ?>, Excel: <?= $bankSoal['excel'] ?>, PPT: <?= $bankSoal['ppt'] ?>, Internet: <?= $bankSoal['internet'] ?>) |
-                  <strong>Akhir Kursus:</strong> <?= $bankSoal['akhir_kursus'] ?> soal
-                </small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
+       
       <!-- Main Form Card -->
       <div class="card content-card">
         <div class="section-header">
@@ -284,13 +270,6 @@ $bankSoal = mysqli_fetch_assoc($bankSoalResult);
                   <input type="text" name="nama_evaluasi" id="namaEvaluasi" class="form-control" required
                          value="<?= isset($_POST['nama_evaluasi']) ? htmlspecialchars($_POST['nama_evaluasi']) : '' ?>"
                          placeholder="Misal: Evaluasi Materi Word - Gelombang 1">
-                  <div class="form-text">
-                    <small>Nama yang mudah dikenali untuk periode evaluasi ini</small>
-                    <div class="d-flex justify-content-between mt-1">
-                      <span id="namaCharCount" class="text-muted">0 karakter</span>
-                      <span class="text-muted">Min 5 karakter</span>
-                    </div>
-                  </div>
                 </div>
 
                 <div class="mb-4">
@@ -304,9 +283,6 @@ $bankSoal = mysqli_fetch_assoc($bankSoalResult);
                       Evaluasi Akhir Kursus
                     </option>
                   </select>
-                  <div class="form-text" id="jenisHelp">
-                    <small>Pilih jenis untuk melihat bank soal yang tersedia</small>
-                  </div>
                 </div>
 
                 <!-- Conditional Field: Materi Terkait -->
@@ -347,18 +323,6 @@ $bankSoal = mysqli_fetch_assoc($bankSoalResult);
                       <option value="" disabled>Tidak ada gelombang tersedia</option>
                     <?php endif; ?>
                   </select>
-                  <div class="form-text">
-                    <small>Gelombang yang akan mengikuti evaluasi ini</small>
-                  </div>
-                </div>
-
-                <div class="mb-4">
-                  <label class="form-label">Deskripsi</label>
-                  <textarea name="deskripsi" id="deskripsi" class="form-control" rows="3"
-                            placeholder="Deskripsi tambahan untuk periode evaluasi (opsional)"><?= isset($_POST['deskripsi']) ? htmlspecialchars($_POST['deskripsi']) : '' ?></textarea>
-                  <div class="form-text">
-                    <small>Informasi tambahan yang akan membantu siswa memahami evaluasi</small>
-                  </div>
                 </div>
               </div>
 
@@ -372,57 +336,36 @@ $bankSoal = mysqli_fetch_assoc($bankSoalResult);
                   <label class="form-label required">Tanggal & Waktu Buka</label>
                   <input type="datetime-local" name="tanggal_buka" id="tanggalBuka" class="form-control" required
                          value="<?= isset($_POST['tanggal_buka']) ? $_POST['tanggal_buka'] : '' ?>">
-                  <div class="form-text">
-                    <small>Kapan siswa dapat mulai mengisi evaluasi</small>
-                  </div>
                 </div>
 
                 <div class="mb-4">
                   <label class="form-label required">Tanggal & Waktu Tutup</label>
                   <input type="datetime-local" name="tanggal_tutup" id="tanggalTutup" class="form-control" required
                          value="<?= isset($_POST['tanggal_tutup']) ? $_POST['tanggal_tutup'] : '' ?>">
-                  <div class="form-text">
-                    <small>Kapan periode evaluasi berakhir</small>
-                  </div>
                 </div>
 
                 <div class="mb-4">
-                  <label class="form-label required">Status Awal</label>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input" type="radio" name="status" id="statusDraft" value="draft" 
-                           <?= (!isset($_POST['status']) || $_POST['status'] == 'draft') ? 'checked' : '' ?>>
-                    <label class="form-check-label" for="statusDraft">
-                      <strong>Draft</strong>
-                      <div class="form-text"><small>Belum aktif, masih bisa diedit</small></div>
-                    </label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="radio" name="status" id="statusAktif" value="aktif"
-                           <?= (isset($_POST['status']) && $_POST['status'] == 'aktif') ? 'checked' : '' ?>>
-                    <label class="form-check-label" for="statusAktif">
-                      <strong>Aktif</strong>
-                      <div class="form-text"><small>Langsung aktif sesuai jadwal</small></div>
-                    </label>
-                  </div>
-                </div>
-
-                <!-- Quick Actions -->
-                <div class="mb-4">
-                  <label class="form-label">Quick Actions</label>
-                  <div class="d-grid gap-2">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="setHariIni">
-                      <i class="bi bi-calendar-today me-1"></i>Set Buka: Hari Ini
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="setPeriode7Hari">
-                      <i class="bi bi-calendar-week me-1"></i>Set Periode: 7 Hari
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="setPeriode14Hari">
-                      <i class="bi bi-calendar2-week me-1"></i>Set Periode: 14 Hari
-                    </button>
+                  <label class="form-label required">Status</label>
+                  <div class="d-flex gap-4">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="status" id="statusDraft" value="draft" 
+                            <?= (!isset($_POST['status']) || $_POST['status'] == 'draft') ? 'checked' : '' ?>>
+                      <label class="form-check-label" for="statusDraft">
+                        <strong>Draft</strong>
+                        <div class="form-text"><small>Belum aktif, masih bisa diedit</small></div>
+                      </label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="status" id="statusAktif" value="aktif"
+                            <?= (isset($_POST['status']) && $_POST['status'] == 'aktif') ? 'checked' : '' ?>>
+                      <label class="form-check-label" for="statusAktif">
+                        <strong>Aktif</strong>
+                        <div class="form-text"><small>Langsung aktif sesuai jadwal</small></div>
+                      </label>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
+                </div>
 
             <!-- STEP 2: PILIH PERTANYAAN (NEW SECTION!) -->
             <div class="row mb-5">

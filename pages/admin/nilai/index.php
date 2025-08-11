@@ -503,18 +503,17 @@ function buildUrlWithFilters($page) {
                       <!-- Kelas -->
                       <td class="align-middle text-nowrap">
                         <?php if($nilai['nama_kelas']): ?>
-                          <span class="badge bg-primary px-2 py-1">
-                            <i class="bi bi-building me-1"></i>
+                          <span class="fw-medium small">
                             <?= htmlspecialchars($nilai['nama_kelas']) ?>
                           </span>
                           <?php if($nilai['nama_gelombang']): ?>
-                            <br><small class="text-muted"><?= htmlspecialchars($nilai['nama_gelombang']) ?></small>
+                            <br><small class="text-muted">(<?= htmlspecialchars($nilai['nama_gelombang']) ?>)</small>
                           <?php endif; ?>
                         <?php else: ?>
                           <span class="text-muted fst-italic">-</span>
                         <?php endif; ?>
                       </td>
-                      
+
                       <!-- Nilai Word -->
                       <td class="text-center align-middle">
                         <?php if($nilai['nilai_word'] && $nilai['nilai_word'] > 0): ?>
@@ -566,10 +565,6 @@ function buildUrlWithFilters($page) {
                           <span class="badge bg-<?= $nilai['nilai_terisi'] == 5 ? 'success' : ($nilai['nilai_terisi'] >= 3 ? 'warning' : 'secondary') ?> mb-1">
                             <?= $nilai['nilai_terisi'] ?>/5
                           </span>
-                          <div class="progress" style="width: 60px; height: 4px;">
-                            <div class="progress-bar bg-<?= $nilai['nilai_terisi'] == 5 ? 'success' : ($nilai['nilai_terisi'] >= 3 ? 'warning' : 'secondary') ?>" 
-                                 style="width: <?= ($nilai['nilai_terisi'] / 5) * 100 ?>%"></div>
-                          </div>
                         </div>
                       </td>
                       

@@ -912,7 +912,7 @@
     </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2025 LKP Pradata Komputer Tabalong | Developed by Rika Apliana</p>
+                <p>&copy; 2025 LKP Pradata Komputer Tabalong</p>
             </div>
         </div>
     </footer>

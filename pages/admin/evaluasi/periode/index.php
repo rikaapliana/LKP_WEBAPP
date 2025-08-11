@@ -212,16 +212,6 @@ function formatPeriodeWaktu($tanggal_buka, $tanggal_tutup, $status) {
     $result .= '<small class="text-muted d-block">Buka: ' . date('d M Y, H:i', $buka) . '</small>';
     $result .= '<small class="text-muted d-block">Tutup: ' . date('d M Y, H:i', $tutup) . '</small>';
     
-    if ($status == 'aktif') {
-        if ($now < $buka) {
-            $result .= '<small class="text-warning"><i class="bi bi-clock me-1"></i>Belum dimulai</small>';
-        } elseif ($now > $tutup) {
-            $result .= '<small class="text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Sudah berakhir</small>';
-        } else {
-            $result .= '<small class="text-success"><i class="bi bi-play-circle me-1"></i>Sedang berjalan</small>';
-        }
-    }
-    
     $result .= '</div>';
     return $result;
 }
@@ -583,14 +573,12 @@ function formatPeriodeWaktu($tanggal_buka, $tanggal_tutup, $status) {
                         </div>
                       </td>
                       
-                      <td class="align-middle">
+                      <td class="align-middle text-nowrap">
                         <?php if($periode['jenis_evaluasi'] == 'akhir_kursus'): ?>
-                          <span class="badge bg-success">
-                            <i class="bi bi-award me-1"></i>Akhir Kursus
+                          <span> Akhir Kursus
                           </span>
                         <?php else: ?>
-                          <span class="badge bg-info">
-                            <i class="bi bi-book me-1"></i>Per Materi
+                          <span> Per Materi
                           </span>
                         <?php endif; ?>
                       </td>

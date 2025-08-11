@@ -424,147 +424,150 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
               </div>
             </div>
 
-            <!-- Upload Documents Section -->
-            <div class="row mt-5">
+          <!-- Upload Documents Section -->
+            <div class="row mt-4">
               <div class="col-12">
-                <h6 class="section-title mb-4">
-                  <i class="bi bi-cloud-upload me-2"></i>Dokumen Persyaratan
+                <h6 class="section-title mb-3">
+                  <i class="bi bi-cloud-upload me-2"></i>Dokumen
                 </h6>
-                <p class="text-muted mb-4">Upload ulang dokumen jika diperlukan. File lama akan diganti dengan file baru.</p>
                 
-                <div class="row">
+                <div class="row g-3">
                   <!-- Pas Foto -->
-                  <div class="col-lg-3 col-md-6 mb-4">
-                    <div class="border rounded p-3" style="background-color: #f8f9fa;">
-                      <h6 class="mb-3">
-                        <i class="bi bi-camera me-1"></i>Pas Foto
+                  <div class="col-lg-3 col-md-6">
+                    <div class="border rounded p-3 h-100">
+                      <h6 class="mb-2 small">
+                        <i class="bi bi-camera me-1 text-primary"></i>Pas Foto
                       </h6>
                       
-                      <?php if(!empty($siswa['pas_foto'])): ?>
-                        <div class="current-file mb-3 p-3 border rounded" style="background-color: #f8f9fa;">
-                          <h6 class="mb-3">Foto Saat Ini</h6>
-                          <div class="text-center mb-3">
-                            <img src="../../../uploads/pas_foto/<?= $siswa['pas_foto'] ?>" 
-                                 alt="Pas Foto" 
-                                 class="img-thumbnail" 
-                                 style="max-width: 150px; max-height: 150px; object-fit: cover;">
-                          </div>
-                          <div class="text-center mb-3">
-                            <a href="../../../uploads/pas_foto/<?= $siswa['pas_foto'] ?>" target="_blank" 
-                               class="btn btn-outline-primary btn-sm">
-                              <i class="bi bi-eye me-1"></i>Lihat Foto
-                            </a>
-                          </div>
-                          <div class="form-check">
-                            <input type="checkbox" name="hapus_pas_foto" value="1" class="form-check-input" id="hapus_pas_foto">
-                            <label class="form-check-label text-danger" for="hapus_pas_foto">
-                              <i class="bi bi-trash me-1"></i>Hapus foto ini
-                            </label>
-                          </div>
+                      <?php if(!empty($siswa['pas_foto']) && file_exists("../../../uploads/pas_foto/" . $siswa['pas_foto'])): ?>
+                        <div class="text-center mb-2">
+                          <img src="../../../uploads/pas_foto/<?= $siswa['pas_foto'] ?>" 
+                               alt="Foto" 
+                               class="rounded" 
+                               style="width: 80px; height: 80px; object-fit: cover;">
+                        </div>
+                        <div class="mb-2">
+                          <a href="../../../uploads/pas_foto/<?= $siswa['pas_foto'] ?>" target="_blank" 
+                             class="btn btn-outline-primary btn-sm w-100">
+                            Lihat
+                          </a>
+                        </div>
+                        <div class="form-check mb-2">
+                          <input type="checkbox" name="hapus_pas_foto" value="1" class="form-check-input" id="hapus_pas_foto">
+                          <label class="form-check-label small text-danger" for="hapus_pas_foto">
+                            Hapus
+                          </label>
+                        </div>
+                      <?php else: ?>
+                        <div class="text-center text-muted mb-2" style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                          <small>Belum ada</small>
                         </div>
                       <?php endif; ?>
                       
-                      <input type="file" name="pas_foto" class="form-control" accept=".jpg,.jpeg,.png">
-                      <div class="form-text"><small>Format yang didukung: JPG, JPEG, PNG (Maks 2MB)</small></div>
+                      <input type="file" name="pas_foto" class="form-control form-control-sm" accept=".jpg,.jpeg,.png">
+                      <small class="text-muted">JPG/PNG max 2MB</small>
                     </div>
                   </div>
 
                   <!-- KTP -->
-                  <div class="col-lg-3 col-md-6 mb-4">
-                    <div class="border rounded p-3" style="background-color: #f8f9fa;">
-                      <h6 class="mb-3">
-                        <i class="bi bi-file-pdf me-1"></i>Scan KTP
+                  <div class="col-lg-3 col-md-6">
+                    <div class="border rounded p-3 h-100">
+                      <h6 class="mb-2 small">
+                        <i class="bi bi-file-pdf me-1 text-danger"></i>KTP
                       </h6>
                       
-                      <?php if(!empty($siswa['ktp'])): ?>
-                        <div class="current-file mb-3 p-3 border rounded" style="background-color: #f8f9fa;">
-                          <h6 class="mb-3">File KTP Saat Ini</h6>
-                          <div class="text-center mb-3">
-                            <i class="bi bi-file-pdf text-danger" style="font-size: 3rem;"></i>
-                          </div>
-                          <div class="text-center mb-3">
-                            <a href="../../../uploads/ktp/<?= $siswa['ktp'] ?>" target="_blank" 
-                               class="btn btn-outline-primary btn-sm">
-                              <i class="bi bi-eye me-1"></i>Lihat File
-                            </a>
-                          </div>
-                          <div class="form-check">
-                            <input type="checkbox" name="hapus_ktp" value="1" class="form-check-input" id="hapus_ktp">
-                            <label class="form-check-label text-danger" for="hapus_ktp">
-                              <i class="bi bi-trash me-1"></i>Hapus file ini
-                            </label>
-                          </div>
+                      <?php if(!empty($siswa['ktp']) && file_exists("../../../uploads/ktp/" . $siswa['ktp'])): ?>
+                        <div class="text-center mb-2" style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                          <i class="bi bi-file-pdf text-danger" style="font-size: 2rem;"></i>
+                        </div>
+                        <div class="mb-2">
+                          <a href="../../../uploads/ktp/<?= $siswa['ktp'] ?>" target="_blank" 
+                             class="btn btn-outline-danger btn-sm w-100">
+                            Download
+                          </a>
+                        </div>
+                        <div class="form-check mb-2">
+                          <input type="checkbox" name="hapus_ktp" value="1" class="form-check-input" id="hapus_ktp">
+                          <label class="form-check-label small text-danger" for="hapus_ktp">
+                            Hapus
+                          </label>
+                        </div>
+                      <?php else: ?>
+                        <div class="text-center text-muted mb-2" style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                          <small>Belum ada</small>
                         </div>
                       <?php endif; ?>
                       
-                      <input type="file" name="ktp" class="form-control" accept=".pdf">
-                      <div class="form-text"><small>Format yang didukung: PDF (Maks 5MB)</small></div>
+                      <input type="file" name="ktp" class="form-control form-control-sm" accept=".pdf">
+                      <small class="text-muted">PDF max 5MB</small>
                     </div>
                   </div>
 
                   <!-- KK -->
-                  <div class="col-lg-3 col-md-6 mb-4">
-                    <div class="border rounded p-3" style="background-color: #f8f9fa;">
-                      <h6 class="mb-3">
-                        <i class="bi bi-file-pdf me-1"></i>Kartu Keluarga
+                  <div class="col-lg-3 col-md-6">
+                    <div class="border rounded p-3 h-100">
+                      <h6 class="mb-2 small">
+                        <i class="bi bi-file-pdf me-1 text-info"></i>Kartu Keluarga
                       </h6>
                       
-                      <?php if(!empty($siswa['kk'])): ?>
-                        <div class="current-file mb-3 p-3 border rounded" style="background-color: #f8f9fa;">
-                          <h6 class="mb-3">File KK Saat Ini</h6>
-                          <div class="text-center mb-3">
-                            <i class="bi bi-file-pdf text-info" style="font-size: 3rem;"></i>
-                          </div>
-                          <div class="text-center mb-3">
-                            <a href="../../../uploads/kk/<?= $siswa['kk'] ?>" target="_blank" 
-                               class="btn btn-outline-primary btn-sm">
-                              <i class="bi bi-eye me-1"></i>Lihat File
-                            </a>
-                          </div>
-                          <div class="form-check">
-                            <input type="checkbox" name="hapus_kk" value="1" class="form-check-input" id="hapus_kk">
-                            <label class="form-check-label text-danger" for="hapus_kk">
-                              <i class="bi bi-trash me-1"></i>Hapus file ini
-                            </label>
-                          </div>
+                      <?php if(!empty($siswa['kk']) && file_exists("../../../uploads/kk/" . $siswa['kk'])): ?>
+                        <div class="text-center mb-2" style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                          <i class="bi bi-file-pdf text-info" style="font-size: 2rem;"></i>
+                        </div>
+                        <div class="mb-2">
+                          <a href="../../../uploads/kk/<?= $siswa['kk'] ?>" target="_blank" 
+                             class="btn btn-outline-info btn-sm w-100">
+                            Download
+                          </a>
+                        </div>
+                        <div class="form-check mb-2">
+                          <input type="checkbox" name="hapus_kk" value="1" class="form-check-input" id="hapus_kk">
+                          <label class="form-check-label small text-danger" for="hapus_kk">
+                            Hapus
+                          </label>
+                        </div>
+                      <?php else: ?>
+                        <div class="text-center text-muted mb-2" style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                          <small>Belum ada</small>
                         </div>
                       <?php endif; ?>
                       
-                      <input type="file" name="kk" class="form-control" accept=".pdf">
-                       <div class="form-text"><small>Format yang didukung: PDF (Maks 5MB)</small></div>
+                      <input type="file" name="kk" class="form-control form-control-sm" accept=".pdf">
+                      <small class="text-muted">PDF max 5MB</small>
                     </div>
                   </div>
 
                   <!-- Ijazah -->
-                  <div class="col-lg-3 col-md-6 mb-4">
-                    <div class="border rounded p-3" style="background-color: #f8f9fa;">
-                      <h6 class="mb-3">
-                        <i class="bi bi-file-pdf me-1"></i>Ijazah
+                  <div class="col-lg-3 col-md-6">
+                    <div class="border rounded p-3 h-100">
+                      <h6 class="mb-2 small">
+                        <i class="bi bi-file-pdf me-1 text-success"></i>Ijazah
                       </h6>
                       
-                      <?php if(!empty($siswa['ijazah'])): ?>
-                        <div class="current-file mb-3 p-3 border rounded" style="background-color: #f8f9fa;">
-                          <h6 class="mb-3">File Ijazah Saat Ini</h6>
-                          <div class="text-center mb-3">
-                            <i class="bi bi-file-pdf text-success" style="font-size: 3rem;"></i>
-                          </div>
-                          <div class="text-center mb-3">
-                            <a href="../../../uploads/ijazah/<?= $siswa['ijazah'] ?>" target="_blank" 
-                               class="btn btn-outline-primary btn-sm">
-                              <i class="bi bi-eye me-1"></i>Lihat File
-                            </a>
-                          </div>
-                          <div class="form-check">
-                            <input type="checkbox" name="hapus_ijazah" value="1" class="form-check-input" id="hapus_ijazah">
-                            <label class="form-check-label text-danger" for="hapus_ijazah">
-                              <i class="bi bi-trash me-1"></i>Hapus file ini
-                            </label>
-                          </div>
+                      <?php if(!empty($siswa['ijazah']) && file_exists("../../../uploads/ijazah/" . $siswa['ijazah'])): ?>
+                        <div class="text-center mb-2" style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                          <i class="bi bi-file-pdf text-success" style="font-size: 2rem;"></i>
+                        </div>
+                        <div class="mb-2">
+                          <a href="../../../uploads/ijazah/<?= $siswa['ijazah'] ?>" target="_blank" 
+                             class="btn btn-outline-success btn-sm w-100">
+                            Download
+                          </a>
+                        </div>
+                        <div class="form-check mb-2">
+                          <input type="checkbox" name="hapus_ijazah" value="1" class="form-check-input" id="hapus_ijazah">
+                          <label class="form-check-label small text-danger" for="hapus_ijazah">
+                            Hapus
+                          </label>
+                        </div>
+                      <?php else: ?>
+                        <div class="text-center text-muted mb-2" style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                          <small>Belum ada</small>
                         </div>
                       <?php endif; ?>
                       
-                      <input type="file" name="ijazah" class="form-control" accept=".pdf">
-                      <div class="form-text"><small>Format yang didukung: PDF (Maks 5MB)</small></div>
+                      <input type="file" name="ijazah" class="form-control form-control-sm" accept=".pdf">
+                      <small class="text-muted">PDF max 5MB</small>
                     </div>
                   </div>
                 </div>

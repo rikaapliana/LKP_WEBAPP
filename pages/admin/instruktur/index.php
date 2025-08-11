@@ -446,10 +446,9 @@ function buildUrlWithFilters($page) {
                         <?php endif; ?>
                       </td>
                       
-                      <!-- Foto -->
-                      <td class="text-center align-middle" style="text-align: center !important;">
-                        <?php if($instruktur['pas_foto'] && file_exists('../../../uploads/pas_foto/'.$instruktur['pas_foto'])): ?>
-                          <img src="../../../uploads/pas_foto/<?= $instruktur['pas_foto'] ?>" 
+                       <td class="text-center align-middle" style="text-align: center !important;">
+                        <?php if($instruktur['pas_foto'] && file_exists('../../../uploads/profile_pictures/'.$instruktur['pas_foto'])): ?>
+                          <img src="../../../uploads/profile_pictures/<?= $instruktur['pas_foto'] ?>" 
                                alt="Foto" 
                                class="rounded photo-preview" 
                                style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #e9ecef; margin: 0 auto; display: block;" 

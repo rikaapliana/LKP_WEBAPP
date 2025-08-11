@@ -53,52 +53,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $angkatan = mysqli_real_escape_string($conn, $_POST['angkatan']);
     $kelas_diampu = isset($_POST['kelas_diampu']) ? $_POST['kelas_diampu'] : [];
     
-    // Handle file upload pas foto
-    $pas_foto = $instruktur['pas_foto'];
-    
-    // Handle file deletion
-    if (isset($_POST['hapus_pas_foto']) && $_POST['hapus_pas_foto'] == '1') {
-        if (!empty($instruktur['pas_foto']) && file_exists("../../../uploads/pas_foto/" . $instruktur['pas_foto'])) {
-            unlink("../../../uploads/pas_foto/" . $instruktur['pas_foto']);
-        }
-        $pas_foto = '';
-    }
-    
-    // Upload pas foto baru
-    if (!empty($_FILES['pas_foto']['name'])) {
-        // Hapus file lama jika ada
-        if (!empty($instruktur['pas_foto']) && file_exists("../../../uploads/pas_foto/" . $instruktur['pas_foto'])) {
-            unlink("../../../uploads/pas_foto/" . $instruktur['pas_foto']);
-        }
-        
-        $targetDir = "../../../uploads/pas_foto/";
-        if (!file_exists($targetDir)) mkdir($targetDir, 0777, true);
-        
-        $fileExtension = strtolower(pathinfo($_FILES['pas_foto']['name'], PATHINFO_EXTENSION));
-        $allowedExtensions = ['jpg', 'jpeg', 'png'];
-        
-        if (in_array($fileExtension, $allowedExtensions)) {
-            $pas_foto = time() . '_instruktur_' . uniqid() . '.' . $fileExtension;
-            if (!move_uploaded_file($_FILES['pas_foto']['tmp_name'], $targetDir . $pas_foto)) {
-                $pas_foto = $instruktur['pas_foto']; // Kembalikan ke file lama jika gagal
-                $error = "Gagal mengupload foto. File tidak valid.";
-            }
-        } else {
-            $error = "Format file foto tidak didukung. Gunakan JPG, JPEG, atau PNG.";
-        }
-    }
-    
     if (!isset($error)) {
         // Begin transaction
         mysqli_begin_transaction($conn);
         
         try {
-            // Update data instruktur
+            // Update data instruktur (tanpa pas_foto karena dikelola instruktur sendiri)
             $query = "UPDATE instruktur SET 
                       nama = '$nama',
                       jenis_kelamin = '$jenis_kelamin',
-                      angkatan = '$angkatan',
-                      pas_foto = '$pas_foto'
+                      angkatan = '$angkatan'
                       WHERE id_instruktur = '$id_instruktur'";
             
             if (!mysqli_query($conn, $query)) {
@@ -227,191 +191,126 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
 
         <div class="card-body">
-          <form action="" method="post" enctype="multipart/form-data" id="formEditInstruktur">
+          <form action="" method="post" id="formEditInstruktur">
             <div class="row">
               
               <!-- Data Instruktur Section -->
-              <div class="col-lg-8">
+              <div class="col-12">
                 <h6 class="section-title mb-4">
                   <i class="bi bi-person-circle me-2"></i>Data Instruktur
                 </h6>
                 
-                <div class="mb-4">
-                  <label class="form-label">NIK</label>
-                  <input type="text" class="form-control" value="<?= htmlspecialchars($instruktur['nik']) ?>" readonly style="background-color: #f8f9fa;">
-                  <div class="form-text"><small>NIK tidak dapat diubah</small></div>
-                </div>
-
-                <div class="mb-4">
-                  <label class="form-label required">Nama Lengkap</label>
-                  <input type="text" name="nama" class="form-control" required 
-                         value="<?= htmlspecialchars($instruktur['nama']) ?>">
-                </div>
-
                 <div class="row">
-                  <div class="col-md-6">
-                    <div class="mb-4">
-                      <label class="form-label required">Jenis Kelamin</label>
-                      <select name="jenis_kelamin" class="form-select" required>
-                        <option value="">Pilih Jenis Kelamin</option>
-                        <option value="Laki-Laki" <?= ($instruktur['jenis_kelamin'] == 'Laki-Laki') ? 'selected' : '' ?>>Laki-Laki</option>
-                        <option value="Perempuan" <?= ($instruktur['jenis_kelamin'] == 'Perempuan') ? 'selected' : '' ?>>Perempuan</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="mb-4">
-                      <label class="form-label required">Angkatan</label>
-                      <input type="text" name="angkatan" class="form-control" required 
-                             placeholder="Contoh: Angkatan 2024"
-                             value="<?= htmlspecialchars($instruktur['angkatan']) ?>">
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Kelas yang Diampu -->
-                <div class="mb-4">
-                  <label class="form-label">
-                    <i class="bi bi-building me-1"></i>Kelas yang Diampu
-                  </label>
-                  
-                  <div class="border rounded p-3" style="background-color: #f8f9fa;">
-                    <!-- Search Box -->
+                  <div class="col-lg-6">
                     <div class="mb-3">
-                      <input type="text" 
-                             class="form-control form-control-sm" 
-                             id="kelasSearchInput" 
-                             placeholder="Cari kelas...">
+                      <label class="form-label">NIK</label>
+                      <input type="text" class="form-control" value="<?= htmlspecialchars($instruktur['nik']) ?>" readonly style="background-color: #f8f9fa;">
+                      <small class="text-muted">NIK tidak dapat diubah</small>
                     </div>
-                    
-                    <!-- Kelas List dalam scrollable area -->
-                    <div style="max-height: 280px; overflow-y: auto;" class="border rounded p-3 bg-white">
-                      <div class="row g-3">
-                        <?php if (mysqli_num_rows($kelasResult) > 0): ?>
-                          <?php mysqli_data_seek($kelasResult, 0); ?>
-                          <?php while($kelas = mysqli_fetch_assoc($kelasResult)): ?>
-                            <div class="col-md-6">
-                              <div class="kelas-item" 
-                                   data-search="<?= strtolower(htmlspecialchars($kelas['nama_kelas'] . ' ' . $kelas['nama_gelombang'])) ?>">
-                                <div class="form-check p-2 border rounded h-100">
-                                  <input class="form-check-input" 
-                                         type="checkbox" 
-                                         value="<?= $kelas['id_kelas'] ?>" 
-                                         id="kelas_<?= $kelas['id_kelas'] ?>"
-                                         name="kelas_diampu[]"
-                                         <?= in_array($kelas['id_kelas'], $kelasInstrukturArray) ? 'checked' : '' ?>
-                                         onchange="updateKelasCount()">
-                                  <label class="form-check-label w-100" for="kelas_<?= $kelas['id_kelas'] ?>">
-                                    <div class="fw-medium"><?= htmlspecialchars($kelas['nama_kelas']) ?></div>
-                                    <?php if($kelas['nama_gelombang']): ?>
-                                      <small class="text-muted"><?= htmlspecialchars($kelas['nama_gelombang']) ?> (<?= $kelas['tahun'] ?>)</small>
-                                    <?php endif; ?>
-                                  </label>
-                                </div>
-                              </div>
-                            </div>
-                          <?php endwhile; ?>
-                        <?php else: ?>
-                          <div class="col-12 text-center text-muted py-4">
-                            <i class="bi bi-info-circle me-2"></i>
-                            Tidak ada kelas yang sedang aktif
-                          </div>
-                        <?php endif; ?>
+
+                    <div class="mb-3">
+                      <label class="form-label required">Nama Lengkap</label>
+                      <input type="text" name="nama" class="form-control" required 
+                             value="<?= htmlspecialchars($instruktur['nama']) ?>">
+                    </div>
+
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label required">Jenis Kelamin</label>
+                          <select name="jenis_kelamin" class="form-select" required>
+                            <option value="">Pilih Jenis Kelamin</option>
+                            <option value="Laki-Laki" <?= ($instruktur['jenis_kelamin'] == 'Laki-Laki') ? 'selected' : '' ?>>Laki-Laki</option>
+                            <option value="Perempuan" <?= ($instruktur['jenis_kelamin'] == 'Perempuan') ? 'selected' : '' ?>>Perempuan</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label required">Angkatan</label>
+                          <input type="text" name="angkatan" class="form-control" required 
+                                 value="<?= htmlspecialchars($instruktur['angkatan']) ?>">
+                        </div>
                       </div>
                     </div>
-                    
-                    <!-- Controls -->
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                      <small class="text-muted">
-                        <i class="bi bi-check-circle me-1"></i>
-                        <span id="selectedCount"><?= count($kelasInstrukturArray) ?></span> kelas dipilih
-                      </small>
-                      <button type="button" class="btn-formal btn-batal" onclick="deselectAll()">
-                        Batalkan Semua
-                      </button>
-                    </div>
                   </div>
-                  
-                  <div class="form-text mt-2">
-                    Pilih kelas yang akan diampu oleh instruktur ini
-                  </div>
-                </div>
-              </div>
 
-              <!-- Upload Foto Section -->
-              <div class="col-lg-4">
-                <h6 class="section-title mb-4">
-                  <i class="bi bi-camera me-2"></i>Foto Profil
-                </h6>
-                
-                <!-- Current Photo -->
-                <?php if (!empty($instruktur['pas_foto'])): ?>
-                  <div class="current-file mb-4 p-3 border rounded" style="background-color: #f8f9fa;">
-                    <h6 class="mb-3">Foto Saat Ini</h6>
-                    
-                    <div class="text-center mb-3">
-                      <img src="../../../uploads/pas_foto/<?= $instruktur['pas_foto'] ?>" 
-                           alt="Foto Instruktur" 
-                           class="img-thumbnail" 
-                           style="max-width: 200px; max-height: 200px; object-fit: cover;">
-                    </div>
-                    
-                    <div class="text-center mb-3">
-                      <a href="../../../uploads/pas_foto/<?= $instruktur['pas_foto'] ?>" target="_blank" 
-                         class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-eye me-1"></i>Lihat Foto
-                      </a>
-                    </div>
-                    
-                    <div class="form-check">
-                      <input type="checkbox" name="hapus_pas_foto" value="1" class="form-check-input" id="hapus_pas_foto">
-                      <label class="form-check-label text-danger" for="hapus_pas_foto">
-                        <i class="bi bi-trash me-1"></i>Hapus foto ini
+                  <div class="col-lg-6">
+                    <!-- Kelas yang Diampu -->
+                    <div class="mb-3">
+                      <label class="form-label">
+                        <i class="bi bi-building me-1"></i>Kelas yang Diampu
                       </label>
+                      
+                      <div class="border rounded p-3 bg-light">
+                        <!-- Search Box -->
+                        <div class="mb-3">
+                          <input type="text" 
+                                 class="form-control form-control-sm" 
+                                 id="kelasSearchInput" 
+                                 placeholder="Cari kelas...">
+                        </div>
+                        
+                        <!-- Kelas List -->
+                        <div style="max-height: 250px; overflow-y: auto;" class="border rounded p-3 bg-white">
+                          <div class="row g-2">
+                            <?php if (mysqli_num_rows($kelasResult) > 0): ?>
+                              <?php mysqli_data_seek($kelasResult, 0); ?>
+                              <?php while($kelas = mysqli_fetch_assoc($kelasResult)): ?>
+                                <div class="col-md-6">
+                                  <div class="kelas-item" 
+                                       data-search="<?= strtolower(htmlspecialchars($kelas['nama_kelas'] . ' ' . $kelas['nama_gelombang'])) ?>">
+                                    <div class="form-check p-2 border rounded">
+                                      <input class="form-check-input" 
+                                             type="checkbox" 
+                                             value="<?= $kelas['id_kelas'] ?>" 
+                                             id="kelas_<?= $kelas['id_kelas'] ?>"
+                                             name="kelas_diampu[]"
+                                             <?= in_array($kelas['id_kelas'], $kelasInstrukturArray) ? 'checked' : '' ?>
+                                             onchange="updateKelasCount()">
+                                      <label class="form-check-label w-100" for="kelas_<?= $kelas['id_kelas'] ?>">
+                                        <div class="fw-medium small"><?= htmlspecialchars($kelas['nama_kelas']) ?></div>
+                                        <?php if($kelas['nama_gelombang']): ?>
+                                          <small class="text-muted"><?= htmlspecialchars($kelas['nama_gelombang']) ?> (<?= $kelas['tahun'] ?>)</small>
+                                        <?php endif; ?>
+                                      </label>
+                                    </div>
+                                  </div>
+                                </div>
+                              <?php endwhile; ?>
+                            <?php else: ?>
+                              <div class="col-12 text-center text-muted py-3">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Tidak ada kelas aktif
+                              </div>
+                            <?php endif; ?>
+                          </div>
+                        </div>
+                        
+                        <!-- Controls -->
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                          <small class="text-muted">
+                            <span id="selectedCount"><?= count($kelasInstrukturArray) ?></span> kelas dipilih
+                          </small>
+                          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAll()">
+                            Reset
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                <?php endif; ?>
-                
-                <!-- Upload New Photo -->
-                <div class="mb-4">
-                  <label class="form-label">
-                    <i class="bi bi-image me-1"></i><?= !empty($instruktur['pas_foto']) ? 'Upload Foto Baru' : 'Upload Foto Profil' ?>
-                  </label>
-                  <input type="file" name="pas_foto" class="form-control" accept=".jpg,.jpeg,.png">
-                  <div class="form-text"><small>Format yang didukung: JPG, JPEG, PNG (Maks 2MB)</small></div>
-                </div>
-                
-                <!-- Preview Area -->
-                <div class="text-center">
-                  <div id="imagePreview" class="d-none mb-3">
-                    <h6 class="mb-2">Preview Foto Baru</h6>
-                    <img id="previewImg" src="" alt="Preview" class="img-thumbnail mb-2" style="max-width: 200px; max-height: 200px; object-fit: cover;">
-                    <div>
-                      <button type="button" class="btn btn-sm btn-outline-danger" onclick="removePreview()">
-                        <i class="bi bi-trash me-1"></i>Hapus Preview
-                      </button>
-                    </div>
-                  </div>
-                  <div id="placeholderPreview" class="preview-placeholder border rounded p-4 text-muted" <?= !empty($instruktur['pas_foto']) ? 'style="display: none;"' : '' ?>>
-                    <i class="bi bi-person-fill fs-1 d-block mb-2"></i>
-                    <small>Preview foto baru akan tampil di sini</small>
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- Action Buttons -->
-           <div class="row mt-5 pt-4 border-top">
-              <div class="col-12">
-                <div class="d-flex justify-content-end gap-3">
-                  <a href="index.php" class="btn btn-kembali px-3">
-                   Kembali
-                  </a>
-                  <button type="submit" class="btn btn-simpan px-4">
-                    <i class="bi bi-check-lg me-1"></i>Simpan
-                  </button>
-                </div>
-              </div>
+            <div class="d-flex justify-content-end gap-3 mt-4 pt-3 border-top">
+              <a href="index.php" class="btn btn-kembali">
+                Kembali
+              </a>
+              <button type="submit" class="btn btn-simpan">
+                <i class="bi bi-check-lg me-1"></i>Simpan
+              </button>
             </div>  
         </div>
       </div>
@@ -426,64 +325,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const form = document.getElementById('formEditInstruktur');
-  
-  // Photo preview functionality
-  const photoInput = document.querySelector('input[name="pas_foto"]');
-  const imagePreview = document.getElementById('imagePreview');
-  const previewImg = document.getElementById('previewImg');
-  const placeholderPreview = document.getElementById('placeholderPreview');
-
-  if (photoInput) {
-    photoInput.addEventListener('change', function() {
-      const file = this.files[0];
-      if (file) {
-        // Check file size (2MB max)
-        if (file.size > 2 * 1024 * 1024) {
-          alert('Ukuran file terlalu besar. Maksimal 2MB');
-          this.value = '';
-          return;
-        }
-
-        // Check file type
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-        if (!allowedTypes.includes(file.type)) {
-          alert('Format file tidak didukung. Gunakan JPG, JPEG, atau PNG');
-          this.value = '';
-          return;
-        }
-
-        // Show preview
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          previewImg.src = e.target.result;
-          imagePreview.classList.remove('d-none');
-          placeholderPreview.style.display = 'none';
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-  }
-
-  // Remove preview function
-  window.removePreview = function() {
-    photoInput.value = '';
-    imagePreview.classList.add('d-none');
-    placeholderPreview.style.display = 'block';
-    previewImg.src = '';
-  };
-
-  // Handle file deletion checkbox
-  const deleteCheckbox = document.getElementById('hapus_pas_foto');
-  if (deleteCheckbox) {
-    deleteCheckbox.addEventListener('change', function() {
-      if (this.checked) {
-        const confirmDelete = confirm('Apakah Anda yakin ingin menghapus foto ini?');
-        if (!confirmDelete) {
-          this.checked = false;
-        }
-      }
-    });
-  }
 
   // Form submission validation
   form.addEventListener('submit', function(e) {

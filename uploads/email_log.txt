@@ -102,3 +102,5 @@ IP: ::1
 2025-07-22 09:15:54 - Email verifikasi dikirim ke: rikaapliana02@gmail.com - Status: Gagal
 2025-07-22 09:16:47 - Email welcome berhasil dikirim ke: rikaapliana02@gmail.com (Username: muhammadfa_2025)
 2025-07-24 19:33:39 - Email welcome berhasil dikirim ke: almanidazahra@gmail.com (Username: almanidaza_2025)
+2025-08-09 07:34:05 - Email verifikasi dikirim ke: ahmad.rizki@email.com - Status: Gagal
+2025-08-10 16:56:19 - Email welcome berhasil dikirim ke: rikaapliana02@gmail.com (Username: muhammadfa_2025)

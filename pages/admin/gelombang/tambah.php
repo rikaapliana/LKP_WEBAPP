@@ -252,32 +252,6 @@ $recentResult = mysqli_query($conn, $recentQuery);
           <!-- Info Panel -->
           <div class="col-lg-4">
 
-            <!-- Gelombang Terbaru -->
-            <?php if (mysqli_num_rows($recentResult) > 0): ?>
-            <div class="card content-card mb-3">
-              <div class="section-header">
-                <h6 class="mb-0 text-dark">
-                  <i class="bi bi-clock-history me-2"></i>Gelombang Terbaru
-                </h6>
-              </div>
-              <div class="card-body">
-                <?php while ($recent = mysqli_fetch_assoc($recentResult)): ?>
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                      <div class="fw-medium"><?= htmlspecialchars($recent['nama_gelombang']) ?></div>
-                      <small class="text-muted">
-                        <?= $recent['tahun'] ?> - Gelombang ke-<?= $recent['gelombang_ke'] ?>
-                      </small>
-                    </div>
-                    <span class="badge bg-<?= $recent['status'] === 'aktif' ? 'success' : ($recent['status'] === 'dibuka' ? 'primary' : 'secondary') ?>">
-                      <?= ucfirst($recent['status']) ?>
-                    </span>
-                  </div>
-                <?php endwhile; ?>
-              </div>
-            </div>
-            <?php endif; ?>
-
             <!-- Tips -->
             <div class="card content-card">
               <div class="section-header">

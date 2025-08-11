@@ -58,7 +58,7 @@ $baseURL = $baseURL ?? './'; // default: jika tidak di-set, gunakan './'
         </li>
 
         <li class="nav-item">
-            <a class="nav-link <?= ($activePage == 'jadwal-mengajar') ? 'active' : '' ?>" href="<?= $baseURL ?>jadwal/index.php">
+            <a class="nav-link <?= ($activePage == 'jadwal') ? 'active' : '' ?>" href="<?= $baseURL ?>jadwal/index.php">
                 <i class="bi bi-calendar-event me-2"></i> Jadwal Mengajar
             </a>
         </li>

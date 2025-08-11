@@ -334,13 +334,11 @@ function buildUrlWithFilters($page = null) {
                       <!-- Kelas -->
                       <td class="align-middle">
                         <?php if($materi['nama_kelas']): ?>
-                          <span class="badge bg-primary px-2 py-1">
-                            <i class="bi bi-building me-1"></i>
+                          <span>
                             <?= htmlspecialchars($materi['nama_kelas']) ?>
                           </span>
                         <?php else: ?>
-                          <span class="text-muted fst-italic">
-                            <i class="bi bi-dash-circle me-1"></i>
+                          <span>
                             Belum ditentukan
                           </span>
                         <?php endif; ?>
@@ -376,14 +374,8 @@ function buildUrlWithFilters($page = null) {
                       </td>
                       
                       <!-- Aksi -->
-                      <td class="text-center align-middle">
+                      <td class="align-middle">
                         <div class="btn-group btn-group-sm" role="group">
-                          <a href="detail.php?id=<?= $materi['id_materi'] ?>" 
-                             class="btn btn-action btn-view btn-sm" 
-                             data-bs-toggle="tooltip" 
-                             title="Detail">
-                            <i class="bi bi-eye"></i>
-                          </a>
                           <a href="edit.php?id=<?= $materi['id_materi'] ?>" 
                              class="btn btn-action btn-edit btn-sm" 
                              data-bs-toggle="tooltip" 

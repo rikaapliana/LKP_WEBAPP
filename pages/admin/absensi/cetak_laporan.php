@@ -186,54 +186,8 @@ try {
         // Custom MultiCell Table untuk Absensi
         createAbsensiTableWithMultiCell($pdf, $dataArray, $tipeAbsensi);
         
-        // Tambah detail tambahan di bawah tabel
-        $pdf->Ln(10);
-        $pdf->SetFont('Arial', 'B', 9);
-        $pdf->Cell(0, 5, 'Ringkasan Data:', 0, 1, 'L');
-        $pdf->SetFont('Arial', '', 8);
+      
         
-        // Hitung statistik status
-        $stats_status = [];
-        $stats_kelas = [];
-        foreach ($dataArray as $row) {
-            $status = $row['status'] ?? 'Tidak Diketahui';
-            $kelas = $row['nama_kelas'] ?? 'Tidak Ada';
-            $stats_status[$status] = ($stats_status[$status] ?? 0) + 1;
-            $stats_kelas[$kelas] = ($stats_kelas[$kelas] ?? 0) + 1;
-        }
-        
-        $no_ringkasan = 1;
-        $pdf->Cell(5, 4, $no_ringkasan . '.', 0, 0, 'L');
-        $pdf->Cell(0, 4, ' Total Absensi: ' . $totalAbsensi . ' record', 0, 1, 'L');
-        $no_ringkasan++;
-        
-        // Stats berdasarkan status
-        $pdf->Ln(2);
-        $pdf->SetFont('Arial', 'B', 8);
-        $pdf->Cell(0, 4, 'Berdasarkan Status:', 0, 1, 'L');
-        $pdf->SetFont('Arial', '', 8);
-        
-        foreach ($stats_status as $status => $count) {
-            $pdf->Cell(5, 4, $no_ringkasan . '.', 0, 0, 'L');
-            $pdf->Cell(0, 4, ' ' . ucfirst($status) . ': ' . $count . ' orang', 0, 1, 'L');
-            $no_ringkasan++;
-        }
-        
-        // Stats berdasarkan kelas (jika ada variasi kelas)
-        if (count($stats_kelas) > 1) {
-            $pdf->Ln(2);
-            $pdf->SetFont('Arial', 'B', 8);
-            $pdf->Cell(0, 4, 'Berdasarkan Kelas:', 0, 1, 'L');
-            $pdf->SetFont('Arial', '', 8);
-            
-            foreach ($stats_kelas as $kelas => $count) {
-                if ($kelas != 'Tidak Ada') {
-                    $pdf->Cell(5, 4, $no_ringkasan . '.', 0, 0, 'L');
-                    $pdf->Cell(0, 4, ' ' . htmlspecialchars($kelas) . ': ' . $count . ' record', 0, 1, 'L');
-                    $no_ringkasan++;
-                }
-            }
-        }
         
     } else {
         // Jika tidak ada data yang sesuai filter

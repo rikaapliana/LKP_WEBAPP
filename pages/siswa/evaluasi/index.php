@@ -84,19 +84,19 @@ function formatTanggalIndonesia($tanggal) {
     return $hari . ' ' . $bulanNama . ' ' . $tahun . ' pukul ' . $jam;
 }
 
-// Function untuk mendapatkan badge status
-function getStatusBadge($status_akses) {
+// Function untuk mendapatkan badge status yang lebih clean
+function getCleanStatusBadge($status_akses) {
     switch($status_akses) {
         case 'bisa_dikerjakan':
-            return '<span class="badge bg-success"><i class="bi bi-play-circle me-1"></i>Tersedia</span>';
-        case 'belum_buka':
-            return '<span class="badge bg-warning"><i class="bi bi-clock me-1"></i>Belum Buka</span>';
+            return '<span class="badge bg-success bg-opacity-10 text-success border border-success"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>Tersedia</span>';
         case 'sudah_tutup':
-            return '<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Sudah Tutup</span>';
+            return '<span class="badge bg-danger bg-opacity-10 text-danger border border-danger"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>Sudah Tutup</span>';
+        case 'belum_buka':
+            return '<span class="badge bg-warning bg-opacity-10 text-warning border border-warning"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>Belum Buka</span>';
         case 'tidak_aktif':
-            return '<span class="badge bg-secondary"><i class="bi bi-pause-circle me-1"></i>Tidak Aktif</span>';
+            return '<span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>Tidak Aktif</span>';
         default:
-            return '<span class="badge bg-secondary">Unknown</span>';
+            return '<span class="badge bg-secondary bg-opacity-10 text-secondary">Unknown</span>';
     }
 }
 
@@ -234,20 +234,17 @@ function getNamaMateri($materi) {
                               <div class="flex-grow-1">
                                 <div class="d-flex align-items-center gap-2 mb-2">
                                   <i class="<?= getJenisIcon($evaluasi['jenis_evaluasi']) ?> text-primary fs-5"></i>
-                                  <h6 class="mb-0 fw-medium"><?= htmlspecialchars($evaluasi['nama_evaluasi']) ?></h6>
+                                  <h6 class="mb-0 text-dark"><?= htmlspecialchars($evaluasi['nama_evaluasi']) ?></h6>
                                 </div>
                                 
+                                <!-- Informasi jenis dan materi dengan text biasa -->
                                 <div class="mb-2">
-                                  <small class="text-muted">Jenis:</small>
-                                  <span class="badge bg-info px-2 py-1 small">
+                                  <small class="text-muted">
                                     <?= $evaluasi['jenis_evaluasi'] == 'per_materi' ? 'Per Materi' : 'Akhir Kursus' ?>
-                                  </span>
-                                  
-                                  <?php if($evaluasi['materi_terkait']): ?>
-                                    <span class="badge bg-secondary px-2 py-1 small ms-1">
-                                      <?= getNamaMateri($evaluasi['materi_terkait']) ?>
-                                    </span>
-                                  <?php endif; ?>
+                                    <?php if($evaluasi['materi_terkait']): ?>
+                                      • <?= getNamaMateri($evaluasi['materi_terkait']) ?>
+                                    <?php endif; ?>
+                                  </small>
                                 </div>
                                 
                                 <?php if($evaluasi['deskripsi']): ?>
@@ -263,8 +260,9 @@ function getNamaMateri($materi) {
                                   </div>
                                 </div>
                                 
+                                <!-- Status badge yang lebih clean -->
                                 <div class="mb-3">
-                                  <?= getStatusBadge($evaluasi['status_akses']) ?>
+                                  <?= getCleanStatusBadge($evaluasi['status_akses']) ?>
                                 </div>
                               </div>
                             </div>
@@ -281,7 +279,7 @@ function getNamaMateri($materi) {
                                 ?>
                                 
                                 <?php if($sudahDikerjakan): ?>
-                                  <span class="btn btn-success btn-sm disabled">
+                                  <span class="btn btn-outline-success btn-sm disabled">
                                     <i class="bi bi-check-circle me-1"></i>Sudah Dikerjakan
                                   </span>
                                 <?php else: ?>
@@ -294,7 +292,7 @@ function getNamaMateri($materi) {
                                   </button>
                                 <?php endif; ?>
                               <?php else: ?>
-                                <span class="btn btn-secondary btn-sm disabled">
+                                <span class="btn btn-outline-secondary btn-sm disabled">
                                   <i class="bi bi-lock me-1"></i>Tidak Tersedia
                                 </span>
                               <?php endif; ?>
@@ -506,52 +504,5 @@ function getNamaMateri($materi) {
     }, 300000);
   });
   </script>
-
-  <style>
-  .swal-wide {
-    width: 600px !important;
-  }
-  
-  .bg-gradient-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  }
-  
-  .card.border {
-    transition: all 0.3s ease;
-  }
-  
-  .card.border:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-  }
-  
-  .start-evaluation-btn {
-    transition: all 0.3s ease;
-  }
-  
-  .start-evaluation-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 0.25rem 0.5rem rgba(13, 110, 253, 0.3);
-  }
-  
-  .alert-warning {
-    background-color: #fff3cd;
-    border-left: 4px solid #ffc107;
-  }
-  
-  @media (max-width: 768px) {
-    .swal-wide {
-      width: 95% !important;
-    }
-    
-    .card.border:hover {
-      transform: none;
-    }
-    
-    .start-evaluation-btn:hover {
-      transform: none;
-    }
-  }
-  </style>
 </body>
 </html>

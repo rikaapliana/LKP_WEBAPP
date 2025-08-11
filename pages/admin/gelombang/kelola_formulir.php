@@ -201,11 +201,7 @@ $presentase_terisi = $total_kapasitas > 0 ? round(($total_terisi / $total_kapasi
                   <span class="badge bg-light text-dark">
                     <i class="bi bi-calendar me-1"></i>Tahun <?= $data['tahun'] ?>
                   </span>
-                  <span class="badge bg-info">
-                    <i class="bi bi-hash me-1"></i>Gelombang Ke-<?= $data['gelombang_ke'] ?>
-                  </span>
                   <span class="badge bg-<?= $data['status'] === 'aktif' ? 'success' : ($data['status'] === 'dibuka' ? 'primary' : 'secondary') ?>">
-                    <i class="bi bi-<?= $data['status'] === 'aktif' ? 'play-circle' : ($data['status'] === 'dibuka' ? 'door-open' : 'stop-circle') ?> me-1"></i>
                     <?= ucfirst($data['status']) ?>
                   </span>
                 </div>
@@ -339,7 +335,7 @@ $presentase_terisi = $total_kapasitas > 0 ? round(($total_terisi / $total_kapasi
 
           <!-- Informasi Detail -->
           <div class="col-lg-4 mb-4">
-            <div class="card content-card h-100">
+            <div class="card content-card">
               <div class="section-header">
                 <h6 class="mb-0 text-dark">
                   <i class="bi bi-info-circle me-2"></i>Informasi Detail
@@ -406,35 +402,6 @@ $presentase_terisi = $total_kapasitas > 0 ? round(($total_terisi / $total_kapasi
                       <small>Belum pernah diperbarui</small>
                     </div>
                   <?php endif; ?>
-                </div>
-
-                <!-- Statistik Pendaftar (jika ada) -->
-                <?php if ($data['status'] === 'dibuka' && $stats['total_pendaftar'] > 0): ?>
-                <div>
-                  <h6 class="text-muted mb-2">Status Pendaftar</h6>
-                  <div class="row g-2 text-center">
-                    <div class="col-4">
-                      <div class="p-2 bg-warning bg-opacity-10 rounded">
-                        <div class="fw-bold text-warning"><?= $stats['pendaftar_belum_verifikasi'] ?></div>
-                        <small class="text-muted">Belum Verifikasi</small>
-                      </div>
-                    </div>
-                    <div class="col-4">
-                      <div class="p-2 bg-info bg-opacity-10 rounded">
-                        <div class="fw-bold text-info"><?= $stats['pendaftar_terverifikasi'] ?></div>
-                        <small class="text-muted">Terverifikasi</small>
-                      </div>
-                    </div>
-                    <div class="col-4">
-                      <div class="p-2 bg-success bg-opacity-10 rounded">
-                        <div class="fw-bold text-success"><?= $stats['pendaftar_diterima'] ?></div>
-                        <small class="text-muted">Diterima</small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <?php endif; ?>
-
               </div>
             </div>
           </div>

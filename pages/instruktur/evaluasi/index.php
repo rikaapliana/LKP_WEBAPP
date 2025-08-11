@@ -373,10 +373,8 @@ function formatTanggal($tanggal) {
               <thead class="sticky-top">
                 <tr>
                   <th>No</th>
-                  <th>Foto</th>
-                  <th>Data Siswa</th>
+                  <th>Nama Siswa</th>
                   <th>Status Evaluasi</th>
-                  <th>Progress Jawaban</th>
                   <th>Tanggal Selesai</th>
                   <th>Aksi</th>
                 </tr>
@@ -394,21 +392,6 @@ function formatTanggal($tanggal) {
                       <!-- No -->
                       <td class="text-center align-middle"><?= $no++ ?></td>
                       
-                      <!-- Foto -->
-                      <td class="text-center align-middle">
-                        <?php if($siswa['pas_foto'] && file_exists('../../../uploads/pas_foto/'.$siswa['pas_foto'])): ?>
-                          <img src="../../../uploads/pas_foto/<?= $siswa['pas_foto'] ?>" 
-                               alt="Foto" 
-                               class="rounded-circle" 
-                               style="width: 50px; height: 50px; object-fit: cover; border: 2px solid #e9ecef;" 
-                               title="<?= htmlspecialchars($siswa['nama']) ?>">
-                        <?php else: ?>
-                          <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white" 
-                               style="width: 50px; height: 50px;">
-                            <i class="bi bi-person-fill fs-5"></i>
-                          </div>
-                        <?php endif; ?>
-                      </td>
                       
                       <!-- Data Siswa -->
                       <td class="align-middle">
@@ -417,7 +400,7 @@ function formatTanggal($tanggal) {
                       </td>
                       
                       <!-- Status Evaluasi -->
-                      <td class="text-center align-middle">
+                      <td class="align-middle">
                         <?php if($siswa['status_evaluasi'] == 'selesai'): ?>
                           <span class="badge badge-active">
                             <i class="bi bi-check-circle me-1"></i>Selesai
@@ -427,20 +410,6 @@ function formatTanggal($tanggal) {
                             <i class="bi bi-x-circle me-1"></i>Belum Mulai
                           </span>
                         <?php endif; ?>
-                      </td>
-
-                      <!-- Progress Jawaban -->
-                      <td class="align-middle">
-                        <div class="d-flex align-items-center">
-                          <div class="progress me-2" style="width: 80px; height: 8px;">
-                            <div class="progress-bar bg-<?= $progress_pct == 100 ? 'success' : ($progress_pct > 0 ? 'info' : 'secondary') ?>" 
-                                 style="width: <?= $progress_pct ?>%"></div>
-                          </div>
-                          <small class="text-muted">
-                            <?= $siswa['jumlah_jawaban'] ?>/<?= $siswa['total_pertanyaan'] ?>
-                          </small>
-                        </div>
-                        <small class="text-muted"><?= $progress_pct ?>% selesai</small>
                       </td>
                       
                       <!-- Tanggal Selesai -->
@@ -455,7 +424,7 @@ function formatTanggal($tanggal) {
                       </td>
                       
                       <!-- Aksi -->
-                      <td class="text-center align-middle">
+                      <td class="align-middle">
                         <?php if($siswa['id_evaluasi']): ?>
                           <a href="jawaban.php?id_evaluasi=<?= $siswa['id_evaluasi'] ?>" 
                              class="btn btn-action btn-view btn-sm" 
@@ -465,7 +434,7 @@ function formatTanggal($tanggal) {
                           </a>
                         <?php else: ?>
                           <span class="text-muted">
-                            <small>Belum ada jawaban</small>
+                            <small>-</small>
                           </span>
                         <?php endif; ?>
                       </td>

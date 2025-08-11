@@ -94,7 +94,7 @@ if (isset($_GET['error'])) {
             flex: 1;
             background: linear-gradient(135deg, #4A90E2 0%, #357ABD 70%, #2868A3 100%);
             color: white;
-            padding: 60px 40px;
+            padding: 50px 35px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -127,12 +127,11 @@ if (isset($_GET['error'])) {
         .info-content {
             position: relative;
             z-index: 2;
-            text-align: left;
         }
         
         /* Header Section */
         .info-header {
-            margin-bottom: 40px;
+            margin-bottom: 35px;
         }
         
         .system-badge {
@@ -150,7 +149,7 @@ if (isset($_GET['error'])) {
         }
         
         .institution-name {
-            font-size: 32px;
+            font-size: 30px;
             font-weight: 800;
             line-height: 1.1;
             margin-bottom: 12px;
@@ -173,13 +172,13 @@ if (isset($_GET['error'])) {
         
         /* Mission Section */
         .mission-section {
-            margin-bottom: 40px;
+            margin-bottom: 35px;
         }
         
         .mission-title {
             font-size: 16px;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             opacity: 0.9;
         }
         
@@ -189,78 +188,38 @@ if (isset($_GET['error'])) {
             opacity: 0.8;
         }
         
-        /* Features Section */
-        .features-section {
-            margin-bottom: 40px;
-        }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        
-        .feature-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            backdrop-filter: blur(5px);
-        }
-        
-        .feature-icon {
-            width: 35px;
-            height: 35px;
-            background: rgba(134, 157, 226, 0.9);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            color: #01080fff;
-            flex-shrink: 0;
-        }
-        
-        .feature-text {
-            font-size: 12px;
-            font-weight: 500;
-            line-height: 1.3;
-        }
-        
         /* Stats Section */
         .stats-section {
             border-top: 1px solid rgba(255, 255, 255, 0.2);
-            padding-top: 30px;
+            padding-top: 25px;
         }
         
         .stats-title {
             font-size: 14px;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             opacity: 0.9;
             text-align: center;
         }
         
         .stats-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 20px;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
             text-align: center;
         }
         
         .stat-item {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
-            padding: 20px 15px;
+            padding: 15px 20px;
             backdrop-filter: blur(5px);
         }
         
         .stat-number {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 800;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
             display: block;
         }
         
@@ -275,7 +234,7 @@ if (isset($_GET['error'])) {
         /* Right Side - Login Form */
         .card-right {
             flex: 1;
-            padding: 60px 40px;
+            padding: 50px 35px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -283,7 +242,7 @@ if (isset($_GET['error'])) {
         
         .login-header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 35px;
         }
         
         .logo {
@@ -317,7 +276,7 @@ if (isset($_GET['error'])) {
         }
         
         .form-group {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
         
         .form-label {
@@ -368,7 +327,7 @@ if (isset($_GET['error'])) {
         
         .forgot-password {
             text-align: right;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
         
         .forgot-link {
@@ -412,7 +371,7 @@ if (isset($_GET['error'])) {
         
         .footer-text {
             text-align: center;
-            margin-top: 40px;
+            margin-top: 35px;
             color: #6c757d;
             font-size: 12px;
         }
@@ -421,7 +380,7 @@ if (isset($_GET['error'])) {
         .alert {
             border: none;
             border-radius: 8px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             padding: 12px 16px;
             font-size: 14px;
         }
@@ -451,7 +410,7 @@ if (isset($_GET['error'])) {
             }
             
             .card-left {
-                padding: 40px 30px;
+                padding: 35px 25px;
                 text-align: center;
             }
             
@@ -460,21 +419,24 @@ if (isset($_GET['error'])) {
             }
             
             .institution-name {
-                font-size: 28px;
-            }
-            
-            .features-grid,
-            .stats-grid {
-                grid-template-columns: 1fr;
-                gap: 10px;
+                font-size: 26px;
             }
             
             .stats-grid {
                 grid-template-columns: 1fr 1fr;
+                gap: 12px;
             }
             
             .card-right {
-                padding: 40px 30px;
+                padding: 35px 25px;
+            }
+            
+            .login-header {
+                margin-bottom: 30px;
+            }
+            
+            .form-group {
+                margin-bottom: 18px;
             }
         }
         
@@ -485,15 +447,16 @@ if (isset($_GET['error'])) {
             
             .card-left,
             .card-right {
-                padding: 30px 20px;
+                padding: 25px 20px;
             }
             
             .institution-name {
-                font-size: 24px;
+                font-size: 22px;
             }
             
-            .features-grid {
+            .stats-grid {
                 grid-template-columns: 1fr;
+                gap: 10px;
             }
         }
     </style>
@@ -530,30 +493,7 @@ if (isset($_GET['error'])) {
                     <div class="mission-section">
                         <div class="mission-title">Misi Kami</div>
                         <div class="mission-text">
-                            Membangun Sumber Daya Manusia yang Unggul melalui program pelatihan berkualitas tinggi
-                        </div>
-                    </div>
-                    
-                    <!-- Features Section -->
-                    <div class="features-section">
-                        <div class="features-grid">
-                            <div class="feature-item">
-                                <div class="feature-icon">
-                                    <i class="bi bi-mortarboard"></i>
-                                </div>
-                                <div class="feature-text">
-                                    Program<br>Berkualitas
-                                </div>
-                            </div>
-                            
-                            <div class="feature-item">
-                                <div class="feature-icon">
-                                    <i class="bi bi-people"></i>
-                                </div>
-                                <div class="feature-text">
-                                    Instruktur<br>Berpengalaman
-                                </div>
-                            </div>
+                            Memberikan pendidikan teknologi berkualitas untuk mempersiapkan generasi yang kompeten di era digital.
                         </div>
                     </div>
                     
@@ -568,10 +508,6 @@ if (isset($_GET['error'])) {
                             <div class="stat-item">
                                 <span class="stat-number">25+</span>
                                 <span class="stat-label">Instruktur</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-number">15+</span>
-                                <span class="stat-label">Program</span>
                             </div>
                         </div>
                     </div>
@@ -637,7 +573,7 @@ if (isset($_GET['error'])) {
                 </form>
                 
                 <div class="footer-text">
-                    &copy; <?= date('Y') ?> LKP Pradata Komputer Tabalong | Developed by Rika Apliana
+                    &copy; <?= date('Y') ?> LKP Pradata Komputer Tabalong
                 </div>
             </div>
         </div>

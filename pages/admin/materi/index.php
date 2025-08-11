@@ -367,10 +367,9 @@ $gelombangResult = mysqli_query($conn, $gelombangQuery);
                       </td>
                       
                       <!-- Kelas -->
-                      <td class="align-middle">
+                      <td class="align-middle text-nowrap">
                         <?php if($materi['nama_kelas']): ?>
-                          <span class="badge bg-primary px-2 py-1">
-                            <i class="bi bi-building me-1"></i>
+                          <span>
                             <?= htmlspecialchars($materi['nama_kelas']) ?>
                           </span>
                         <?php else: ?>
@@ -394,7 +393,7 @@ $gelombangResult = mysqli_query($conn, $gelombangQuery);
                       </td>
 
                       <!-- Gelombang -->
-                      <td class="align-middle">
+                      <td class="align-middle text-nowrap">
                         <?php if($materi['nama_gelombang']): ?>
                           <span>
                             <?= htmlspecialchars($materi['nama_gelombang']) ?>

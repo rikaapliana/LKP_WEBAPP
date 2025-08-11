@@ -217,7 +217,10 @@ function buildUrlWithFilters($page) {
               <div class="col-md-6 text-md-end">
                 <!-- UPDATED: Button Group dengan Cetak PDF -->
                 <div class="d-flex button-group-header justify-content-md-end">                 
-                  <!-- Button Cetak PDF -->
+                   <a href="grafik.php" class="btn btn-kirim-soft">
+                    Grafik Pendaftar
+                  </a>  
+
                   <button type="button" 
                           class="btn btn-cetak-soft" 
                           onclick="cetakLaporanPDF()" 
@@ -225,6 +228,7 @@ function buildUrlWithFilters($page) {
                           title="Cetak laporan data pendaftar dalam format PDF">
                     <i class="bi bi-printer me-2"></i>Cetak Data
                   </button>
+        
                 </div>
               </div>
             </div>
@@ -630,7 +634,7 @@ function buildUrlWithFilters($page) {
                             break;
                           case 'Diterima':
                             echo '<span class="badge bg-success px-2 py-1">
-                            <i class="bi bi-check-circle me-1"></i></i>Diterima</span>';
+                            <i class="bi bi-check-circle me-1"></i>Diterima</span>';
                             break;
                           default:
                             echo '<span class="badge badge-secondary">-</span>';
@@ -1002,9 +1006,9 @@ function buildUrlWithFilters($page) {
   <!-- Scripts -->
   <script src="../../../assets/js/bootstrap.bundle.min.js"></script>
   <script src="../../../assets/js/scripts.js"></script>
-
+  
   <script>
-  // Fungsi Cetak PDF - BARU
+  // Fungsi Cetak PDF
   function cetakLaporanPDF() {
     const button = document.getElementById('btnCetakPDF');
     const originalHTML = button.innerHTML;
@@ -1052,17 +1056,8 @@ function buildUrlWithFilters($page) {
       button.disabled = false;
       button.innerHTML = originalHTML;
       
-      // Show alert dengan link manual menggunakan SweetAlert2
-      Swal.fire({
-        title: 'Pop-up Diblokir!',
-        html: `Browser memblokir pop-up. Klik tombol di bawah untuk membuka PDF secara manual:<br><br>
-               <a href="${cetakURL}" target="_blank" class="btn btn-danger">
-               <i class="bi bi-file-earmark-pdf"></i> Buka PDF Manual</a>`,
-        icon: 'warning',
-        showConfirmButton: false,
-        showCloseButton: true,
-        allowOutsideClick: true
-      });
+      // Show alert dengan link manual
+      alert('Pop-up diblokir oleh browser. Silakan buka link berikut secara manual: ' + cetakURL);
     }
   }
 
@@ -1084,7 +1079,7 @@ function buildUrlWithFilters($page) {
       const hasData = rows.length > 0;
       if (!hasData) {
         btnCetakPDF.disabled = true;
-        btnCetakPDF.innerHTML = '<i class="bi bi-file-earmark-pdf me-2"></i>Tidak Ada Data';
+        btnCetakPDF.innerHTML = '<i class="bi bi-printer me-2"></i>Tidak Ada Data';
         btnCetakPDF.title = 'Tidak ada data pendaftar untuk dicetak';
       }
     }

@@ -230,31 +230,6 @@ try {
         $pdf->Cell(5, 4, $no_ringkasan++ . '.', 0, 0, 'L');
         $pdf->Cell(0, 4, ' Rata-rata Siswa per Gelombang: ' . $rata_rata_siswa . ' siswa', 0, 1, 'L');
         
-        // Statistik per tahun
-        if (count($stats_tahun) > 1) {
-            $pdf->Ln(2);
-            $pdf->SetFont('Arial', 'B', 8);
-            $pdf->Cell(0, 4, 'Distribusi per Tahun:', 0, 1, 'L');
-            $pdf->SetFont('Arial', '', 8);
-            
-            foreach ($stats_tahun as $tahun => $jumlah) {
-                $pdf->Cell(5, 4, '', 0, 0, 'L');
-                $pdf->Cell(0, 4, '- Tahun ' . $tahun . ': ' . number_format($jumlah) . ' gelombang', 0, 1, 'L');
-            }
-        }
-        
-        // Statistik per status
-        if (count($stats_status) > 1) {
-            $pdf->Ln(2);
-            $pdf->SetFont('Arial', 'B', 8);
-            $pdf->Cell(0, 4, 'Distribusi per Status:', 0, 1, 'L');
-            $pdf->SetFont('Arial', '', 8);
-            
-            foreach ($stats_status as $status => $jumlah) {
-                $pdf->Cell(5, 4, '', 0, 0, 'L');
-                $pdf->Cell(0, 4, '- Status ' . ucfirst($status) . ': ' . number_format($jumlah) . ' gelombang', 0, 1, 'L');
-            }
-        }
         
     } else {
         // Jika tidak ada data

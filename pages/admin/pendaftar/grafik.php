@@ -284,6 +284,9 @@ $resultTahun = mysqli_query($conn, $queryTahun);
                                             <a href="../dashboard.php">Dashboard</a>
                                         </li>
                                         <li class="breadcrumb-item">
+                                            <a href="#">Data Pendaftaran</a>
+                                        </li>
+                                        <li class="breadcrumb-item">
                                             <a href="index.php">Data Pendaftar</a>
                                         </li>
                                         <li class="breadcrumb-item active" aria-current="page">Grafik Statistik</li>

@@ -304,25 +304,6 @@ $periode['tanggal_tutup_formatted'] = date('Y-m-d\TH:i', strtotime($periode['tan
       <!-- Info Bank Soal -->
       <div class="row mb-4">
         <div class="col-12">
-          <div class="alert alert-info">
-            <div class="row align-items-center">
-              <div class="col-md-8">
-                <h6 class="mb-1"><i class="bi bi-info-circle me-2"></i>Bank Soal Tersedia</h6>
-                <small>
-                  <strong>Per Materi:</strong> <?= $bankSoal['per_materi'] ?> soal 
-                  (Word: <?= $bankSoal['word'] ?>, Excel: <?= $bankSoal['excel'] ?>, PPT: <?= $bankSoal['ppt'] ?>, Internet: <?= $bankSoal['internet'] ?>) |
-                  <strong>Akhir Kursus:</strong> <?= $bankSoal['akhir_kursus'] ?> soal
-                </small>
-              </div>
-              <div class="col-md-4 text-md-end">
-                <a href="detail.php?id=<?= $id_periode ?>" class="btn btn-sm btn-outline-primary">
-                  <i class="bi bi-eye me-1"></i>Lihat Detail
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- Main Form Card -->
       <div class="card content-card">
@@ -348,13 +329,6 @@ $periode['tanggal_tutup_formatted'] = date('Y-m-d\TH:i', strtotime($periode['tan
                   <input type="text" name="nama_evaluasi" id="namaEvaluasi" class="form-control" required
                          value="<?= htmlspecialchars($periode['nama_evaluasi']) ?>"
                          placeholder="Misal: Evaluasi Materi Word - Gelombang 1">
-                  <div class="form-text">
-                    <small>Nama yang mudah dikenali untuk periode evaluasi ini</small>
-                    <div class="d-flex justify-content-between mt-1">
-                      <span id="namaCharCount" class="text-muted">0 karakter</span>
-                      <span class="text-muted">Min 5 karakter</span>
-                    </div>
-                  </div>
                 </div>
 
                 <div class="mb-4">
@@ -457,18 +431,12 @@ $periode['tanggal_tutup_formatted'] = date('Y-m-d\TH:i', strtotime($periode['tan
                   <label class="form-label required">Tanggal & Waktu Buka</label>
                   <input type="datetime-local" name="tanggal_buka" id="tanggalBuka" class="form-control" required
                          value="<?= $periode['tanggal_buka_formatted'] ?>">
-                  <div class="form-text">
-                    <small>Kapan siswa dapat mulai mengisi evaluasi</small>
-                  </div>
                 </div>
 
                 <div class="mb-4">
                   <label class="form-label required">Tanggal & Waktu Tutup</label>
                   <input type="datetime-local" name="tanggal_tutup" id="tanggalTutup" class="form-control" required
                          value="<?= $periode['tanggal_tutup_formatted'] ?>">
-                  <div class="form-text">
-                    <small>Kapan periode evaluasi berakhir</small>
-                  </div>
                 </div>
 
                 <div class="mb-4">

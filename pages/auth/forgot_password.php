@@ -71,11 +71,11 @@ if (isset($_GET['error'])) {
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
             overflow: hidden;
             border: 1px solid #e9ecef;
-            padding: 60px 50px;
+            padding: 50px 40px;
             position: relative;
         }
         
-        /* Background decoration */
+        /* Background decoration - selaras dengan login */
         .reset-card::before {
             content: '';
             position: absolute;
@@ -107,12 +107,12 @@ if (isset($_GET['error'])) {
         
         .reset-header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 35px;
         }
         
         .logo {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             margin: 0 auto 20px;
             background: #f8f9fa;
             border-radius: 50%;
@@ -124,42 +124,42 @@ if (isset($_GET['error'])) {
         }
         
         .logo img {
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             object-fit: contain;
         }
         
         .reset-title {
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 24px;
+            font-weight: 600;
             color: #2c3e50;
             margin-bottom: 8px;
         }
         
         .reset-subtitle {
-            font-size: 16px;
+            font-size: 14px;
             color: #6c757d;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
         
         .system-info {
-            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            background: rgba(74, 144, 226, 0.05);
             border-left: 4px solid #4A90E2;
             padding: 15px 20px;
             border-radius: 8px;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             text-align: left;
         }
         
         .system-info h6 {
-            color: #1565c0;
+            color: #4A90E2;
             font-weight: 600;
             margin-bottom: 5px;
             font-size: 14px;
         }
         
         .system-info small {
-            color: #424242;
+            color: #495057;
             font-size: 12px;
             line-height: 1.4;
         }
@@ -168,11 +168,11 @@ if (isset($_GET['error'])) {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
         
         .form-group {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
         
         .form-group.full-width {
@@ -277,11 +277,11 @@ if (isset($_GET['error'])) {
             font-size: 12px;
         }
         
-        /* Alert Styles */
+        /* Alert Styles - selaras dengan login */
         .alert {
             border: none;
             border-radius: 8px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             padding: 12px 16px;
             font-size: 14px;
         }
@@ -302,18 +302,18 @@ if (isset($_GET['error'])) {
             margin-right: 8px;
         }
         
-        /* Info Box */
+        /* Info Box - selaras dengan theme */
         .info-box {
-            background: #fff3cd;
+            background: rgba(255, 193, 7, 0.1);
             border-left: 4px solid #ffc107;
             padding: 12px 16px;
             border-radius: 8px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             font-size: 13px;
             color: #856404;
         }
         
-        /* Password Strength */
+        /* Password Strength - warna selaras */
         .password-strength {
             margin-top: 8px;
         }
@@ -340,7 +340,17 @@ if (isset($_GET['error'])) {
         .match-text {
             font-size: 12px;
             margin-top: 4px;
+            font-weight: 500;
         }
+        
+        /* Color classes untuk strength */
+        .strength-weak { color: #dc3545; }
+        .strength-fair { color: #fd7e14; }
+        .strength-good { color: #ffc107; }
+        .strength-strong { color: #28a745; }
+        
+        .match-success { color: #28a745; }
+        .match-error { color: #dc3545; }
         
         /* Responsive */
         @media (max-width: 768px) {
@@ -349,7 +359,7 @@ if (isset($_GET['error'])) {
             }
             
             .reset-card {
-                padding: 40px 30px;
+                padding: 35px 25px;
             }
             
             .form-row {
@@ -358,7 +368,7 @@ if (isset($_GET['error'])) {
             }
             
             .reset-title {
-                font-size: 24px;
+                font-size: 22px;
             }
         }
         
@@ -369,11 +379,11 @@ if (isset($_GET['error'])) {
             }
             
             .reset-card {
-                padding: 30px 20px;
+                padding: 25px 20px;
             }
             
             .reset-title {
-                font-size: 22px;
+                font-size: 20px;
             }
         }
     </style>
@@ -479,7 +489,7 @@ if (isset($_GET['error'])) {
                 </div>
                 
                 <div class="footer-text">
-                    &copy; <?= date('Y') ?> LKP Pradata Komputer Tabalong | Developed by Rika Apliana
+                    &copy; <?= date('Y') ?> LKP Pradata Komputer Tabalong
                 </div>
             </div>
         </div>
@@ -549,16 +559,17 @@ if (isset($_GET['error'])) {
             
             if (confirm === '') {
                 matchText.textContent = '';
+                matchText.className = 'match-text';
                 return false;
             }
             
             if (password === confirm) {
                 matchText.textContent = '✓ Password cocok';
-                matchText.style.color = '#28a745';
+                matchText.className = 'match-text match-success';
                 return true;
             } else {
                 matchText.textContent = '✗ Password tidak cocok';
-                matchText.style.color = '#dc3545';
+                matchText.className = 'match-text match-error';
                 return false;
             }
         }

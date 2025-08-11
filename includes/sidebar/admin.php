@@ -225,7 +225,7 @@ $isLaporanActive = isGroupSubPage($activePage, $laporanPages);
         <!-- Profil (menu biasa) -->
         <li class="nav-item">
             <a class="nav-link <?= ($activePage == 'profil') ? 'active' : '' ?>" href="<?= $baseURL ?>profil/index.php">
-                <i class="bi bi-person-fill me-2"></i> Profil
+                <i class="bi bi-person-fill me-2"></i> Profil Saya
             </a>
         </li>
 

@@ -384,20 +384,22 @@
                 console.log('✅ Submenu dibuka otomatis');
             }
         },
-        
+
         activateByUrl: function() {
             const currentUrl = window.location.href;
             
-            // Keywords untuk Data Master
+            // Keywords untuk Data Master (TIDAK ADA PERUBAHAN)
             const masterKeywords = ['instruktur', 'kelas', 'materi'];
             
-            // Keywords untuk Data Akademik  
-            const akademikKeywords = ['pendaftar', 'siswa', 'jadwal', 'nilai'];
+            // Keywords untuk Data Pendaftaran (BARU - DIPISAH DARI AKADEMIK)
+            const pendaftaranKeywords = ['pendaftar', 'gelombang'];
             
-            // Keywords untuk Evaluasi
-            const evaluasiKeywords = ['pertanyaan', 'jawaban', 'grafik-hasil', 'kelola-pertanyaan', 'hasil-jawaban'];
+            // Keywords untuk Data Akademik (PENDAFTAR DIPINDAH KE ATAS)
+            const akademikKeywords = ['siswa', 'jadwal', 'absensi', 'nilai'];
             
-            // Keywords untuk Laporan
+            // Keywords untuk Evaluasi (TIDAK ADA PERUBAHAN)
+            const evaluasiKeywords = ['analisis-evaluasi', 'hasil-evaluasi', 'evaluasi', 'pertanyaan', 'jawaban', 'grafik-hasil', 'kelola-pertanyaan', 'hasil-jawaban'];
+            // Keywords untuk Laporan (TIDAK ADA PERUBAHAN)
             const laporanKeywords = ['laporan'];
             
             // Check dan activate submenu berdasarkan URL
@@ -405,58 +407,75 @@
                 currentUrl.includes('/' + keyword + '/') || currentUrl.includes('/' + keyword + '.php')
             );
             
+            // BARU: Check untuk Data Pendaftaran
+            const pendaftaranMatch = pendaftaranKeywords.find(keyword => 
+                currentUrl.includes('/' + keyword + '/') || currentUrl.includes('/' + keyword + '.php')
+            );
+            
             const akademikMatch = akademikKeywords.find(keyword => 
                 currentUrl.includes('/' + keyword + '/') || currentUrl.includes('/' + keyword + '.php')
             );
             
-            const evaluasiMatch = evaluasiKeywords.find(keyword => 
-                currentUrl.includes('/' + keyword + '/') || currentUrl.includes('/' + keyword + '.php') || currentUrl.includes('/evaluasi/')
+           const evaluasiMatch = evaluasiKeywords.find(keyword => 
+                currentUrl.includes('/' + keyword + '/') || 
+                currentUrl.includes('/' + keyword + '.php')
+                // HAPUS: || currentUrl.includes('/evaluasi/')
             );
             
             const laporanMatch = laporanKeywords.find(keyword => 
                 currentUrl.includes('/' + keyword + '/') || currentUrl.includes('/' + keyword + '.php')
             );
             
+            // Activate submenu berdasarkan match
             if (masterMatch) {
+                console.log('🎯 Activating Data Master for:', masterMatch);
                 this.activateSubmenuBySelector('#toggle-datamaster', masterMatch);
             }
             
+            // BARU: Activate untuk Data Pendaftaran
+            if (pendaftaranMatch) {
+                console.log('🎯 Activating Data Pendaftaran for:', pendaftaranMatch);
+                this.activateSubmenuBySelector('#toggle-datapendaftaran', pendaftaranMatch);
+            }
+            
             if (akademikMatch) {
+                console.log('🎯 Activating Data Akademik for:', akademikMatch);
                 this.activateSubmenuBySelector('#toggle-dataakademik', akademikMatch);
             }
             
             if (evaluasiMatch) {
+                console.log('🎯 Activating Evaluasi for:', evaluasiMatch);
                 this.activateSubmenuBySelector('#toggle-evaluasi, #toggle-manajemenevaluasi', evaluasiMatch);
             }
             
             if (laporanMatch) {
+                console.log('🎯 Activating Laporan for:', laporanMatch);
                 this.activateSubmenuBySelector('#toggle-laporan, #toggle-laporanmaster, #toggle-laporanakademik', laporanMatch);
             }
             
-            console.log('🎯 URL activation completed');
+            console.log('🎯 URL activation completed - Fixed version');
         },
         
         activateSubmenuBySelector: function(selector, keyword) {
-            const toggle = Utils.safeQuerySelector(selector);
-            if (!toggle) return;
-            
-            const submenu = toggle.nextElementSibling;
-            if (submenu && submenu.classList.contains('submenu')) {
-                this.openSubmenu(submenu);
-                
-                // Activate the specific link
-                const submenuLinks = submenu.querySelectorAll('.nav-link, .submenu-link');
-                submenuLinks.forEach(link => {
-                    if (link.href.includes('/' + keyword + '/') || 
-                        link.href.includes('/' + keyword + '.php') ||
-                        link.href.includes('/evaluasi/') ||
-                        link.href.includes('/laporan/')) {
-                        link.classList.add('active');
-                        console.log('✅ Link activated:', link.textContent.trim());
-                    }
-                });
+    const toggle = Utils.safeQuerySelector(selector);
+    if (!toggle) return;
+    
+    const submenu = toggle.nextElementSibling;
+    if (submenu && submenu.classList.contains('submenu')) {
+        this.openSubmenu(submenu);
+        
+        // Activate the specific link - PERBAIKI LOGIC INI
+        const submenuLinks = submenu.querySelectorAll('.nav-link, .submenu-link');
+        submenuLinks.forEach(link => {
+            // HANYA COCOKKAN KEYWORD YANG EXACT, BUKAN SUBSTRING
+            if (link.href.includes('/' + keyword + '/') || 
+                link.href.includes('/' + keyword + '.php')) {
+                link.classList.add('active');
+                console.log('✅ Link activated:', link.textContent.trim());
             }
-        }
+        });
+    }
+}
     };
 
     // ===========================================

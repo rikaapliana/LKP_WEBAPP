@@ -131,8 +131,8 @@ if ($pendaftar['status_pendaftaran'] === 'Terverifikasi') {
             <div class="row align-items-start">
               <div class="col-auto">
                 <div class="profile-photo">
-                  <?php if($pendaftar['pas_foto'] && file_exists('../../../uploads/pas_foto_pendaftar/'.$pendaftar['pas_foto'])): ?>
-                    <img src="../../../uploads/pas_foto_pendaftar/<?= $pendaftar['pas_foto'] ?>" 
+                  <?php if($pendaftar['pas_foto'] && file_exists('../../../uploads/pas_foto/'.$pendaftar['pas_foto'])): ?>
+                    <img src="../../../uploads/pas_foto/<?= $pendaftar['pas_foto'] ?>" 
                          alt="Foto <?= htmlspecialchars($pendaftar['nama_pendaftar']) ?>" 
                          class="rounded-circle" 
                          style="width: 100px; height: 100px; object-fit: cover; border: 4px solid #f8f9fa;">
@@ -397,8 +397,8 @@ if ($pendaftar['status_pendaftaran'] === 'Terverifikasi') {
                         <i class="bi bi-card-text text-danger me-2"></i>
                         <span class="text-dark">KTP</span>
                       </div>
-                      <?php if($pendaftar['ktp'] && file_exists('../../../uploads/ktp_pendaftar/'.$pendaftar['ktp'])): ?>
-                        <a href="../../../uploads/ktp_pendaftar/<?= $pendaftar['ktp'] ?>" 
+                      <?php if($pendaftar['ktp'] && file_exists('../../../uploads/ktp/'.$pendaftar['ktp'])): ?>
+                        <a href="../../../uploads/ktp/<?= $pendaftar['ktp'] ?>" 
                            target="_blank" 
                            class="btn btn-sm btn-outline-danger"
                            download="KTP_<?= htmlspecialchars($pendaftar['nama_pendaftar']) ?>.pdf">
@@ -415,8 +415,8 @@ if ($pendaftar['status_pendaftaran'] === 'Terverifikasi') {
                         <i class="bi bi-people-fill text-info me-2"></i>
                         <span class="text-dark">Kartu Keluarga</span>
                       </div>
-                      <?php if($pendaftar['kk'] && file_exists('../../../uploads/kk_pendaftar/'.$pendaftar['kk'])): ?>
-                        <a href="../../../uploads/kk_pendaftar/<?= $pendaftar['kk'] ?>" 
+                      <?php if($pendaftar['kk'] && file_exists('../../../uploads/kk/'.$pendaftar['kk'])): ?>
+                        <a href="../../../uploads/kk/<?= $pendaftar['kk'] ?>" 
                            target="_blank" 
                            class="btn btn-sm btn-outline-info"
                            download="KK_<?= htmlspecialchars($pendaftar['nama_pendaftar']) ?>.pdf">
@@ -433,8 +433,8 @@ if ($pendaftar['status_pendaftaran'] === 'Terverifikasi') {
                         <i class="bi bi-award-fill text-success me-2"></i>
                         <span class="text-dark">Ijazah</span>
                       </div>
-                      <?php if($pendaftar['ijazah'] && file_exists('../../../uploads/ijazah_pendaftar/'.$pendaftar['ijazah'])): ?>
-                        <a href="../../../uploads/ijazah_pendaftar/<?= $pendaftar['ijazah'] ?>" 
+                      <?php if($pendaftar['ijazah'] && file_exists('../../../uploads/ijazah/'.$pendaftar['ijazah'])): ?>
+                        <a href="../../../uploads/ijazah/<?= $pendaftar['ijazah'] ?>" 
                            target="_blank" 
                            class="btn btn-sm btn-outline-success"
                            download="Ijazah_<?= htmlspecialchars($pendaftar['nama_pendaftar']) ?>.pdf">
@@ -616,8 +616,8 @@ if ($pendaftar['status_pendaftaran'] === 'Terverifikasi') {
           <p>Anda yakin ingin menghapus data pendaftar:</p>
           
           <div class="text-center mb-3">
-            <?php if($pendaftar['pas_foto'] && file_exists('../../../uploads/pas_foto_pendaftar/'.$pendaftar['pas_foto'])): ?>
-              <img src="../../../uploads/pas_foto_pendaftar/<?= $pendaftar['pas_foto'] ?>" 
+            <?php if($pendaftar['pas_foto'] && file_exists('../../../uploads/pas_foto/'.$pendaftar['pas_foto'])): ?>
+              <img src="../../../uploads/pas_foto/<?= $pendaftar['pas_foto'] ?>" 
                    alt="Foto Pendaftar" 
                    class="rounded-circle mb-2"
                    style="width: 80px; height: 80px; object-fit: cover;">

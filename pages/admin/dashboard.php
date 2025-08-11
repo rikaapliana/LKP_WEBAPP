@@ -103,19 +103,21 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dashboard Admin - LKP Pradata Komputer</title>
   <link rel="icon" type="image/png" href="../../assets/img/favicon.png"/>
-  
-  <!-- Offline Bootstrap CSS -->
   <link rel="stylesheet" href="../../assets/css/bootstrap.min.css" />
-  
-  <!-- Offline Bootstrap Icons -->
   <link rel="stylesheet" href="../../assets/css/bootstrap-icons.css" />
-  
-  <!-- Offline Poppins Font -->
   <link rel="stylesheet" href="../../assets/css/fonts.css" />
-  
-  <!-- Custom Styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../assets/css/styles.css" />
 </head>
+<style>
+ 
+.font-roboto {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
+
+</style>
 
 <body>
   <div class="d-flex">
@@ -443,152 +445,6 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
             </a>
           </div>
         </div>
-        
-        <!-- Content Cards Row -->
-        <div class="row">
-          <!-- Kelas Terbaru -->
-          <div class="col-lg-8 mb-4">
-            <div class="card content-card">
-              <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center">
-                  <h5 class="mb-0 fw-semibold"><i class="bi bi-calendar-check me-2"></i>Kelas Terbaru</h5>
-                  <a href="kelas/" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
-                </div>
-              </div>
-              <div class="card-body">
-                <?php if (mysqli_num_rows($resultKelas) > 0): ?>
-                  <div class="table-responsive">
-                    <table class="table table-hover">
-                      <thead class="table-light">
-                        <tr>
-                          <th>Nama Kelas</th>
-                          <th>Gelombang</th>
-                          <th>Instruktur</th>
-                          <th>Kapasitas</th>
-                          <th>Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <?php while ($kelas = mysqli_fetch_assoc($resultKelas)): 
-                          $persentase = $kelas['kapasitas'] > 0 ? ($kelas['jumlah_siswa'] / $kelas['kapasitas']) * 100 : 0;
-                          $statusClass = 'success';
-                          $statusText = 'Tersedia';
-                          
-                          if ($kelas['status_gelombang'] == 'selesai') {
-                            $statusClass = 'secondary';
-                            $statusText = 'Selesai';
-                          } elseif ($kelas['status_gelombang'] == 'aktif') {
-                            if ($persentase >= 100) {
-                              $statusClass = 'danger';
-                              $statusText = 'Penuh';
-                            } elseif ($persentase >= 80) {
-                              $statusClass = 'warning';
-                              $statusText = 'Hampir Penuh';
-                            } else {
-                              $statusClass = 'info';
-                              $statusText = 'Berlangsung';
-                            }
-                          } elseif ($kelas['status_gelombang'] == 'dibuka') {
-                            if ($persentase >= 100) {
-                              $statusClass = 'danger';
-                              $statusText = 'Penuh';
-                            } else {
-                              $statusClass = 'success';
-                              $statusText = 'Pendaftaran Dibuka';
-                            }
-                          }
-                        ?>
-                        <tr>
-                          <td class="fw-semibold"><?= htmlspecialchars($kelas['nama_kelas']) ?></td>
-                          <td><?= htmlspecialchars($kelas['nama_gelombang'] ?? 'Belum ditentukan') ?></td>
-                          <td><?= htmlspecialchars($kelas['instruktur'] ?? 'Belum ditentukan') ?></td>
-                          <td>
-                            <span class="badge bg-light text-dark">
-                              <?= $kelas['jumlah_siswa'] ?>/<?= $kelas['kapasitas'] ?? 0 ?>
-                            </span>
-                            <div class="progress mt-1" style="height: 4px;">
-                              <div class="progress-bar bg-<?= $persentase >= 80 ? 'danger' : ($persentase >= 50 ? 'warning' : 'success') ?>" 
-                                   style="width: <?= min($persentase, 100) ?>%"></div>
-                            </div>
-                          </td>
-                          <td>
-                            <span class="badge bg-<?= $statusClass ?> badge-status">
-                              <?= $statusText ?>
-                            </span>
-                          </td>
-                        </tr>
-                        <?php endwhile; ?>
-                      </tbody>
-                    </table>
-                  </div>
-                <?php else: ?>
-                  <div class="text-center py-4">
-                    <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
-                    <p class="text-muted">Belum ada data kelas</p>
-                  </div>
-                <?php endif; ?>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pendaftaran Terbaru -->
-          <div class="col-lg-4 mb-4">
-            <div class="card content-card">
-              <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center">
-                  <h5 class="mb-0 fw-semibold"><i class="bi bi-person-plus me-2"></i>Pendaftaran Terbaru</h5>
-                  <a href="pendaftar/" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
-                </div>
-              </div>
-              <div class="card-body">
-                <?php if (mysqli_num_rows($resultPendaftaran) > 0): ?>
-                  <?php while ($pendaftaran = mysqli_fetch_assoc($resultPendaftaran)): 
-                    $statusClass = 'warning';
-                    $statusIcon = 'clock';
-                    $statusText = 'Belum Verifikasi';
-                    
-                    if ($pendaftaran['status_pendaftaran'] == 'Terverifikasi') {
-                      $statusClass = 'success';
-                      $statusIcon = 'check-circle';
-                      $statusText = 'Terverifikasi';
-                    } elseif ($pendaftaran['status_pendaftaran'] == 'Diterima') {
-                      $statusClass = 'primary';
-                      $statusIcon = 'person-check';
-                      $statusText = 'Diterima';
-                    }
-                  ?>
-                  <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
-                    <div class="flex-shrink-0 me-3">
-                      <div class="rounded-circle bg-<?= $statusClass ?> text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                        <i class="bi bi-<?= $statusIcon ?>"></i>
-                      </div>
-                    </div>
-                    <div class="flex-grow-1">
-                      <div class="fw-semibold"><?= htmlspecialchars($pendaftaran['nama_pendaftar']) ?></div>
-                      <span class="badge bg-<?= $statusClass ?> badge-status small">
-                        <?= $statusText ?>
-                      </span>
-                      <div class="text-muted small mt-1">
-                        <div>ID: <?= str_pad($pendaftaran['id_pendaftar'], 4, '0', STR_PAD_LEFT) ?></div>
-                        <div><?= htmlspecialchars($pendaftaran['nama_gelombang'] ?? 'Gelombang dihapus') ?></div>
-                      </div>
-                    </div>
-                  </div>
-                  <?php endwhile; ?>
-                  
-                <?php else: ?>
-                  <div class="text-center py-4">
-                    <i class="bi bi-person-plus fs-1 text-muted mb-3"></i>
-                    <p class="text-muted">Belum ada pendaftaran</p>
-                  </div>
-                <?php endif; ?>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- Sidebar Overlay -->
   <div class="sidebar-overlay"></div>

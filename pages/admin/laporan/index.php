@@ -164,13 +164,13 @@ try {
               
               <!-- Page Title & Breadcrumb -->
               <div class="page-info">
-                <h2 class="page-title mb-1">LAPORAN</h2>
+                <h2 class="page-title mb-1">PUSAT LAPORAN</h2>
                 <nav aria-label="breadcrumb">
                   <ol class="breadcrumb page-breadcrumb mb-0">
                     <li class="breadcrumb-item">
                       <a href="../dashboard.php">Dashboard</a>
                     </li>
-                    <li class="breadcrumb-item active" aria-current="page">Laporan</li>
+                    <li class="breadcrumb-item active" aria-current="page">Pusat Laporan</li>
                   </ol>
                 </nav>
               </div>

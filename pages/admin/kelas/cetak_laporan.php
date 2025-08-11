@@ -205,20 +205,6 @@ try {
         $pdf->Cell(5, 4, $no_ringkasan++ . '.', 0, 0, 'L');
         $pdf->Cell(0, 4, ' Total Kapasitas: ' . number_format($total_kapasitas) . ' siswa', 0, 1, 'L');
         
-        $pdf->Cell(5, 4, $no_ringkasan++ . '.', 0, 0, 'L');
-        $pdf->Cell(0, 4, ' Total Siswa Aktif: ' . number_format($total_siswa) . ' siswa (' . $persentase_terisi . '%)', 0, 1, 'L');
-        
-        if ($kelas_penuh > 0) {
-            $pdf->Cell(5, 4, $no_ringkasan++ . '.', 0, 0, 'L');
-            $pdf->Cell(0, 4, ' Kelas Penuh: ' . number_format($kelas_penuh) . ' kelas', 0, 1, 'L');
-        }
-        
-        if ($kelas_kosong > 0) {
-            $pdf->Cell(5, 4, $no_ringkasan++ . '.', 0, 0, 'L');
-            $pdf->Cell(0, 4, ' Kelas Kosong: ' . number_format($kelas_kosong) . ' kelas', 0, 1, 'L');
-        }
-        
-        
     } else {
         // Jika tidak ada data
         $pdf->SetFont('Arial', 'I', 12);

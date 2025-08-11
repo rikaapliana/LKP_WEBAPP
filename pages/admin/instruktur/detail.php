@@ -154,8 +154,8 @@ if ($total_kelas > 0) {
           <div class="row align-items-start">
             <div class="col-auto">
               <div class="profile-photo">
-                <?php if($instruktur['pas_foto'] && file_exists('../../../uploads/pas_foto/'.$instruktur['pas_foto'])): ?>
-                  <img src="../../../uploads/pas_foto/<?= $instruktur['pas_foto'] ?>" 
+                <?php if($instruktur['pas_foto'] && file_exists('../../../uploads/profile_pictures/'.$instruktur['pas_foto'])): ?>
+                  <img src="../../../uploads/profile_pictures/<?= $instruktur['pas_foto'] ?>" 
                        alt="Foto <?= htmlspecialchars($instruktur['nama']) ?>" 
                        class="rounded-circle" 
                        style="width: 100px; height: 100px; object-fit: cover; border: 4px solid #f8f9fa;">
@@ -181,12 +181,6 @@ if ($total_kelas > 0) {
                       <i class="bi bi-circle-fill me-1"></i>
                       <?= ucfirst($instruktur['status_aktif'] ?? 'Aktif') ?>
                     </span>
-                    <?php if($instruktur['username']): ?>
-                      <span class="badge bg-info fs-6 px-3 py-2">
-                        <i class="bi bi-person-circle me-1"></i>
-                        Punya Akun
-                      </span>
-                    <?php endif; ?>
                   </div>
                 </div>
                 <div class="d-flex gap-3">

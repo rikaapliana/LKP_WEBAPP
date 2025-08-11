@@ -472,7 +472,7 @@ function canDelete($row) {
                       </td>
                       
                       <!-- Status -->
-                      <td class="text-center align-middle">
+                      <td class="align-middle">
                         <?php 
                         $statusClass = 'secondary';
                         $statusText = 'Draft';
@@ -496,8 +496,8 @@ function canDelete($row) {
                             break;
                         }
                         ?>
-                        <span class="badge bg-<?= $statusClass ?> px-2 py-1">
-                          <i class="bi bi-<?= $statusIcon ?> me-1"></i><?= $statusText ?>
+                        <span>
+                          <?= $statusText ?>
                         </span>
                       </td>
                       
@@ -533,7 +533,7 @@ function canDelete($row) {
                       <!-- Kuota -->
                       <td class="text-center align-middle">
                         <?php if ($gelombang['kuota_maksimal']): ?>
-                          <span class="badge bg-info"><?= number_format($gelombang['kuota_maksimal']) ?> orang</span>
+                          <span><?= number_format($gelombang['kuota_maksimal']) ?> orang</span>
                         <?php else: ?>
                           <span class="text-muted">Belum diatur</span>
                         <?php endif; ?>

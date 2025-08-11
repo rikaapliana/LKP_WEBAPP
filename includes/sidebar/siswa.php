@@ -79,7 +79,7 @@ $baseURL = $baseURL ?? './';
         </li>
 
         <li class="nav-item">
-            <a class="nav-link <?= ($activePage == 'evaluasi-pembelajaran') ? 'active' : '' ?>" href="<?= $baseURL ?>evaluasi/index.php">
+            <a class="nav-link <?= ($activePage == 'evaluasi') ? 'active' : '' ?>" href="<?= $baseURL ?>evaluasi/index.php">
                 <i class="bi bi-clipboard-check-fill me-2"></i> Form Evaluasi
             </a>
         </li>

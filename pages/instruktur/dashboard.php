@@ -150,8 +150,16 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
     <link rel="stylesheet" href="../../assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="../../assets/css/bootstrap-icons.css" />
     <link rel="stylesheet" href="../../assets/css/fonts.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../assets/css/styles.css" />
 </head>
+<style> 
+.font-roboto {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
+</style>
 
 <body>
     <div class="d-flex">

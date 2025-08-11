@@ -603,12 +603,11 @@ function buildUrlWithFilters($page = null) {
                           
                           <!-- Kelas -->
                           <td class="align-middle text-nowrap">
-                            <span class="badge bg-primary px-2 py-1">
-                              <i class="bi bi-building me-1"></i>
+                            <span>
                               <?= htmlspecialchars($nilai['nama_kelas']) ?>
                             </span>
                             <?php if($nilai['nama_gelombang']): ?>
-                              <br><small class="text-muted"><?= htmlspecialchars($nilai['nama_gelombang']) ?></small>
+                              <br><small class="text-muted">(<?= htmlspecialchars($nilai['nama_gelombang']) ?>)</small>
                             <?php endif; ?>
                           </td>
                           
@@ -663,11 +662,6 @@ function buildUrlWithFilters($page = null) {
                               <span class="badge bg-<?= $nilai['nilai_terisi'] == 5 ? 'success' : ($nilai['nilai_terisi'] >= 3 ? 'warning' : 'secondary') ?> mb-1">
                                 <?= $nilai['nilai_terisi'] ?>/5
                               </span>
-                              <div class="progress" style="width: 60px; height: 4px;">
-                                <div class="progress-bar bg-<?= $nilai['nilai_terisi'] == 5 ? 'success' : ($nilai['nilai_terisi'] >= 3 ? 'warning' : 'secondary') ?>" 
-                                     style="width: <?= ($nilai['nilai_terisi'] / 5) * 100 ?>%"></div>
-                              </div>
-                            </div>
                           </td>
                           
                           <!-- Rata-rata -->

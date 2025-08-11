@@ -132,29 +132,6 @@ function buildUrlWithFilters($page) {
       }
     }
 
-    /* Role badge styles */
-    .role-badge {
-      font-size: 0.75rem;
-      padding: 0.25rem 0.5rem;
-      border-radius: 0.375rem;
-      font-weight: 500;
-    }
-    
-    .role-admin {
-      background-color: #ee1a6bff;
-      color: white;
-    }
-    
-    .role-instruktur {
-      background-color: #0d6efd;
-      color: white;
-    }
-    
-    .role-siswa {
-      background-color: #23d180ff;
-      color: white;
-    }
-
     /* Status badge styles */
     .status-badge {
       font-size: 0.75rem;
@@ -480,7 +457,7 @@ function buildUrlWithFilters($page) {
                       </td>
                       
                       <!-- Aksi -->
-                      <td class="text-center align-middle">
+                      <td class="align-middle">
                         <div class="btn-group btn-group-sm" role="group">
                           <a href="edit.php?id=<?= $user['id_user'] ?>" 
                              class="btn btn-action btn-edit btn-sm" 

@@ -351,8 +351,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <h6 class="section-title mb-4">
                   <i class="bi bi-cloud-upload me-2"></i>Dokumen Persyaratan
                 </h6>
-                <p class="text-muted mb-4">Upload dokumen persyaratan pendaftaran. Semua dokumen bersifat opsional dan dapat dilengkapi kemudian.</p>
-                
                 <div class="row">
                   <!-- Pas Foto -->
                   <div class="col-lg-3 col-md-6 mb-4">

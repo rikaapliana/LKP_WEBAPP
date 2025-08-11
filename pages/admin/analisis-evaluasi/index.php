@@ -1,7 +1,4 @@
 <?php
-// PERBAIKAN BAGIAN DATA PROCESSING
-// Ganti bagian mulai dari baris ke-30 sampai sebelum HTML
-
 session_start();  
 require_once '../../../includes/auth.php';  
 requireAdminAuth();

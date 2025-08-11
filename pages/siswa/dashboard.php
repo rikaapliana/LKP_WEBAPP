@@ -137,8 +137,16 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
     <link rel="stylesheet" href="../../assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="../../assets/css/bootstrap-icons.css" />
     <link rel="stylesheet" href="../../assets/css/fonts.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../assets/css/styles.css" />
 </head>
+<style> 
+.font-roboto {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
+</style>
 
 <body>
     <div class="d-flex">
@@ -345,93 +353,7 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
                     </div>
                 </div>
 
-                <!-- Quick Actions Row -->
-                <div class="row g-3 g-md-4">
-                    <!-- Jadwal Terdekat -->
-                    <?php if ($jadwalResult->num_rows > 0): ?>
-                    <div class="col-md-6">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-header bg-white border-0 py-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0 text-dark">
-                                        <i class="bi bi-calendar-event text-primary me-2"></i>
-                                        Jadwal Terdekat
-                                    </h5>
-                                    <a href="jadwal/" class="btn btn-outline-primary btn-sm">
-                                        Lihat Semua
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="card-body py-2">
-                                <?php while ($jadwal = $jadwalResult->fetch_assoc()): ?>
-                                    <?php
-                                    $isToday = $jadwal['tgl_jadwal'] == date('Y-m-d');
-                                    $isTomorrow = $jadwal['tgl_jadwal'] == date('Y-m-d', strtotime('+1 day'));
-                                    
-                                    if ($isToday) {
-                                        $dateLabel = 'Hari Ini';
-                                        $badgeClass = 'bg-success';
-                                    } elseif ($isTomorrow) {
-                                        $dateLabel = 'Besok';
-                                        $badgeClass = 'bg-warning';
-                                    } else {
-                                        $dateLabel = date('d/m/Y', strtotime($jadwal['tanggal']));
-                                        $badgeClass = 'bg-info';
-                                    }
-                                    ?>
-                                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                                        <div>
-                                            <h6 class="mb-1 fw-bold"><?= htmlspecialchars($jadwal['nama_kelas']) ?></h6>
-                                            <small class="text-muted">
-                                                <i class="bi bi-clock me-1"></i>
-                                                <?= $jadwal['waktu_mulai'] ?> - <?= $jadwal['waktu_selesai'] ?>
-                                            </small>
-                                        </div>
-                                        <span class="badge <?= $badgeClass ?> px-2 py-1">
-                                            <?= $dateLabel ?>
-                                        </span>
-                                    </div>
-                                <?php endwhile; ?>
-                            </div>
-                        </div>
-                    </div>
-                    <?php endif; ?>
-
-                    <!-- Materi Terbaru -->
-                    <?php if ($materiResult->num_rows > 0): ?>
-                    <div class="col-md-6">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-header bg-white border-0 py-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0 text-dark">
-                                        <i class="bi bi-journal-text text-warning me-2"></i>
-                                        Materi Terbaru
-                                    </h5>
-                                    <a href="materi/" class="btn btn-outline-warning btn-sm">
-                                        Lihat Semua (<?= $totalMateri ?>)
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="card-body py-2">
-                                <?php while ($materi = $materiResult->fetch_assoc()): ?>
-                                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                                        <div>
-                                            <h6 class="mb-1 fw-bold"><?= htmlspecialchars($materi['judul']) ?></h6>
-                                            <small class="text-muted">
-                                                <i class="bi bi-person me-1"></i>
-                                                <?= htmlspecialchars($materi['nama_instruktur']) ?>
-                                            </small>
-                                        </div>
-                                    </div>
-                                <?php endwhile; ?>
-                            </div>
-                        </div>
-                    </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </div>
+               
 
     <!-- Sidebar Overlay -->
     <div class="sidebar-overlay"></div>
