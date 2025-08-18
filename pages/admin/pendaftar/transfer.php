@@ -50,10 +50,10 @@ try {
     
     // 2. Validasi kelas dan kapasitas
     $kelasQuery = "SELECT k.*, g.nama_gelombang, 
-                   (SELECT COUNT(*) FROM siswa s WHERE s.id_kelas = k.id_kelas AND s.status_aktif = 'aktif') as siswa_terdaftar
-                   FROM kelas k 
-                   LEFT JOIN gelombang g ON k.id_gelombang = g.id_gelombang 
-                   WHERE k.id_kelas = ? AND g.status = 'aktif'";
+                      (SELECT COUNT(*) FROM siswa s WHERE s.id_kelas = k.id_kelas AND s.status_aktif = 'aktif') as siswa_terdaftar
+                      FROM kelas k 
+                      LEFT JOIN gelombang g ON k.id_gelombang = g.id_gelombang 
+                      WHERE k.id_kelas = ? AND g.status = 'aktif'";
     $kelasStmt = mysqli_prepare($conn, $kelasQuery);
     mysqli_stmt_bind_param($kelasStmt, "i", $id_kelas);
     mysqli_stmt_execute($kelasStmt);
@@ -139,13 +139,13 @@ try {
         throw new Exception('Gagal mengupdate status pendaftar: ' . mysqli_error($conn));
     }
     
-    // 8. Validasi file yang sudah ada (tidak perlu copy karena sudah satu folder)
+    // 8. Validasi file yang sudah ada
     $fileValidation = validatePendaftarFiles($pendaftar);
     
     // Commit transaksi
     mysqli_commit($conn);
     
-    // 9. Kirim email credentials (menggunakan config)
+    // 9. Kirim email credentials
     $emailSent = sendWelcomeEmail($pendaftar, $username, $password, $kelas);
     
     // 10. Log aktivitas
@@ -172,40 +172,25 @@ exit();
 
 // HELPER FUNCTIONS
 
-/**
- * Generate username unik
- */
 function generateUsername($nama, $conn) {
-    // Bersihkan nama dari karakter khusus
     $base = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $nama));
-    
-    // Batasi panjang base name
     if (strlen($base) > 10) {
         $base = substr($base, 0, 10);
     }
-    
     $tahun = date('Y');
     $username = $base . '_' . $tahun;
-    
-    // Cek apakah username sudah ada
     $counter = 1;
     while (usernameExists($username, $conn)) {
         $username = $base . '_' . $tahun . '_' . $counter;
         $counter++;
-        
-        // Failsafe: jika counter terlalu tinggi, gunakan timestamp
         if ($counter > 999) {
             $username = $base . '_' . time();
             break;
         }
     }
-    
     return $username;
 }
 
-/**
- * Cek apakah username sudah ada
- */
 function usernameExists($username, $conn) {
     $query = "SELECT COUNT(*) as count FROM user WHERE username = ?";
     $stmt = mysqli_prepare($conn, $query);
@@ -213,41 +198,23 @@ function usernameExists($username, $conn) {
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
     $row = mysqli_fetch_assoc($result);
-    
     return $row['count'] > 0;
 }
 
-/**
- * Generate password
- */
 function generatePassword() {
-    // Opsi 1: Random 8 karakter
-    // return bin2hex(random_bytes(4));
-    
-    // Opsi 2: Pattern dengan tahun
-    // return "lkp" . date('Y');
-    
-    // Opsi 3: Kombinasi yang mudah diingat tapi aman
     $adjectives = ['smart', 'bright', 'quick', 'clever', 'sharp'];
     $numbers = rand(10, 99);
     $adjective = $adjectives[array_rand($adjectives)];
-    
     return $adjective . $numbers;
 }
 
-/**
- * PERBAIKAN: Validasi file yang sudah ada (tidak perlu copy lagi)
- */
 function validatePendaftarFiles($pendaftar) {
-    // File sudah berada di folder yang tepat dari awal, hanya validasi
     $fileFields = ['pas_foto', 'ktp', 'kk', 'ijazah'];
     $missingFiles = [];
     $validFiles = [];
-    
     foreach ($fileFields as $field) {
         if (!empty($pendaftar[$field])) {
             $filePath = "../../../uploads/{$field}/{$pendaftar[$field]}";
-            
             if (file_exists($filePath)) {
                 $validFiles[] = $field . ': ' . $pendaftar[$field];
             } else {
@@ -257,25 +224,6 @@ function validatePendaftarFiles($pendaftar) {
             $missingFiles[] = $field . ': (kosong)';
         }
     }
-    
-    // Log hasil validasi
-    $timestamp = date('Y-m-d H:i:s');
-    $logEntry = "[{$timestamp}] File validation untuk {$pendaftar['nama_pendaftar']} (NIK: {$pendaftar['nik']}):\n";
-    
-    if (!empty($validFiles)) {
-        $logEntry .= "  - Valid files: " . implode(', ', $validFiles) . "\n";
-    }
-    
-    if (!empty($missingFiles)) {
-        $logEntry .= "  - Missing files: " . implode(', ', $missingFiles) . "\n";
-    }
-    
-    $logEntry .= "  - Status: Files sudah berada di folder yang tepat, tidak perlu copy\n\n";
-    
-    // Simpan log
-    file_put_contents('../../../uploads/file_validation_log.txt', $logEntry, FILE_APPEND | LOCK_EX);
-    
-    // Return info untuk log aktivitas
     return [
         'valid_count' => count($validFiles),
         'missing_count' => count($missingFiles),
@@ -283,16 +231,11 @@ function validatePendaftarFiles($pendaftar) {
     ];
 }
 
-/**
- * Kirim email selamat datang dengan credentials (MENGGUNAKAN CONFIG)
- */
 function sendWelcomeEmail($pendaftar, $username, $password, $kelas) {
     if (empty($pendaftar['email'])) return false;
     
     try {
         $mail = new PHPMailer(true);
-        
-        // Server settings - MENGGUNAKAN CONFIG
         $mail->isSMTP();
         $mail->Host = SMTP_HOST;
         $mail->SMTPAuth = true;
@@ -301,40 +244,34 @@ function sendWelcomeEmail($pendaftar, $username, $password, $kelas) {
         $mail->SMTPSecure = (SMTP_ENCRYPTION == 'tls') ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port = SMTP_PORT;
         
-        // Recipients
         $mail->setFrom(FROM_EMAIL, FROM_NAME);
         $mail->addAddress($pendaftar['email'], $pendaftar['nama_pendaftar']);
         
-        // Content
         $mail->isHTML(true);
         $mail->Subject = 'Selamat! Anda Diterima di ' . COMPANY_NAME;
         $mail->Body = generateWelcomeEmailHTML($pendaftar, $username, $password, $kelas);
         $mail->AltBody = generateWelcomeEmailText($pendaftar, $username, $password, $kelas);
         
         $mail->send();
-        
-        // Log sukses
-        $logEntry = date('Y-m-d H:i:s') . " - Email welcome berhasil dikirim ke: {$pendaftar['email']} (Username: {$username})\n";
-        file_put_contents('../../../uploads/email_log.txt', $logEntry, FILE_APPEND | LOCK_EX);
-        
         return true;
         
     } catch (Exception $e) {
-        // Log error
         $logEntry = date('Y-m-d H:i:s') . " - Email welcome GAGAL dikirim ke: {$pendaftar['email']} - Error: {$e->getMessage()}\n";
         file_put_contents('../../../uploads/email_log.txt', $logEntry, FILE_APPEND | LOCK_EX);
-        
         return false;
     }
 }
 
 /**
- * Generate HTML email template (MENGGUNAKAN CONFIG)
+ * PERBAIKAN: Generate HTML email template yang lebih rapi dan jelas
  */
 function generateWelcomeEmailHTML($pendaftar, $username, $password, $kelas) {
-    $currentDate = date('d F Y');
-    $currentTime = date('H:i');
+    // Ambil nama depan untuk sapaan yang lebih personal
+    $firstName = explode(' ', trim($pendaftar['nama_pendaftar']))[0];
     
+    // URL Login dari config
+    $loginUrl = defined('LOGIN_URL') ? LOGIN_URL : '#'; // Fallback jika konstanta tidak ada
+
     return "
     <!DOCTYPE html>
     <html lang='id'>
@@ -343,243 +280,74 @@ function generateWelcomeEmailHTML($pendaftar, $username, $password, $kelas) {
         <meta name='viewport' content='width=device-width, initial-scale=1.0'>
         <title>Selamat Datang di " . COMPANY_NAME . "</title>
         <style>
-            body {
-                font-family: Arial, sans-serif;
-                font-size: 14px;
-                line-height: 1.6;
-                color: #333;
-                margin: 0;
-                padding: 20px;
-                background-color: #f5f5f5;
-            }
-            .container {
-                max-width: 600px;
-                margin: 0 auto;
-                background: white;
-                padding: 30px;
-                border-radius: 8px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-            .header {
-                text-align: center;
-                margin-bottom: 30px;
-                padding-bottom: 20px;
-                border-bottom: 2px solid #007bff;
-            }
-            .header h1 {
-                color: #007bff;
-                margin: 0;
-                font-size: 28px;
-            }
-            .header p {
-                color: #666;
-                margin: 5px 0 0 0;
-            }
-            .success-message {
-                background: #d4edda;
-                color: #155724;
-                padding: 15px;
-                border-radius: 5px;
-                margin: 20px 0;
-                text-align: center;
-                font-weight: bold;
-                border: 1px solid #c3e6cb;
-            }
-            .content {
-                margin: 20px 0;
-            }
-            .content p {
-                margin-bottom: 15px;
-            }
-            .info-table {
-                width: 100%;
-                margin: 20px 0;
-                border-collapse: collapse;
-            }
-            .info-table td {
-                padding: 10px;
-                border-bottom: 1px solid #eee;
-                vertical-align: top;
-            }
-            .info-table td:first-child {
-                font-weight: bold;
-                width: 120px;
-                color: #555;
-            }
-            .credentials {
-                background: #f8f9fa;
-                padding: 20px;
-                border-radius: 5px;
-                margin: 25px 0;
-                border: 1px solid #dee2e6;
-            }
-            .credentials h3 {
-                margin: 0 0 15px 0;
-                color: #333;
-                font-size: 18px;
-            }
-            .credential-row {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin: 12px 0;
-                padding: 10px;
-                background: white;
-                border-radius: 4px;
-                border: 1px solid #ddd;
-            }
-            .credential-label {
-                font-weight: bold;
-                color: #555;
-            }
-            .credential-value {
-                font-family: 'Courier New', monospace;
-                font-weight: bold;
-                color: #007bff;
-                background: #e9ecef;
-                padding: 4px 8px;
-                border-radius: 3px;
-            }
-            .login-button {
-                text-align: center;
-                margin: 25px 0;
-            }
-            .login-button a {
-                display: inline-block;
-                background: #007bff;
-                color: white;
-                padding: 12px 30px;
-                text-decoration: none;
-                border-radius: 5px;
-                font-weight: bold;
-                font-size: 16px;
-            }
-            .warning {
-                background: #fff3cd;
-                color: #856404;
-                padding: 15px;
-                border-radius: 5px;
-                margin: 20px 0;
-                border: 1px solid #ffeaa7;
-            }
-            .warning strong {
-                color: #856404;
-            }
-            .steps {
-                margin: 20px 0;
-            }
-            .steps ol {
-                padding-left: 20px;
-            }
-            .steps li {
-                margin: 8px 0;
-            }
-            .contact {
-                margin: 30px 0;
-                padding: 20px;
-                background: #f8f9fa;
-                border-radius: 5px;
-            }
-            .contact h3 {
-                margin: 0 0 15px 0;
-                color: #333;
-            }
-            .contact p {
-                margin: 5px 0;
-            }
-            .footer {
-                text-align: center;
-                margin-top: 30px;
-                padding-top: 20px;
-                border-top: 1px solid #dee2e6;
-                color: #6c757d;
-                font-size: 13px;
-            }
+            body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; }
+            .email-container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; }
+            .header { background-color: #0056b3; color: #ffffff; padding: 30px; text-align: center; }
+            .header h1 { margin: 0; font-size: 28px; }
+            .content { padding: 30px; color: #333333; line-height: 1.6; }
+            .content h2 { color: #0056b3; font-size: 20px; }
+            .content p { margin: 0 0 15px 0; }
+            .credentials { background-color: #f4f7f6; border: 1px dashed #cccccc; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; }
+            .credentials .label { font-size: 14px; color: #555555; margin-bottom: 5px; }
+            .credentials .value { font-size: 20px; font-weight: bold; color: #d9534f; background-color: #ffffff; padding: 8px 15px; border-radius: 5px; display: inline-block; letter-spacing: 1px; }
+            .cta-button { text-align: center; margin: 30px 0; }
+            .cta-button a { background-color: #28a745; color: #ffffff; padding: 14px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; }
+            .info-table { width: 100%; margin-bottom: 20px; }
+            .info-table td { padding: 8px 0; border-bottom: 1px solid #eeeeee; }
+            .info-table td:first-child { font-weight: bold; width: 120px; }
+            .warning { background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 5px; margin-top: 20px; font-size: 14px; }
+            .footer { background-color: #f4f7f6; color: #888888; text-align: center; padding: 20px; font-size: 12px; }
+            .footer a { color: #0056b3; text-decoration: none; }
         </style>
     </head>
     <body>
-        <div class='container'>
+        <div class='email-container'>
             <div class='header'>
-                <h1>🎉 Selamat Datang!</h1>
-                <p>LKP PRADATA KOMPUTER TABALONG</p>
+                <h1>Pendaftaran Berhasil!</h1>
             </div>
-            
-            <div class='success-message'>
-                ✅ PENDAFTARAN ANDA DITERIMA
-            </div>
-            
             <div class='content'>
-                <p>Halo <strong>{$pendaftar['nama_pendaftar']}</strong>,</p>
-                
-                <p>Selamat! Kami dengan senang hati menginformasikan bahwa pendaftaran Anda di <strong>LKP PRADATA KOMPUTER TABALONG</strong> telah <strong>DITERIMA</strong> dan Anda resmi menjadi siswa kami.</p>
+                <h2>Selamat Bergabung, " . htmlspecialchars($firstName) . "!</h2>
+                <p>Kami dengan senang hati menginformasikan bahwa Anda telah resmi diterima sebagai siswa di <strong>" . COMPANY_NAME . "</strong>. Selamat datang di keluarga besar kami!</p>
                 
                 <table class='info-table'>
                     <tr>
+                        <td>Nama Lengkap</td>
+                        <td>: " . htmlspecialchars($pendaftar['nama_pendaftar']) . "</td>
+                    </tr>
+                    <tr>
                         <td>Kelas</td>
-                        <td>{$kelas['nama_kelas']}</td>
+                        <td>: " . htmlspecialchars($kelas['nama_kelas']) . "</td>
                     </tr>
                     <tr>
                         <td>Gelombang</td>
-                        <td>{$kelas['nama_gelombang']}</td>
-                    </tr>
-                    <tr>
-                        <td>Kapasitas</td>
-                        <td>{$kelas['kapasitas']} siswa</td>
+                        <td>: " . htmlspecialchars($kelas['nama_gelombang']) . "</td>
                     </tr>
                 </table>
-                
-                <p>Untuk mengakses sistem pembelajaran online, berikut adalah informasi login Anda:</p>
+
+                <p>Untuk mengakses materi, jadwal, dan informasi lainnya, silakan gunakan detail login di bawah ini:</p>
                 
                 <div class='credentials'>
-                    <h3>🔐 Informasi Login</h3>
-                    <div class='credential-row'>
-                        <span class='credential-label'>Username:</span>
-                        <span class='credential-value'>{$username}</span>
-                    </div>
-                    <div class='credential-row'>
-                        <span class='credential-label'>Password:</span>
-                        <span class='credential-value'>{$password}</span>
-                    </div>
+                    <div class='label'>Username Anda:</div>
+                    <div class='value'>" . htmlspecialchars($username) . "</div>
+                    <br>
+                    <div class='label'>Password Sementara Anda:</div>
+                    <div class='value'>" . htmlspecialchars($password) . "</div>
                 </div>
-                
-                <div class='login-button'>
-                    <a href='" . LOGIN_URL . "'>LOGIN KE SISTEM</a>
+
+                <div class='cta-button'>
+                    <a href='" . $loginUrl . "'>Masuk ke Portal Siswa</a>
                 </div>
-                
+
                 <div class='warning'>
-                    <strong>⚠️ Penting:</strong> Simpan informasi login ini dengan baik dan jangan bagikan kepada siapa pun. Segera ubah password setelah login pertama kali untuk keamanan akun Anda.
+                    <strong>Penting:</strong> Untuk keamanan, mohon segera ganti password Anda setelah berhasil login untuk pertama kali.
                 </div>
-                
-                <div class='steps'>
-                    <h3>📚 Langkah Selanjutnya:</h3>
-                    <ol>
-                        <li>Login ke sistem menggunakan username dan password di atas</li>
-                        <li>Lengkapi profil Anda di sistem</li>
-                        <li>Cek jadwal pembelajaran di dashboard</li>
-                        <li>Unduh materi pembelajaran yang tersedia</li>
-                        <li>Ikuti evaluasi dan ujian sesuai jadwal</li>
-                    </ol>
-                </div>
-                
-                <div class='contact'>
-                    <h3>📞 Butuh Bantuan?</h3>
-                    <p><strong>Email:</strong> " . COMPANY_EMAIL . "</p>
-                    <p><strong>Telepon:</strong> " . COMPANY_PHONE . "</p>
-                    <p><strong>WhatsApp:</strong> " . COMPANY_WHATSAPP . "</p>
-                    <p><strong>Alamat:</strong> " . COMPANY_ADDRESS . "</p>
-                </div>
-                
-                <p>Terima kasih telah mempercayai LKP PRADATA KOMPUTER TABALONG untuk mengembangkan kemampuan komputer Anda. Kami berkomitmen memberikan pelayanan terbaik untuk kesuksesan pembelajaran Anda.</p>
-                
-                <p>Selamat bergabung dan semoga sukses! 🚀</p>
-                
-                <p>Salam hangat,<br>
-                <strong>TIM LKP PRADATA KOMPUTER TABALONG</strong></p>
+
+                <p>Jika Anda memiliki pertanyaan, jangan ragu untuk menghubungi kami. Kami siap membantu Anda memulai perjalanan belajar ini.</p>
+                <p>Salam hangat,<br><strong>Tim " . COMPANY_NAME . "</strong></p>
             </div>
-            
             <div class='footer'>
-                <p>Email ini dikirim secara otomatis pada {$currentDate} pukul {$currentTime} WIB</p>
-                <p>" . EMAIL_FOOTER_TEXT . "</p>
+                <p>&copy; " . date('Y') . " " . COMPANY_NAME . ". Semua Hak Cipta Dilindungi.</p>
+                <p>Email ini dibuat secara otomatis. Mohon tidak membalas email ini.</p>
             </div>
         </div>
     </body>
@@ -588,62 +356,50 @@ function generateWelcomeEmailHTML($pendaftar, $username, $password, $kelas) {
 }
 
 /**
- * Generate text email template (MENGGUNAKAN CONFIG)
+ * PERBAIKAN: Generate text email template yang disesuaikan
  */
 function generateWelcomeEmailText($pendaftar, $username, $password, $kelas) {
-    $currentDate = date('d F Y');
-    $currentTime = date('H:i');
+    $loginUrl = defined('LOGIN_URL') ? LOGIN_URL : '#';
     
     return "
-SELAMAT DATANG DI " . COMPANY_NAME . "
+==================================================
+PENDAFTARAN BERHASIL - SELAMAT DATANG!
+==================================================
 
-Kepada Yth,
-{$pendaftar['nama_pendaftar']}
+Halo " . htmlspecialchars($pendaftar['nama_pendaftar']) . ",
 
-Selamat! Pendaftaran Anda di " . COMPANY_NAME . " telah DITERIMA.
+Selamat! Anda telah resmi diterima sebagai siswa di " . COMPANY_NAME . ".
 
-INFORMASI KELAS:
-- Kelas: {$kelas['nama_kelas']}
-- Gelombang: {$kelas['nama_gelombang']}
-- Kapasitas: {$kelas['kapasitas']} siswa
+Berikut adalah detail pendaftaran Anda:
+--------------------------------------------------
+- Nama Lengkap: " . htmlspecialchars($pendaftar['nama_pendaftar']) . "
+- Kelas         : " . htmlspecialchars($kelas['nama_kelas']) . "
+- Gelombang     : " . htmlspecialchars($kelas['nama_gelombang']) . "
 
-INFORMASI LOGIN:
-- Username: {$username}
-- Password: {$password}
-- Login URL: " . LOGIN_URL . "
+AKUN PORTAL SISWA ANDA:
+--------------------------------------------------
+Gunakan informasi berikut untuk masuk ke portal siswa.
 
-PENTING:
-- Simpan informasi login ini dengan baik
-- Jangan bagikan kepada siapa pun
-- Segera ubah password setelah login pertama
+- Username: " . htmlspecialchars($username) . "
+- Password: " . htmlspecialchars($password) . "
 
-LANGKAH SELANJUTNYA:
-1. Login ke sistem menggunakan kredensial di atas
-2. Lengkapi profil Anda di sistem
-3. Cek jadwal pembelajaran di dashboard
-4. Unduh materi pembelajaran yang tersedia
-5. Ikuti evaluasi dan ujian sesuai jadwal
+- LINK LOGIN: " . $loginUrl . "
 
-KONTAK:
-- Email: " . COMPANY_EMAIL . "
-- Telepon: " . COMPANY_PHONE . "
-- WhatsApp: " . COMPANY_WHATSAPP . "
-- Alamat: " . COMPANY_ADDRESS . "
+[PENTING]
+Untuk keamanan, mohon segera ganti password Anda setelah berhasil login untuk pertama kali.
 
-Terima kasih telah mempercayai " . COMPANY_NAME . ".
+--------------------------------------------------
+Jika ada pertanyaan, silakan hubungi kami.
+
+Terima kasih dan selamat belajar!
 
 Salam hangat,
 Tim " . COMPANY_NAME . "
 
----
-Email dikirim pada {$currentDate} pukul {$currentTime} WIB
-" . EMAIL_FOOTER_TEXT . "
+(Email ini dibuat secara otomatis, mohon tidak dibalas)
     ";
 }
 
-/**
- * Log aktivitas transfer dengan info file validation
- */
 function logTransferActivity($message, $emailSent, $fileValidation) {
     $logFile = '../../../uploads/transfer_log.txt';
     $adminName = $_SESSION['nama_admin'] ?? 'Unknown Admin';

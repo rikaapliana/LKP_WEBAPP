@@ -506,18 +506,22 @@ function buildUrlWithFilters($page) {
                       <!-- Foto -->
                       <td class="text-center align-middle" style="text-align: center !important;">
                         <?php if($siswa['pas_foto'] && file_exists('../../../uploads/pas_foto/'.$siswa['pas_foto'])): ?>
-                          <img src="../../../uploads/pas_foto/<?= $siswa['pas_foto'] ?>" 
-                               alt="Foto" 
-                               class="rounded photo-preview" 
-                               style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #e9ecef; margin: 0 auto; display: block;" 
-                               title="<?= htmlspecialchars($siswa['nama']) ?>">
+                            <a href="../../../uploads/pas_foto/<?= $siswa['pas_foto'] ?>" 
+                              class="d-block" 
+                              title="Download Foto <?= htmlspecialchars($siswa['nama']) ?>"
+                              download="Foto_<?= htmlspecialchars(str_replace(' ', '_', $siswa['nama'])) ?>.jpg">
+                                <img src="../../../uploads/pas_foto/<?= $siswa['pas_foto'] ?>" 
+                                    alt="Foto" 
+                                    class="rounded photo-preview" 
+                                    style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #e9ecef; margin: 0 auto; display: block;" 
+                                    title="Klik untuk download foto">
+                            </a>
                         <?php else: ?>
-                          <div class="photo-preview-placeholder" 
-                               style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 6px; color: #6c757d; margin: 0 auto;">
-                            <i class="bi bi-person-fill"></i>
-                          </div>
+                            <div class="photo-preview-placeholder" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 6px; color: #6c757d; margin: 0 auto;">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
                         <?php endif; ?>
-                      </td>
+                    </td>
 
                       <!-- KTP -->
                       <td class="text-center align-middle" style="text-align: center !important;">

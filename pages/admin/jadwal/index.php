@@ -545,14 +545,8 @@ function buildUrlWithFilters($page = null) {
                         <?php endif; ?>
                       </td>
                       
-                      <td class="text-center align-middle">
+                      <td class="align-middle">
                         <div class="btn-group btn-group-sm" role="group">
-                          <a href="detail.php?id=<?= $jadwal['id_jadwal'] ?>" 
-                             class="btn btn-action btn-view btn-sm" 
-                             data-bs-toggle="tooltip" 
-                             title="Detail">
-                            <i class="bi bi-eye"></i>
-                          </a>
                           <a href="edit.php?id=<?= $jadwal['id_jadwal'] ?>" 
                              class="btn btn-action btn-edit btn-sm" 
                              data-bs-toggle="tooltip" 

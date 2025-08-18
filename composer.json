@@ -1,0 +1,13 @@
+{
+    "name": "lkp-pradata/sistem-evaluasi",
+    "description": "Sistem Evaluasi Siswa untuk LKP Pradata Komputer",
+    "require": {
+        "phpoffice/phpspreadsheet": "^1.29"
+    },
+    "authors": [
+        {
+            "name": "Admin LKP",
+            "email": "admin@lkp.com"
+        }
+    ]
+}

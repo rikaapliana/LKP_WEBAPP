@@ -424,12 +424,6 @@ $gelombangResult = mysqli_query($conn, $gelombangQuery);
                       <!-- Aksi -->
                       <td class="text-center align-middle">
                         <div class="btn-group btn-group-sm" role="group">
-                          <a href="detail.php?id=<?= $materi['id_materi'] ?>" 
-                             class="btn btn-action btn-view btn-sm" 
-                             data-bs-toggle="tooltip" 
-                             title="Detail">
-                            <i class="bi bi-eye"></i>
-                          </a>
                           <a href="edit.php?id=<?= $materi['id_materi'] ?>" 
                              class="btn btn-action btn-edit btn-sm" 
                              data-bs-toggle="tooltip" 

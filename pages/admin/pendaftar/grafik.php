@@ -102,24 +102,38 @@ $resultTahun = mysqli_query($conn, $queryTahun);
             width: 100%;
         }
         
-        .filter-section {
-            background: linear-gradient(135deg, #0d6efd 0%, #0052cc 100%);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            color: white;
+        .filter-card {
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
-        
-        .filter-section h5 {
-            color: white;
-            margin-bottom: 20px;
+        .filter-card .form-label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .filter-card .form-select {
+            border-radius: 0.5rem;
+        }
+        .filter-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            color: #343a40;
+        }
+        .filter-header i {
+            font-size: 1.5rem;
+            color: #0d6efd;
+        }
+        .filter-header h5 {
+            margin: 0;
+            font-size: 1.2rem;
             font-weight: 600;
-        }
-        
-        .filter-section .form-select {
-            background-color: rgba(255, 255, 255, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
         }
         
         .loading-overlay {
@@ -313,44 +327,38 @@ $resultTahun = mysqli_query($conn, $queryTahun);
                 <div id="alertContainer"></div>
 
                 <!-- Filter Section -->
-                <div class="filter-section">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h5 class="mb-3">
-                                <i class="bi bi-funnel me-2"></i>Filter Statistik Pendaftar
-                            </h5>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label text-white">Filter Gelombang:</label>
-                                    <select class="form-select" id="filterGelombang">
-                                        <option value="">Semua Gelombang</option>
-                                        <?php while($gelombang = mysqli_fetch_assoc($resultGelombang)): ?>
-                                            <option value="<?= $gelombang['id_gelombang'] ?>">
-                                                <?= htmlspecialchars($gelombang['nama_gelombang']) ?> 
-                                                (<?= $gelombang['tahun'] ?>) - <?= $gelombang['jumlah_pendaftar'] ?> pendaftar
-                                            </option>
-                                        <?php endwhile; ?>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label text-white">Filter Tahun:</label>
-                                    <select class="form-select" id="filterTahun">
-                                        <option value="">Semua Tahun</option>
-                                        <?php while($tahun = mysqli_fetch_assoc($resultTahun)): ?>
-                                            <option value="<?= $tahun['tahun'] ?>">
-                                                Tahun <?= $tahun['tahun'] ?> - <?= $tahun['jumlah_pendaftar'] ?> pendaftar
-                                            </option>
-                                        <?php endwhile; ?>
-                                    </select>
-                                </div>
-                            </div>
+                <div class="card filter-card">
+                    <div class="filter-header">
+                        <i class="bi bi-funnel-fill"></i>
+                        <h5>Filter Statistik Pendaftar</h5>
+                    </div>
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-5">
+                            <label for="filterGelombang" class="form-label">Berdasarkan Gelombang</label>
+                            <select class="form-select" id="filterGelombang">
+                                <option value="">Tampilkan Semua Gelombang</option>
+                                <?php mysqli_data_seek($resultGelombang, 0); while($gelombang = mysqli_fetch_assoc($resultGelombang)): ?>
+                                    <option value="<?= $gelombang['id_gelombang'] ?>">
+                                        <?= htmlspecialchars($gelombang['nama_gelombang']) ?> 
+                                        (<?= $gelombang['tahun'] ?>) - <?= $gelombang['jumlah_pendaftar'] ?> orang
+                                    </option>
+                                <?php endwhile; ?>
+                            </select>
                         </div>
-                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                            <button class="btn btn-light btn-lg" id="applyFilter">
-                                <i class="bi bi-bar-chart me-2"></i>Update Grafik
-                            </button>
-                            <button class="btn btn-outline-light ms-2" id="resetFilter">
-                                <i class="bi bi-arrow-clockwise"></i>
+                        <div class="col-md-5">
+                            <label for="filterTahun" class="form-label">Berdasarkan Tahun</label>
+                            <select class="form-select" id="filterTahun">
+                                <option value="">Tampilkan Semua Tahun</option>
+                                <?php mysqli_data_seek($resultTahun, 0); while($tahun = mysqli_fetch_assoc($resultTahun)): ?>
+                                    <option value="<?= $tahun['tahun'] ?>">
+                                        Tahun <?= $tahun['tahun'] ?> - <?= $tahun['jumlah_pendaftar'] ?> orang
+                                    </option>
+                                <?php endwhile; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-grid">
+                            <button class="btn btn-outline-secondary" type="button" id="resetFilter" title="Reset Filter">
+                                <i class="bi bi-arrow-clockwise"></i> Reset
                             </button>
                         </div>
                     </div>

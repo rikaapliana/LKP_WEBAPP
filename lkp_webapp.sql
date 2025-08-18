@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 26 Jul 2025 pada 10.15
+-- Waktu pembuatan: 18 Agu 2025 pada 17.02
 -- Versi server: 10.4.28-MariaDB
 -- Versi PHP: 8.2.4
 
@@ -43,7 +43,15 @@ CREATE TABLE `absensi_instruktur` (
 
 INSERT INTO `absensi_instruktur` (`id_absen`, `id_instruktur`, `id_jadwal`, `tanggal`, `waktu`, `status`, `keterangan`) VALUES
 (1, 2, 25, '2025-07-23', '2025-07-23 08:46:42', 'hadir', ''),
-(2, 2, 72, '2025-07-25', '2025-07-25 06:42:48', 'hadir', '');
+(2, 2, 72, '2025-07-25', '2025-07-25 06:42:48', 'hadir', ''),
+(3, 2, 75, '2025-07-30', '2025-07-30 08:23:13', 'hadir', ''),
+(4, 2, 76, '2025-07-31', '2025-07-31 08:00:00', 'hadir', ''),
+(5, 2, 77, '2025-08-01', '2025-08-01 08:00:00', 'hadir', ''),
+(6, 2, 78, '2025-08-04', '2025-08-04 08:00:00', 'izin', 'Ada keperluan keluarga'),
+(7, 2, 79, '2025-08-05', '2025-08-05 08:00:00', 'hadir', ''),
+(8, 2, 80, '2025-08-06', '2025-08-06 08:00:00', 'hadir', ''),
+(9, 2, 81, '2025-08-07', '2025-08-07 08:00:00', 'sakit', 'Demam'),
+(10, 2, 82, '2025-08-08', '2025-08-08 08:00:00', 'hadir', '');
 
 -- --------------------------------------------------------
 
@@ -66,7 +74,68 @@ CREATE TABLE `absensi_siswa` (
 INSERT INTO `absensi_siswa` (`id_absen`, `id_siswa`, `id_jadwal`, `status`, `waktu_absen`) VALUES
 (4, 12, 72, 'sakit', '2025-07-25 16:27:18'),
 (5, 8, 72, 'hadir', '2025-07-25 16:27:18'),
-(6, 14, 72, 'hadir', '2025-07-25 16:27:18');
+(6, 14, 72, 'hadir', '2025-07-25 16:27:18'),
+(7, 14, 73, 'izin', '2025-07-28 10:04:31'),
+(8, 8, 73, 'hadir', '2025-07-28 10:04:31'),
+(9, 12, 73, 'hadir', '2025-07-28 10:04:31'),
+(10, 14, 76, 'hadir', '2025-07-31 08:05:00'),
+(11, 8, 76, 'hadir', '2025-07-31 08:03:00'),
+(12, 12, 76, 'izin', '2025-07-31 08:00:00'),
+(13, 14, 77, 'hadir', '2025-08-01 08:02:00'),
+(14, 8, 77, 'hadir', '2025-08-01 08:04:00'),
+(15, 12, 77, 'hadir', '2025-08-01 08:01:00'),
+(16, 14, 78, 'sakit', '2025-08-04 08:00:00'),
+(17, 8, 78, 'hadir', '2025-08-04 08:03:00'),
+(18, 12, 78, 'hadir', '2025-08-04 08:02:00'),
+(19, 19, 71, 'hadir', '2025-07-24 08:03:00'),
+(20, 20, 71, 'hadir', '2025-07-24 08:02:00'),
+(21, 21, 71, 'izin', '2025-07-24 08:00:00'),
+(22, 22, 71, 'hadir', '2025-07-24 08:05:00'),
+(23, 23, 71, 'hadir', '2025-07-24 08:01:00'),
+(24, 24, 71, 'hadir', '2025-07-24 08:04:00'),
+(25, 25, 71, 'hadir', '2025-07-24 08:02:00'),
+(26, 19, 72, 'hadir', '2025-07-25 08:01:00'),
+(27, 20, 72, 'hadir', '2025-07-25 08:03:00'),
+(28, 21, 72, 'hadir', '2025-07-25 08:02:00'),
+(29, 22, 72, 'sakit', '2025-07-25 08:00:00'),
+(30, 23, 72, 'hadir', '2025-07-25 08:04:00'),
+(31, 24, 72, 'hadir', '2025-07-25 08:01:00'),
+(32, 25, 72, 'hadir', '2025-07-25 08:03:00'),
+(33, 19, 73, 'hadir', '2025-07-28 08:02:00'),
+(34, 20, 73, 'hadir', '2025-07-28 08:01:00'),
+(35, 21, 73, 'hadir', '2025-07-28 08:03:00'),
+(36, 22, 73, 'hadir', '2025-07-28 08:04:00'),
+(37, 23, 73, 'izin', '2025-07-28 08:00:00'),
+(38, 24, 73, 'hadir', '2025-07-28 08:02:00'),
+(39, 25, 73, 'hadir', '2025-07-28 08:01:00'),
+(40, 19, 74, 'hadir', '2025-07-29 08:03:00'),
+(41, 20, 74, 'hadir', '2025-07-29 08:02:00'),
+(42, 21, 74, 'hadir', '2025-07-29 08:01:00'),
+(43, 22, 74, 'hadir', '2025-07-29 08:04:00'),
+(44, 23, 74, 'hadir', '2025-07-29 08:02:00'),
+(45, 24, 74, 'tanpa keterangan', '2025-07-29 08:00:00'),
+(46, 25, 74, 'hadir', '2025-07-29 08:03:00'),
+(47, 19, 75, 'hadir', '2025-07-30 08:01:00'),
+(48, 20, 75, 'hadir', '2025-07-30 08:03:00'),
+(49, 21, 75, 'hadir', '2025-07-30 08:02:00'),
+(50, 22, 75, 'hadir', '2025-07-30 08:04:00'),
+(51, 23, 75, 'hadir', '2025-07-30 08:01:00'),
+(52, 24, 75, 'hadir', '2025-07-30 08:03:00'),
+(53, 25, 75, 'sakit', '2025-07-30 08:00:00'),
+(54, 19, 76, 'hadir', '2025-07-31 08:02:00'),
+(55, 20, 76, 'hadir', '2025-07-31 08:01:00'),
+(56, 21, 76, 'hadir', '2025-07-31 08:03:00'),
+(57, 22, 76, 'izin', '2025-07-31 08:00:00'),
+(58, 23, 76, 'hadir', '2025-07-31 08:04:00'),
+(59, 24, 76, 'hadir', '2025-07-31 08:02:00'),
+(60, 25, 76, 'hadir', '2025-07-31 08:01:00'),
+(61, 19, 77, 'hadir', '2025-08-01 08:03:00'),
+(62, 20, 77, 'hadir', '2025-08-01 08:02:00'),
+(63, 21, 77, 'hadir', '2025-08-01 08:01:00'),
+(64, 22, 77, 'hadir', '2025-08-01 08:04:00'),
+(65, 23, 77, 'hadir', '2025-08-01 08:02:00'),
+(66, 24, 77, 'hadir', '2025-08-01 08:03:00'),
+(67, 25, 77, 'tanpa keterangan', '2025-08-01 08:00:00');
 
 -- --------------------------------------------------------
 
@@ -88,7 +157,9 @@ CREATE TABLE `admin` (
 --
 
 INSERT INTO `admin` (`id_admin`, `id_user`, `nama`, `no_hp`, `email`, `foto`) VALUES
-(1, 6, 'Rika Apliana', '082213594210', 'rikaapliana02@gmail.com', '1752636015_admin_68771a6fcbb4a.jpg');
+(1, 6, 'Rika Apliana', '082213594210', 'rikaapliana02@gmail.com', '1752636015_admin_68771a6fcbb4a.jpg'),
+(2, 7, 'Sari Wulandari', '082213594211', 'sari.wulandari@gmail.com', '1752636016_admin_sari.jpg'),
+(3, 9, 'Budi Santoso', '082213594212', 'budi.santoso@gmail.com', '1752636017_admin_budi.jpg');
 
 -- --------------------------------------------------------
 
@@ -111,7 +182,9 @@ CREATE TABLE `evaluasi` (
 
 INSERT INTO `evaluasi` (`id_evaluasi`, `id_siswa`, `id_kelas`, `tanggal_evaluasi`, `status_evaluasi`, `id_periode`) VALUES
 (32, 14, 1, '2025-07-26 13:18:55', 'selesai', 17),
-(33, 14, 1, '2025-07-26 13:24:30', 'selesai', 19);
+(33, 14, 1, '2025-07-26 13:24:30', 'selesai', 19),
+(34, 8, 1, '2025-07-27 02:12:02', 'selesai', 19),
+(35, 8, 1, '2025-07-27 02:15:34', 'selesai', 17);
 
 -- --------------------------------------------------------
 
@@ -133,7 +206,7 @@ CREATE TABLE `gelombang` (
 
 INSERT INTO `gelombang` (`id_gelombang`, `tahun`, `gelombang_ke`, `nama_gelombang`, `status`) VALUES
 (1, '2025', 1, 'Gelombang 1 Tahun 2025', 'aktif'),
-(2, '2025', 2, 'Gelombang 2 Tahun 2025', 'aktif');
+(2, '2025', 2, 'Gelombang 2 Tahun 2025', 'dibuka');
 
 -- --------------------------------------------------------
 
@@ -160,8 +233,13 @@ CREATE TABLE `instruktur` (
 INSERT INTO `instruktur` (`id_instruktur`, `id_user`, `nik`, `nama`, `jenis_kelamin`, `angkatan`, `status_aktif`, `pas_foto`, `email`) VALUES
 (1, 2, '6309077107050001', 'Fithri Mutiya ', 'Perempuan', 'Gelombang 2 Tahun 2021', 'aktif', '', 'mutiya@gmail.com'),
 (2, 3, '6309077107050089', 'Fety Fatimah', 'Perempuan', 'Gelombang 1 Tahun 2020', 'aktif', '1753344356_instruktur_6881e9648f312.jpg', 'fety@gmail.com'),
-(3, NULL, '6309077107050002', 'Muhammad Rizki ', 'Laki-Laki', 'Gelombang 5 Tahun 2021', 'aktif', '', NULL),
-(5, NULL, '6309077107050080', 'Muhammad Alfiansyah', 'Perempuan', 'Gelombang 3 Tahun 2021', 'aktif', '', NULL);
+(3, 25, '6309077107050081', 'Dewi Kartika Sari', 'Perempuan', 'Gelombang 1 Tahun 2022', 'aktif', '1753344357_instruktur_dewi.jpg', 'dewi.kartika@gmail.com'),
+(4, 26, '6309077107050082', 'Andi Wijaya Putra', 'Laki-Laki', 'Gelombang 2 Tahun 2022', 'aktif', '1753344358_instruktur_andi.jpg', 'andi.wijaya@gmail.com'),
+(6, 27, '6309077107050083', 'Siti Nurhaliza', 'Perempuan', 'Gelombang 1 Tahun 2023', 'aktif', '1753344359_instruktur_siti.jpg', 'siti.nurhaliza@gmail.com'),
+(7, 28, '6309077107050084', 'Roni Firmansyah', 'Laki-Laki', 'Gelombang 2 Tahun 2023', 'aktif', '1753344360_instruktur_roni.jpg', 'roni.firmansyah@gmail.com'),
+(8, NULL, '6309077107050090', 'Samsul Bahri', 'Laki-Laki', 'Gelombang 1 Tahun 2020', 'aktif', '', NULL),
+(9, NULL, '6309077107050007', 'Saniyah', 'Perempuan', 'Gelombang 5 Tahun 2024', 'aktif', '', NULL),
+(10, NULL, '6309077107050008', 'Maulidin ', 'Laki-Laki', 'Gelombang 3 Tahun 2025', 'aktif', '', NULL);
 
 -- --------------------------------------------------------
 
@@ -278,7 +356,60 @@ INSERT INTO `jawaban_evaluasi` (`id_jawaban`, `id_evaluasi`, `id_pertanyaan`, `i
 (569, 33, 123, 14, '2', '2025-07-26 05:24:30'),
 (570, 33, 124, 14, '3', '2025-07-26 05:24:30'),
 (571, 33, 125, 14, 'ckup', '2025-07-26 05:24:30'),
-(572, 33, 126, 14, 'cukup', '2025-07-26 05:24:30');
+(572, 33, 126, 14, 'cukup', '2025-07-26 05:24:30'),
+(573, 34, 105, 8, 'SUM (penjumlahan)', '2025-07-26 18:12:02'),
+(574, 34, 106, 8, 'Semua cara bisa digunakan', '2025-07-26 18:12:02'),
+(575, 34, 107, 8, '=SUM(A1:A10)', '2025-07-26 18:12:02'),
+(576, 34, 108, 8, 'Insert > Chart', '2025-07-26 18:12:02'),
+(577, 34, 109, 8, 'Tergantung jenis analisis', '2025-07-26 18:12:02'),
+(578, 34, 110, 8, 'Format Cells > Currency', '2025-07-26 18:12:02'),
+(579, 34, 111, 8, 'Menyaring data tertentu', '2025-07-26 18:12:02'),
+(580, 34, 112, 8, 'Format as Table', '2025-07-26 18:12:02'),
+(581, 34, 113, 8, 'Semua penting', '2025-07-26 18:12:02'),
+(582, 34, 114, 8, 'Save As dengan nama jelas', '2025-07-26 18:12:02'),
+(583, 34, 115, 8, 'Page Layout > Print Area', '2025-07-26 18:12:02'),
+(584, 34, 116, 8, 'Semua jenis data', '2025-07-26 18:12:02'),
+(585, 34, 117, 8, '=(nilai/total)*100', '2025-07-26 18:12:02'),
+(586, 34, 118, 8, 'A1 vs $A$1', '2025-07-26 18:12:02'),
+(587, 34, 119, 8, 'Mengelola keuangan', '2025-07-26 18:12:02'),
+(588, 34, 120, 8, '5', '2025-07-26 18:12:02'),
+(589, 34, 121, 8, '5', '2025-07-26 18:12:02'),
+(590, 34, 122, 8, '5', '2025-07-26 18:12:02'),
+(591, 34, 123, 8, '5', '2025-07-26 18:12:02'),
+(592, 34, 124, 8, '5', '2025-07-26 18:12:02'),
+(593, 34, 125, 8, 'Tidak ada, kaka nya semuanya baik', '2025-07-26 18:12:02'),
+(594, 34, 126, 8, '-', '2025-07-26 18:12:02'),
+(595, 35, 171, 8, '5', '2025-07-26 18:15:34'),
+(596, 35, 83, 8, 'Bold dan Italic', '2025-07-26 18:15:34'),
+(597, 35, 173, 8, 'Sedang', '2025-07-26 18:15:34'),
+(598, 35, 84, 8, 'Numbering', '2025-07-26 18:15:34'),
+(599, 35, 174, 8, 'Cukup', '2025-07-26 18:15:34'),
+(600, 35, 85, 8, 'Page Number', '2025-07-26 18:15:34'),
+(601, 35, 175, 8, 'Tidak Jelas', '2025-07-26 18:15:34'),
+(602, 35, 86, 8, 'Screenshots', '2025-07-26 18:15:34'),
+(603, 35, 176, 8, '5', '2025-07-26 18:15:34'),
+(604, 35, 87, 8, 'Sort Data', '2025-07-26 18:15:34'),
+(605, 35, 177, 8, '5', '2025-07-26 18:15:34'),
+(606, 35, 88, 8, 'Page Layout > Margins', '2025-07-26 18:15:34'),
+(607, 35, 178, 8, '4', '2025-07-26 18:15:34'),
+(608, 35, 89, 8, 'Cek ejaan', '2025-07-26 18:15:34'),
+(609, 35, 179, 8, 'Terimkaasih kaka kaka', '2025-07-26 18:15:34'),
+(610, 35, 90, 8, 'Save As dengan nama jelas', '2025-07-26 18:15:34'),
+(611, 35, 180, 8, 'Shourcot', '2025-07-26 18:15:34'),
+(612, 35, 91, 8, 'Lihat layout sebelum print', '2025-07-26 18:15:34'),
+(613, 35, 92, 8, 'Mail merge', '2025-07-26 18:15:34'),
+(614, 35, 93, 8, 'Ctrl+S (Save)', '2025-07-26 18:15:34'),
+(615, 35, 94, 8, 'Template CV Word', '2025-07-26 18:15:34'),
+(616, 35, 95, 8, 'Mengganti kata secara massal', '2025-07-26 18:15:34'),
+(617, 35, 96, 8, 'Konsisten font dan spacing', '2025-07-26 18:15:34'),
+(618, 35, 97, 8, 'Laporan kerja', '2025-07-26 18:15:34'),
+(619, 35, 98, 8, '5', '2025-07-26 18:15:34'),
+(620, 35, 99, 8, '5', '2025-07-26 18:15:34'),
+(621, 35, 100, 8, '5', '2025-07-26 18:15:34'),
+(622, 35, 101, 8, '5', '2025-07-26 18:15:34'),
+(623, 35, 102, 8, '5', '2025-07-26 18:15:34'),
+(624, 35, 103, 8, 'cukup', '2025-07-26 18:15:34'),
+(625, 35, 104, 8, 'cukup', '2025-07-26 18:15:34');
 
 -- --------------------------------------------------------
 
@@ -301,7 +432,14 @@ CREATE TABLE `kelas` (
 INSERT INTO `kelas` (`id_kelas`, `nama_kelas`, `id_gelombang`, `kapasitas`, `id_instruktur`) VALUES
 (1, '08.00 - 09.00 A', 1, 10, 2),
 (2, '08.00 - 09.00 B', 1, 10, 1),
-(10, '08.00 - 09.00 A', 2, 10, NULL);
+(11, '09.00 - 10.00 A', 1, 10, 8),
+(12, '09.00 - 10.00 B', 1, 10, 4),
+(13, '10.00 - 11.00 A', 1, 10, 6),
+(14, '10.00 - 11.00 B', 1, 10, 10),
+(15, '11.00 - 12.00 A', 1, 10, NULL),
+(16, '11.00 - 12.00 B', 1, 10, 3),
+(17, '13.00 - 14.00 A', 1, 10, 7),
+(18, '13.00 - 14.00 B', 1, 10, 9);
 
 -- --------------------------------------------------------
 
@@ -325,7 +463,14 @@ CREATE TABLE `materi` (
 INSERT INTO `materi` (`id_materi`, `deskripsi`, `id_instruktur`, `id_kelas`, `judul`, `file_materi`) VALUES
 (2, 'Materi Word Bagian 1', 2, 1, 'SISTEM INFORMASI MANAJEMEN', '1751525348_RikaSlipBimbinganSkripsi_compressed.pdf'),
 (3, 'Materi Microsoft Persiapan Ujian', 2, 1, 'SISTEM INFORMASI MANAJEMEN 2', '1753242070_lkp_webapp4.doc'),
-(4, 'Materi Word Pertemuan 1', 1, 2, 'SISTEM INFORMASI AKADEMIK', '1753242174_lkp_webapp4.doc');
+(4, 'Materi Word Pertemuan 1', 1, 2, 'SISTEM INFORMASI AKADEMIK', '1753242174_lkp_webapp4.doc'),
+(5, 'Microsoft Word Pertemuan 2 - Formatting dan Styling Dokumen', 1, 2, 'MICROSOFT WORD INTERMEDIATE', '1753242071_word_formatting.pdf'),
+(6, 'Microsoft Excel Pertemuan 1 - Pengenalan Spreadsheet dan Formula Dasar', 3, 11, 'MICROSOFT EXCEL FUNDAMENTAL', '1753242072_excel_basic.pdf'),
+(7, 'Microsoft Excel Pertemuan 2 - Fungsi dan Chart', 4, 12, 'MICROSOFT EXCEL ADVANCED', '1753242073_excel_chart.pdf'),
+(8, 'Microsoft PowerPoint Pertemuan 1 - Membuat Presentasi Efektif', 6, 13, 'MICROSOFT POWERPOINT DASAR', '1753242074_ppt_basic.pdf'),
+(9, 'Microsoft PowerPoint Pertemuan 2 - Animation dan Transition', 7, 14, 'MICROSOFT POWERPOINT LANJUTAN', '1753242075_ppt_animation.pdf'),
+(10, 'Internet dan Email Pertemuan 1 - Browsing dan Keamanan Online', 8, 15, 'INTERNET DAN EMAIL DASAR', '1754055820_CV-RikaApliana.pdf'),
+(11, 'Microsoft Word Pertemuan 3 - Mail Merge dan Template', 9, 16, 'MICROSOFT WORD PROFESSIONAL', '1754055783_KTP_RikaApliana.pdf');
 
 -- --------------------------------------------------------
 
@@ -352,8 +497,15 @@ CREATE TABLE `nilai` (
 
 INSERT INTO `nilai` (`id_nilai`, `id_siswa`, `id_kelas`, `nilai_word`, `nilai_excel`, `nilai_ppt`, `nilai_internet`, `nilai_pengembangan`, `rata_rata`, `status_kelulusan`) VALUES
 (1, 14, 1, 80, 90, 80, 80, 80, 82, 'lulus'),
-(4, 12, 1, 90, 70, NULL, NULL, NULL, 80, NULL),
-(5, 8, 1, 85, 75, NULL, NULL, NULL, 80, NULL);
+(4, 12, 1, 90, 70, 80, 80, 78, 79.6, 'lulus'),
+(5, 8, 1, 85, 75, 90, 90, 80, 84, 'lulus'),
+(6, 19, 1, 78, 82, 75, 80, 79, 78.8, 'lulus'),
+(7, 20, 1, 85, 88, 90, 85, 87, 87, 'lulus'),
+(8, 21, 1, 95, 80, 88, 75, 80, 80, 'lulus'),
+(9, 22, 1, 92, 89, 95, 88, 91, 91, 'lulus'),
+(10, 23, 1, 77, 75, 73, 78, 76, 75.8, 'lulus'),
+(11, 24, 1, 83, 86, 80, 84, 82, 83, 'lulus'),
+(12, 25, 1, 88, 85, 92, 87, 89, 88.2, 'lulus');
 
 -- --------------------------------------------------------
 
@@ -386,10 +538,16 @@ CREATE TABLE `pendaftar` (
 --
 
 INSERT INTO `pendaftar` (`id_pendaftar`, `id_gelombang`, `nik`, `nama_pendaftar`, `tempat_lahir`, `tanggal_lahir`, `jenis_kelamin`, `pendidikan_terakhir`, `no_hp`, `email`, `alamat_lengkap`, `jam_pilihan`, `pas_foto`, `ktp`, `kk`, `ijazah`, `status_pendaftaran`) VALUES
-(1, 2, '3171012101950001', 'Ahmad Rizki Pratama', 'Jakarta', '1995-01-21', 'Laki-Laki', 'SLTA', '081234567890', 'ahmad.rizki@email.com', 'Jl. Merdeka No. 123, RT 05/RW 03, Kelurahan Menteng, Jakarta Pusat', '09.00 - 10.00', '', 'ktp_ahmad.jpg', '', '', 'Belum di Verifikasi'),
-(6, 2, '6309077107050800', 'Almanida Zahra', 'Tabalong', '2002-09-09', 'Perempuan', 'S1', '082213594215', 'almanidazahra@gmail.com', 'JL. Adhyaksa VI, NO. 20A, RT. 26', '13.00 - 14.00', '1752668517_pas_foto_68779965159ce.jpg', '1752668517_ktp_6877996517790.jpg', '1752668517_kk_687799651830d.jpg', '1752668517_ijazah_6877996518a6a.jpg', 'Diterima'),
+(1, 2, '3171012101950001', 'Ahmad Rizki Pratama', 'Jakarta', '1995-01-21', 'Laki-Laki', 'SLTA', '081234567890', 'ahmad.rizki@email.com', 'Jl. Merdeka No. 123, RT 05/RW 03, Kelurahan Menteng, Jakarta Pusat', '09.00 - 10.00', '', 'ktp_ahmad.jpg', '', '', 'Terverifikasi'),
 (7, 2, '6309077107057000', 'Riki Ramadhan', 'Tabalong', '2000-09-09', 'Laki-Laki', 'SLTA', '082213594219', 'rikaapliana0@gmail.com', 'Kupang Nunding', '08.00 - 09.00', '1752741448_pas_foto_6878b64891df8.jpg', '1752741448_ktp_6878b64892390.jpg', '1752741448_kk_6878b64892914.jpg', '1752741448_ijazah_6878b64893355.jpg', 'Terverifikasi'),
-(8, 2, '6309077107050900', 'Muhammad Fadilah', 'Tabalong', '2002-07-07', 'Laki-Laki', 'D1', '082213594215', 'rikaapliana02@gmail.com', 'Kupang Nunding', '08.00 - 09.00', '1753167311_6309077107050900_pasfoto.jpg', '1753167311_6309077107050900_ktp.pdf', '1753167311_6309077107050900_kk.pdf', '1753167311_6309077107050900_ijazah.pdf', 'Terverifikasi');
+(8, 2, '6309077107050900', 'Muhammad Fadilah', 'Tabalong', '2002-07-07', 'Laki-Laki', 'D1', '082213594215', 'rikaapliana02@gmail.com', 'Kupang Nunding', '08.00 - 09.00', '1753167311_6309077107050900_pasfoto.jpg', '1753167311_6309077107050900_ktp.pdf', '1753167311_6309077107050900_kk.pdf', '1753167311_6309077107050900_ijazah.pdf', 'Belum di Verifikasi'),
+(9, 2, '6309077107050011', 'Diki Rahman', 'Banjarmasin', '2002-07-28', 'Laki-Laki', 'SLTA', '0822135942000', 'dikirahman@gmail.com', 'JL. Adhyaksa VI, NO. 20A, RT. 26', '08.00 - 09.00', '1753681712_6309077107050011_pasfoto.jpg', '1753681712_6309077107050011_ktp.pdf', '1753681712_6309077107050011_kk.pdf', '1753681712_6309077107050011_ijazah.pdf', 'Belum di Verifikasi'),
+(11, 2, '6309077107050027', 'Sari Wulandari', 'Tabalong', '2000-04-15', 'Perempuan', 'SLTA', '082213594240', 'sari.wulandari2000@gmail.com', 'Desa Haur Gading, Kec. Haur Gading, Tabalong', '09.00 - 10.00', '1754000001_6309077107050027_pasfoto.jpg', '1754000001_6309077107050027_ktp.pdf', '1754000001_6309077107050027_kk.pdf', '1754000001_6309077107050027_ijazah.pdf', 'Terverifikasi'),
+(12, 2, '6309077107050028', 'Hendra Setiawan', 'Tabalong', '1999-11-22', 'Laki-Laki', 'D1', '082213594241', 'hendra.setiawan99@gmail.com', 'Desa Kelua, Kec. Kelua, Tabalong', '10.00 - 11.00', '1754000002_6309077107050028_pasfoto.jpg', '1754000002_6309077107050028_ktp.pdf', '1754000002_6309077107050028_kk.pdf', '1754000002_6309077107050028_ijazah.pdf', 'Terverifikasi'),
+(13, 2, '6309077107050029', 'Maya Sari Dewi', 'Tabalong', '2001-08-10', 'Perempuan', 'SLTA', '082213594242', 'maya.saridewi@gmail.com', 'Desa Binturu, Kec. Kelua, Tabalong', '08.00 - 09.00', '1754000003_6309077107050029_pasfoto.jpg', '1754000003_6309077107050029_ktp.pdf', '1754000003_6309077107050029_kk.pdf', '1754000003_6309077107050029_ijazah.pdf', 'Terverifikasi'),
+(14, 2, '6309077107050030', 'Ridwan Hakim', 'Tabalong', '2000-01-05', 'Laki-Laki', 'S1', '082213594243', 'ridwan.hakim2000@gmail.com', 'Desa Pangelak, Kec. Kelua, Tabalong', '11.00 - 12.00', '1754000004_6309077107050030_pasfoto.jpg', '1754000004_6309077107050030_ktp.pdf', '1754000004_6309077107050030_kk.pdf', '1754000004_6309077107050030_ijazah.pdf', 'Terverifikasi'),
+(15, 2, '6309077107050031', 'Fitri Handayani', 'Tabalong', '2002-06-18', 'Perempuan', 'D2', '082213594244', 'fitri.handayani02@gmail.com', 'Desa Haur Gading, Kec. Haur Gading, Tabalong', '13.00 - 14.00', '1754000005_6309077107050031_pasfoto.jpg', '1754000005_6309077107050031_ktp.pdf', '1754000005_6309077107050031_kk.pdf', '1754000005_6309077107050031_ijazah.pdf', 'Terverifikasi'),
+(16, 2, '6309077107050032', 'Arif Rahman', 'Tabalong', '1998-09-25', 'Laki-Laki', 'SLTA', '082213594245', 'arif.rahman98@gmail.com', 'Desa Binturu, Kec. Kelua, Tabalong', '09.00 - 10.00', '1754000006_6309077107050032_pasfoto.jpg', '1754000006_6309077107050032_ktp.pdf', '1754000006_6309077107050032_kk.pdf', '1754000006_6309077107050032_ijazah.pdf', 'Terverifikasi');
 
 -- --------------------------------------------------------
 
@@ -416,7 +574,7 @@ CREATE TABLE `pengaturan_pendaftaran` (
 
 INSERT INTO `pengaturan_pendaftaran` (`id_pengaturan`, `id_gelombang`, `status_pendaftaran`, `kuota_maksimal`, `tanggal_buka`, `tanggal_tutup`, `keterangan`, `dibuat_oleh`, `created_at`, `updated_at`) VALUES
 (1, 1, 'ditutup', 10, NULL, '2025-07-17 00:00:00', 'Pendaftaran Gelombang 1 Tahun 2025', 1, '2025-07-16 11:47:59', '2025-07-17 12:41:51'),
-(2, 2, 'dibuka', 10, NULL, NULL, '', NULL, '2025-07-17 07:38:18', '2025-07-17 12:42:04');
+(2, 2, 'dibuka', 20, NULL, NULL, '', NULL, '2025-07-17 07:38:18', '2025-08-09 04:47:44');
 
 -- --------------------------------------------------------
 
@@ -445,7 +603,10 @@ CREATE TABLE `periode_evaluasi` (
 
 INSERT INTO `periode_evaluasi` (`id_periode`, `nama_evaluasi`, `jenis_evaluasi`, `materi_terkait`, `id_gelombang`, `tanggal_buka`, `tanggal_tutup`, `status`, `deskripsi`, `dibuat_oleh`, `created_at`, `pertanyaan_terpilih`) VALUES
 (17, 'Evaluasi Materi Microsoft Word', 'per_materi', 'word', 1, '2025-07-14 20:34:00', '2025-07-31 20:34:00', 'aktif', '', 1, '2025-07-14 12:35:00', '[171,83,173,84,174,85,175,86,176,87,177,88,178,89,179,90,180,91,92,93,94,95,96,97,98,99,100,101,102,103,104]'),
-(19, 'Evaluasi Materi Microsoft Excel', 'per_materi', 'excel', 1, '2025-07-26 13:02:00', '2025-08-02 13:02:00', 'aktif', '', 1, '2025-07-26 05:02:38', '[105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126]');
+(19, 'Evaluasi Materi Microsoft Excel', 'per_materi', 'excel', 1, '2025-07-26 13:02:00', '2025-08-02 13:02:00', 'aktif', '', 1, '2025-07-26 05:02:38', '[105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126]'),
+(20, 'Evaluasi Materi Microsoft PowerPoint', 'per_materi', 'ppt', 1, '2025-08-01 22:12:00', '2025-08-08 22:12:00', 'aktif', '', 1, '2025-08-01 14:12:47', '[127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148]'),
+(21, 'Evaluasi Materi Internet & Email', 'per_materi', 'internet', 1, '2025-08-15 22:13:00', '2025-08-22 22:13:00', 'draft', '', 1, '2025-08-01 14:14:11', '[149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170]'),
+(22, 'Evaluasi Keseluruhan Pertemuan', 'akhir_kursus', NULL, 1, '2025-08-29 22:15:00', '2025-08-30 22:15:00', 'draft', '', 1, '2025-08-01 14:15:25', '[56,181,57,182,58,183,59,184,60,185,61,186,62,187,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82]');
 
 -- --------------------------------------------------------
 
@@ -635,9 +796,16 @@ CREATE TABLE `siswa` (
 --
 
 INSERT INTO `siswa` (`id_siswa`, `id_user`, `id_kelas`, `nik`, `nama`, `tempat_lahir`, `tanggal_lahir`, `jenis_kelamin`, `pendidikan_terakhir`, `no_hp`, `email`, `alamat_lengkap`, `pas_foto`, `ktp`, `kk`, `ijazah`, `status_aktif`) VALUES
-(8, NULL, 1, '6309077107050002', 'Norlaila Hasanah', 'Tabalong', '2002-08-07', 'Perempuan', 'S1', '082213594215', 'lailahasanah02@gmail.com', 'Ds. Kupang Nunding', '1750252872_6852bd48d28ef.jpg', '1751585653_ktp_686713755fd67.pdf', '', '', 'aktif'),
-(12, NULL, 1, '6309077107050009', 'Muhammad Rizki Nugraha', 'Tabalong', '2001-09-08', 'Laki-Laki', 'D2', '082213592100', 'rikzkinugraha02@gmail.com', 'Kupang Nunding', '', '', '', '', 'aktif'),
-(14, 8, 1, '6309077107050008', 'Almanida ', 'Banjarmasin', '2002-08-08', 'Perempuan', 'D1', '0822135942000', 'almanida@gmail.com', 'Tanjung Selatan', '1753450407_siswa_14_688387a78cca1.jpg', '', '', '', 'aktif');
+(8, 22, 1, '6309077107050002', 'Norlaila Hasanah', 'Tabalong', '2002-08-07', 'Perempuan', 'S1', '082213594215', 'lailahasanah02@gmail.com', 'Ds. Kupang Nunding', '1750252872_6852bd48d28ef.jpg', '1751585653_ktp_686713755fd67.pdf', '', '', 'aktif'),
+(12, 23, 1, '6309077107050009', 'Muhammad Rizki', 'Tabalong', '2001-09-08', 'Laki-Laki', 'D2', '082213592100', 'rikzkimuhammad02@gmail.com', 'Kupang Nunding', '', '', '', '', 'aktif'),
+(14, 8, 1, '6309077107050008', 'Almanida ', 'Banjarmasin', '2002-08-08', 'Perempuan', 'D1', '0822135942000', 'almanida@gmail.com', 'Tanjung Selatan', '1753450407_siswa_14_688387a78cca1.jpg', '', '', '', 'aktif'),
+(19, 33, 1, '6309077107050020', 'Andi Saputra', 'Tabalong', '2000-03-15', 'Laki-Laki', 'SLTA', '082213594232', 'andi.saputra@gmail.com', 'Desa Kelua, Kec. Kelua, Tabalong', '1753450412_siswa_19.jpg', '', '', '', 'aktif'),
+(20, 34, 1, '6309077107050021', 'Siti Ayu Lestari', 'Tabalong', '2001-07-22', 'Perempuan', 'D1', '082213594233', 'siti.ayu@gmail.com', 'Desa Binturu, Kec. Kelua, Tabalong', '1753450413_siswa_20.jpg', '', '', '', 'aktif'),
+(21, 35, 1, '6309077107050022', 'Budi Pratama', 'Tabalong', '1999-11-08', 'Laki-Laki', 'SLTA', '082213594234', 'budi.pratama@gmail.com', 'Desa Haur Gading, Kec. Haur Gading, Tabalong', '1753450414_siswa_21.jpg', '', '', '', 'aktif'),
+(22, 36, 1, '6309077107050023', 'Dewi Sari Indah', 'Banjar', '2002-01-12', 'Perempuan', 'D2', '082213594235', 'dewi.sari@gmail.com', 'Jl. A. Yani, Martapura, Banjar', '1753450415_siswa_22.jpg', '', '', '', 'aktif'),
+(23, 37, 1, '6309077107050024', 'Rahman Hidayat', 'Tabalong', '2000-09-30', 'Laki-Laki', 'SLTA', '082213594236', 'rahman.hidayat@gmail.com', 'Desa Kelua, Kec. Kelua, Tabalong', '1753450416_siswa_23.jpg', '', '', '', 'aktif'),
+(24, 38, 1, '6309077107050025', 'Nina Saputri', 'Hulu Sungai Selatan', '2001-05-18', 'Perempuan', 'D1', '082213594237', 'nina.saputri@gmail.com', 'Jl. Veteran, Kandangan, HSS', '1753450417_siswa_24.jpg', '', '', '', 'aktif'),
+(25, 39, 1, '6309077107050026', 'Agus Setiawan', 'Tabalong', '1998-12-03', 'Laki-Laki', 'S1', '082213594238', 'agus.setiawan@gmail.com', 'Desa Binturu, Kec. Kelua, Tabalong', '1753450418_siswa_25.jpg', '', '', '', 'aktif');
 
 -- --------------------------------------------------------
 
@@ -663,9 +831,23 @@ CREATE TABLE `user` (
 INSERT INTO `user` (`id_user`, `username`, `password`, `role`, `remember_token`, `reset_token`, `reset_token_expire`, `created_at`) VALUES
 (2, 'mutiyarahmah', '$2y$10$wFZSXpfKhde7LH8NAVKFAueHxdL4YH2fbYxkVYSXFH0MTZej2bQqq', 'instruktur', NULL, NULL, NULL, '2025-06-28 13:21:28'),
 (3, 'fetyfatimah', '$2y$10$hu37l/sRprS7vIRI7IgND.owVORrYvdz5MWxVcdnR9fOA/Ai12VJe', 'instruktur', NULL, NULL, NULL, '2025-06-28 13:21:28'),
-(6, 'Rika Apliana', '$2y$10$4cWKCyb0QwpzpOSFm9uHgOQZSVugqDzB1KqJc1gE.FJQGZQeW2tfG', 'admin', NULL, '14d21782598889a82a6d61ea6859121d9f25afca70b20579f7a75b831d34608d', '2025-06-28 19:58:55', '2025-06-28 13:49:54'),
-(8, 'almanida', '$2y$10$u5dlP1sxhobmb5K9LsGMvOcoDHnpHMID.A76P8uxs4DoN8uS/DJze', 'siswa', NULL, NULL, NULL, '2025-06-28 18:15:11'),
-(20, 'muhammadfa_2025', '$2y$10$.92FSwPsZpO.MlzvH6L7muWcf6qRJPQcZOFGTtT.4CFQKUhgmYe7C', 'siswa', NULL, NULL, NULL, '2025-07-22 07:16:41');
+(6, 'rikaapliana', '$2y$10$4cWKCyb0QwpzpOSFm9uHgOQZSVugqDzB1KqJc1gE.FJQGZQeW2tfG', 'admin', NULL, '14d21782598889a82a6d61ea6859121d9f25afca70b20579f7a75b831d34608d', '2025-06-28 19:58:55', '2025-06-28 13:49:54'),
+(7, 'sariwulandari', '$2y$10$wFZSXpfKhde7LH8NAVKFAueHxdL4YH2fbYxkVYSXFH0MTZej2bQqq', 'admin', NULL, NULL, NULL, '2025-01-15 00:30:00'),
+(8, 'almanida', '$2y$10$0yhMl/t.ZkJnePkUkwwGte2WLvZPlpnJwhXa31Nyw.j5Ss.61VSWe', 'siswa', NULL, NULL, NULL, '2025-06-28 18:15:11'),
+(9, 'budisantoso', '$2y$10$wFZSXpfKhde7LH8NAVKFAueHxdL4YH2fbYxkVYSXFH0MTZej2bQqq', 'admin', NULL, NULL, NULL, '2025-02-10 01:15:00'),
+(22, 'norlailahasanah', '$2y$10$5.i1gG1onTiCgT00V/nwC.SOFof8iDbIEZAsTL0KMOiFXoscAt2Q.', 'siswa', NULL, NULL, NULL, '2025-07-26 17:49:12'),
+(23, 'muhammadrizki', '$argon2id$v=19$m=65536,t=4,p=1$eXV2UVNSemFhaXhraTdEZA$YPICm59yBgCChgWaNor/PZ6tNyN1ajt9gD//SIB6nN4', 'siswa', NULL, NULL, NULL, '2025-07-27 03:34:11'),
+(25, 'dewikartikasari', '$2y$10$wFZSXpfKhde7LH8NAVKFAueHxdL4YH2fbYxkVYSXFH0MTZej2bQqq', 'instruktur', NULL, NULL, NULL, '2025-02-20 02:45:00'),
+(26, 'andiwijaya', '$2y$10$wFZSXpfKhde7LH8NAVKFAueHxdL4YH2fbYxkVYSXFH0MTZej2bQqq', 'instruktur', NULL, NULL, NULL, '2025-03-05 03:20:00'),
+(27, 'sitinurhaliza', '$2y$10$wFZSXpfKhde7LH8NAVKFAueHxdL4YH2fbYxkVYSXFH0MTZej2bQqq', 'instruktur', NULL, NULL, NULL, '2025-03-15 05:30:00'),
+(28, 'ronifirmansyah', '$2y$10$wFZSXpfKhde7LH8NAVKFAueHxdL4YH2fbYxkVYSXFH0MTZej2bQqq', 'instruktur', NULL, NULL, NULL, '2025-04-01 06:15:00'),
+(33, 'andisaputra', '$2y$10$wFZSXpfKhde7LH8NAVKFAueHxdL4YH2fbYxkVYSXFH0MTZej2bQqq', 'siswa', NULL, NULL, NULL, '2025-07-20 01:00:00'),
+(34, 'sitiayu', '$2y$10$wFZSXpfKhde7LH8NAVKFAueHxdL4YH2fbYxkVYSXFH0MTZej2bQqq', 'siswa', NULL, NULL, NULL, '2025-07-20 02:15:00'),
+(35, 'budipratama', '$2y$10$wFZSXpfKhde7LH8NAVKFAueHxdL4YH2fbYxkVYSXFH0MTZej2bQqq', 'siswa', NULL, NULL, NULL, '2025-07-20 03:30:00'),
+(36, 'dewisari', '$2y$10$wFZSXpfKhde7LH8NAVKFAueHxdL4YH2fbYxkVYSXFH0MTZej2bQqq', 'siswa', NULL, NULL, NULL, '2025-07-20 05:45:00'),
+(37, 'rahmanhidayat', '$2y$10$wFZSXpfKhde7LH8NAVKFAueHxdL4YH2fbYxkVYSXFH0MTZej2bQqq', 'siswa', NULL, NULL, NULL, '2025-07-20 06:20:00'),
+(38, 'ninasaputri', '$2y$10$wFZSXpfKhde7LH8NAVKFAueHxdL4YH2fbYxkVYSXFH0MTZej2bQqq', 'siswa', NULL, NULL, NULL, '2025-07-20 07:10:00'),
+(39, 'agussetiawan', '$2y$10$wFZSXpfKhde7LH8NAVKFAueHxdL4YH2fbYxkVYSXFH0MTZej2bQqq', 'siswa', NULL, NULL, NULL, '2025-07-20 08:30:00');
 
 --
 -- Indexes for dumped tables
@@ -809,85 +991,85 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT untuk tabel `absensi_instruktur`
 --
 ALTER TABLE `absensi_instruktur`
-  MODIFY `id_absen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_absen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT untuk tabel `absensi_siswa`
 --
 ALTER TABLE `absensi_siswa`
-  MODIFY `id_absen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_absen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=68;
 
 --
 -- AUTO_INCREMENT untuk tabel `admin`
 --
 ALTER TABLE `admin`
-  MODIFY `id_admin` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_admin` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT untuk tabel `evaluasi`
 --
 ALTER TABLE `evaluasi`
-  MODIFY `id_evaluasi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `id_evaluasi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT untuk tabel `gelombang`
 --
 ALTER TABLE `gelombang`
-  MODIFY `id_gelombang` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_gelombang` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT untuk tabel `instruktur`
 --
 ALTER TABLE `instruktur`
-  MODIFY `id_instruktur` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_instruktur` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT untuk tabel `jadwal`
 --
 ALTER TABLE `jadwal`
-  MODIFY `id_jadwal` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
+  MODIFY `id_jadwal` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=94;
 
 --
 -- AUTO_INCREMENT untuk tabel `jawaban_evaluasi`
 --
 ALTER TABLE `jawaban_evaluasi`
-  MODIFY `id_jawaban` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=573;
+  MODIFY `id_jawaban` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=626;
 
 --
 -- AUTO_INCREMENT untuk tabel `kelas`
 --
 ALTER TABLE `kelas`
-  MODIFY `id_kelas` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id_kelas` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT untuk tabel `materi`
 --
 ALTER TABLE `materi`
-  MODIFY `id_materi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_materi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT untuk tabel `nilai`
 --
 ALTER TABLE `nilai`
-  MODIFY `id_nilai` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_nilai` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT untuk tabel `pendaftar`
 --
 ALTER TABLE `pendaftar`
-  MODIFY `id_pendaftar` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id_pendaftar` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT untuk tabel `pengaturan_pendaftaran`
 --
 ALTER TABLE `pengaturan_pendaftaran`
-  MODIFY `id_pengaturan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_pengaturan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT untuk tabel `periode_evaluasi`
 --
 ALTER TABLE `periode_evaluasi`
-  MODIFY `id_periode` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id_periode` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT untuk tabel `pertanyaan_evaluasi`
@@ -899,13 +1081,13 @@ ALTER TABLE `pertanyaan_evaluasi`
 -- AUTO_INCREMENT untuk tabel `siswa`
 --
 ALTER TABLE `siswa`
-  MODIFY `id_siswa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
+  MODIFY `id_siswa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
 
 --
 -- AUTO_INCREMENT untuk tabel `user`
 --
 ALTER TABLE `user`
-  MODIFY `id_user` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id_user` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
