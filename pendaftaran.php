@@ -21,6 +21,29 @@ if (!$gelombangAktif) {
     $pesanTutup = "Pendaftaran sedang ditutup. Silakan hubungi admin untuk informasi lebih lanjut.";
 } else {
     $pendaftaranTutup = false;
+    $kuota_per_sesi = 5;
+    $kuota_terisi = [];
+
+
+    $query_hitung_sesi = "
+        SELECT jam_pilihan, COUNT(id_pendaftar) as jumlah 
+        FROM pendaftar 
+        WHERE id_gelombang = " . $gelombangAktif['id_gelombang'] . " 
+        GROUP BY jam_pilihan
+    ";
+    $hasil_hitung_sesi = mysqli_query($conn, $query_hitung_sesi);
+
+    while ($row = mysqli_fetch_assoc($hasil_hitung_sesi)) {
+        $kuota_terisi[$row['jam_pilihan']] = $row['jumlah'];
+    }
+
+    $jam_tersedia = [
+        '08.00 - 09.00', '09.00 - 10.00', '10.00 - 11.00', '11.00 - 12.00', 
+        '13.00 - 14.00', '14.00 - 15.00', '15.00 - 16.00', '16.00 - 17.00', 
+        '17.00 - 18.00', '19.00 - 20.00', '20.00 - 21.00', '21.00 - 22.00'
+    ];
+
+
     
     // Cek apakah kuota sudah penuh
     $countPendaftar = mysqli_query($conn, "SELECT COUNT(*) as total FROM pendaftar WHERE id_gelombang = " . $gelombangAktif['id_gelombang']);
@@ -45,7 +68,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
     $email = mysqli_real_escape_string($conn, $_POST['email']);
     $alamat_lengkap = mysqli_real_escape_string($conn, $_POST['alamat_lengkap']);
     $jam_pilihan = $_POST['jam_pilihan'];
+    $kuota_per_sesi_validasi = 5; // Pastikan angka ini sama dengan di atas
+    $id_gelombang_validasi = $gelombangAktif['id_gelombang'];
+
+    $stmt_cek_kuota = $conn->prepare("SELECT COUNT(id_pendaftar) as jumlah FROM pendaftar WHERE id_gelombang = ? AND jam_pilihan = ?");
+    $stmt_cek_kuota->bind_param("is", $id_gelombang_validasi, $jam_pilihan);
+    $stmt_cek_kuota->execute();
+    $hasil_cek_kuota = $stmt_cek_kuota->get_result()->fetch_assoc();
+    $jumlah_pendaftar_sesi = $hasil_cek_kuota['jumlah'];
+
+    if ($jumlah_pendaftar_sesi >= $kuota_per_sesi_validasi) {
+        $error = "Maaf, kuota untuk jam pilihan ($jam_pilihan) sudah penuh saat Anda mengirimkan form. Silakan pilih jadwal lain.";
+    } else {
     
+
     // Cek apakah NIK sudah terdaftar di gelombang yang sama
     $cekNIK = mysqli_query($conn, "SELECT id_pendaftar FROM pendaftar WHERE nik = '$nik' AND id_gelombang = " . $gelombangAktif['id_gelombang']);
     
@@ -193,7 +229,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
             }
         }
     }
-}
+  }
+} 
 ?>
 
 <!DOCTYPE html>
@@ -549,18 +586,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$pendaftaranTutup) {
                                 <label class="form-label">Jam Pilihan <span class="text-danger">*</span></label>
                                 <select name="jam_pilihan" class="form-select" required>
                                     <option value="">Pilih Jam Kursus</option>
-                                    <option value="08.00 - 09.00" <?= isset($_POST['jam_pilihan']) && $_POST['jam_pilihan'] == '08.00 - 09.00' ? 'selected' : '' ?>>08.00 - 09.00</option>
-                                    <option value="09.00 - 10.00" <?= isset($_POST['jam_pilihan']) && $_POST['jam_pilihan'] == '09.00 - 10.00' ? 'selected' : '' ?>>09.00 - 10.00</option>
-                                    <option value="10.00 - 11.00" <?= isset($_POST['jam_pilihan']) && $_POST['jam_pilihan'] == '10.00 - 11.00' ? 'selected' : '' ?>>10.00 - 11.00</option>
-                                    <option value="11.00 - 12.00" <?= isset($_POST['jam_pilihan']) && $_POST['jam_pilihan'] == '11.00 - 12.00' ? 'selected' : '' ?>>11.00 - 12.00</option>
-                                    <option value="13.00 - 14.00" <?= isset($_POST['jam_pilihan']) && $_POST['jam_pilihan'] == '13.00 - 14.00' ? 'selected' : '' ?>>13.00 - 14.00</option>
-                                    <option value="14.00 - 15.00" <?= isset($_POST['jam_pilihan']) && $_POST['jam_pilihan'] == '14.00 - 15.00' ? 'selected' : '' ?>>14.00 - 15.00</option>
-                                    <option value="15.00 - 16.00" <?= isset($_POST['jam_pilihan']) && $_POST['jam_pilihan'] == '15.00 - 16.00' ? 'selected' : '' ?>>15.00 - 16.00</option>
-                                    <option value="16.00 - 17.00" <?= isset($_POST['jam_pilihan']) && $_POST['jam_pilihan'] == '16.00 - 17.00' ? 'selected' : '' ?>>16.00 - 17.00</option>
-                                    <option value="17.00 - 18.00" <?= isset($_POST['jam_pilihan']) && $_POST['jam_pilihan'] == '17.00 - 18.00' ? 'selected' : '' ?>>17.00 - 18.00</option>
-                                    <option value="19.00 - 20.00" <?= isset($_POST['jam_pilihan']) && $_POST['jam_pilihan'] == '19.00 - 20.00' ? 'selected' : '' ?>>19.00 - 20.00</option>
-                                    <option value="20.00 - 21.00" <?= isset($_POST['jam_pilihan']) && $_POST['jam_pilihan'] == '20.00 - 21.00' ? 'selected' : '' ?>>20.00 - 21.00</option>
-                                    <option value="21.00 - 22.00" <?= isset($_POST['jam_pilihan']) && $_POST['jam_pilihan'] == '21.00 - 22.00' ? 'selected' : '' ?>>21.00 - 22.00</option>
+                                    <?php
+                                    foreach ($jam_tersedia as $jam) {
+                                        // Cek jumlah pendaftar untuk jam ini, default 0 jika belum ada
+                                        $jumlah_pendaftar = isset($kuota_terisi[$jam]) ? $kuota_terisi[$jam] : 0;
+                                        
+                                        // Tentukan apakah sesi disabled atau tidak
+                                        $disabled = ($jumlah_pendaftar >= $kuota_per_sesi) ? "disabled" : "";
+                                        
+                                        // HANYA tampilkan label jika penuh
+                                        $label_penuh = ($jumlah_pendaftar >= $kuota_per_sesi) ? " (Penuh)" : "";
+                                        
+                                        // Cek apakah ini adalah value yang sebelumnya di-POST (jika form error)
+                                        $selected = (isset($_POST['jam_pilihan']) && $_POST['jam_pilihan'] == $jam) ? 'selected' : '';
+
+                                        echo "<option value='$jam' $disabled $selected>$jam$label_penuh</option>";
+                                    }
+                                    ?>
                                 </select>
                                 <div class="form-text">Pilih waktu yang sesuai dengan jadwal Anda (dapat disesuaikan kemudian)</div>
                             </div>

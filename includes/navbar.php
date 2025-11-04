@@ -2,11 +2,12 @@
 // File: includes/navbar.php - Untuk akses public
 
 $current_page = basename($_SERVER['PHP_SELF']);
+$base_url = "/lkp_webapp"; // Sesuaikan jika nama folder Anda berbeda
 ?>
 
 <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="/lkp_webapp/index.php">
+        <a class="navbar-brand fw-bold" href="<?= $base_url ?>/index.php">
             <i class="bi bi-mortarboard-fill"></i>
             LKP Pradata Komputer
         </a>
@@ -16,22 +17,21 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto align-items-center">
                 <li class="nav-item">
-                    <a class="nav-link <?= ($current_page == 'index.php') ? 'active' : '' ?>" href="/lkp_webapp/index.php#home">Beranda</a>
+                    <a class="nav-link <?= ($current_page == 'index.php') ? 'active' : '' ?>" href="<?= $base_url ?>/index.php#home">Beranda</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/lkp_webapp/index.php#features">Tentang</a>
+                    <a class="nav-link" href="<?= $base_url ?>/index.php#kurikulum">Program</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= ($current_page == 'pendaftaran.php') ? 'active' : '' ?>" href="/lkp_webapp/pendaftaran.php">Pendaftaran</a>
+                    <a class="nav-link <?= ($current_page == 'pendaftaran.php') ? 'active' : '' ?>" href="<?= $base_url ?>/pendaftaran.php">Pendaftaran</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/lkp_webapp/index.php#contact">Kontak</a>
+                    <a class="nav-link <?= ($current_page == 'bantuan.php') ? 'active' : '' ?>" href="<?= $base_url ?>/bantuan.php">Bantuan</a>
                 </li>
                 
-                <!-- Public Authentication Buttons -->
                 <li class="nav-item">
                     <div class="d-flex gap-2">
-                        <a class="btn btn-primary" href="/lkp_webapp/pages/auth/login.php">
+                        <a class="btn btn-primary" href="<?= $base_url ?>/pages/auth/login.php">
                             Masuk
                         </a>
                     </div>

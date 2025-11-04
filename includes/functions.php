@@ -1,6 +1,17 @@
 <?php
 // File: includes/functions.php
 
+// BARIS TAMBAHAN UNTUK MEMANGGIL PHPMailer
+// ==========================================================
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\SMTP;
+
+// Pastikan autoload.php dipanggil sebelum fungsi ini
+// Path ini relatif terhadap file functions.php di dalam folder 'includes'
+require_once __DIR__ . '/../vendor/autoload.php';
+// ==========================================================
+
 // Fungsi untuk hash password yang aman
 function hashPassword($password) {
     return password_hash($password, PASSWORD_DEFAULT);
@@ -253,5 +264,105 @@ function validatePasswordStrength($password) {
         'level' => $level,
         'feedback' => $feedback
     ];
+}
+// =================================================================
+// FUNGSI BARU UNTUK MENGIRIM SEMUA EMAIL NOTIFIKASI SECARA TERPUSAT
+// =================================================================
+/**
+ * Fungsi terpusat untuk mengirim semua jenis email notifikasi.
+ *
+ * @param string $penerima_email Alamat email tujuan.
+ * @param string $penerima_nama  Nama penerima.
+ * @param string $subjek         Subjek email.
+ * @param string $isi_pesan      Isi email dalam format HTML.
+ * @return bool                  True jika berhasil, false jika gagal.
+ */
+function kirimEmailNotifikasi($penerima_email, $penerima_nama, $subjek, $isi_pesan) {
+
+    $mail = new PHPMailer(true);
+
+    try {
+        // Konfigurasi Server SMTP (sama seperti di bantuan.php)
+        // $mail->SMTPDebug = SMTP::DEBUG_SERVER; // Hapus komentar ini jika butuh debug lagi
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'rikaapliana02@gmail.com'; // Email Anda
+        $mail->Password   = 'ejit psog kjzn yfhf';      // App Password Anda
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        $mail->Port       = 465;
+
+        // Pengirim dan Penerima
+        $mail->setFrom('no-reply@lkp-pradata.com', 'Admin LKP Pradata');
+        $mail->addAddress($penerima_email, $penerima_nama);
+
+        // Konten Email
+        $mail->isHTML(true);
+        $mail->Subject = $subjek;
+        $mail->Body    = $isi_pesan;
+
+        $mail->send();
+        return true; // Mengembalikan nilai true jika email berhasil dikirim
+
+    } catch (Exception $e) {
+        // Jika gagal, bisa dicatat ke file log error untuk diperiksa nanti
+        error_log("Gagal kirim email ke {$penerima_email}. Error: {$mail->ErrorInfo}");
+        return false; // Mengembalikan nilai false jika gagal
+    }
+}
+    // ... (setelah penutup `}` dari fungsi kirimEmailNotifikasi) ...
+
+/**
+ * Fungsi terpusat untuk mengirim notifikasi via WhatsApp menggunakan API Gateway.
+ *
+ * @param string $target Nomor tujuan, format 08... atau 628...
+ * @param string $pesan  Isi pesan teks yang akan dikirim.
+ * @return string        Mengembalikan response dari API Gateway.
+ */
+function kirimWhatsAppNotifikasi($target, $pesan) {
+    // ==========================================================
+    // GANTI DENGAN API TOKEN DARI PENYEDIA LAYANAN ANDA
+    // ==========================================================
+    $token = "Y5DtwHNyT7sCyfTcBP8M"; 
+
+    // Memformat nomor HP ke standar internasional (62xxx)
+    $formattedTarget = $target;
+    if (substr($formattedTarget, 0, 1) == '0') {
+        $formattedTarget = '62' . substr($formattedTarget, 1);
+    } elseif (substr($formattedTarget, 0, 2) != '62') {
+        $formattedTarget = '62' . $formattedTarget;
+    }
+    // Menghapus karakter selain angka
+    $formattedTarget = preg_replace('/[^0-9]/', '', $formattedTarget);
+
+    $curl = curl_init();
+
+    // Menggunakan contoh endpoint dari Fonnte. Sesuaikan jika Anda menggunakan layanan lain.
+    curl_setopt_array($curl, array(
+      CURLOPT_URL => 'https://api.fonnte.com/send',
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_ENCODING => '',
+      CURLOPT_MAXREDIRS => 10,
+      CURLOPT_TIMEOUT => 0,
+      CURLOPT_FOLLOWLOCATION => true,
+      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+      CURLOPT_CUSTOMREQUEST => 'POST',
+      CURLOPT_POSTFIELDS => array(
+        'target' => $formattedTarget,
+        'message' => $pesan
+      ),
+      CURLOPT_HTTPHEADER => array(
+        "Authorization: $token"
+      ),
+    ));
+
+    $response = curl_exec($curl);
+    curl_close($curl);
+    
+    // Anda bisa mencatat response ini ke log untuk debugging
+    // error_log("WhatsApp Response: " . $response);
+    
+    return $response; 
+
 }
 ?>

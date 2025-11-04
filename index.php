@@ -74,6 +74,77 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
         }
+
+        /* ========== STYLE UNTUK SECTION BENEFIT & IKON BANTUAN ========== */
+
+        .benefits-section {
+            padding: 80px 0;
+            background-color: var(--bg-light);
+        }
+
+        .benefit-card {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: left;
+            height: 100%;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+        }
+
+        .benefit-icon {
+            font-size: 2rem;
+            width: 60px;
+            height: 60px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .benefit-card h4 {
+            color: var(--text-dark);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .benefit-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Floating Help Icon */
+        .floating-help-btn {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .floating-help-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(74, 144, 226, 0.4);
+            color: white;
+}
         
         /* Hero Section */
         .hero {
@@ -360,55 +431,149 @@
             font-size: 0.9rem;
         }
         
-        /* Gallery Section */
-        .gallery {
+       /* =================================
+   SECTION GALERI (GAYA KARTU BARU)
+   ================================= */
+.gallery {
+    padding: 80px 0;
+    background: var(--bg-light);
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px; /* Jarak antar kartu */
+}
+
+/* KARTU UTAMA: Diberi background putih dan bayangan */
+.gallery-item {
+    background: #ffffff;
+    border-radius: 15px; /* Sudut melengkung */
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.gallery-item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+}
+
+/* GAMBAR: Dibuat agar sudut atasnya saja yang melengkung */
+.gallery-item img {
+    width: 100%;
+    height: 220px; /* Tinggi gambar bisa disesuaikan */
+    object-fit: cover;
+    display: block;
+}
+
+/* KONTEN (PENGGANTI OVERLAY): Area untuk teks di bawah gambar */
+.gallery-content {
+    padding: 20px 25px 25px 25px; /* Ruang di dalam area teks */
+}
+
+/* JUDUL KONTEN: Diberi warna gelap */
+.gallery-content h5 {
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+    font-size: 1.15rem;
+}
+
+/* DESKRIPSI KONTEN: Diberi warna abu-abu */
+.gallery-content p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 0;
+}
+        /* ========== STYLE UNTUK SECTION KURIKULUM (VERSI DISEMPURNAKAN) ========== */
+
+        .kurikulum-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             padding: 80px 0;
-            background: var(--bg-light);
         }
-        
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-        }
-        
-        .gallery-item {
-            position: relative;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-        
-        .gallery-item:hover {
-            transform: translateY(-5px);
-        }
-        
-        .gallery-item img {
-            width: 100%;
-            height: 250px;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-        
-        .gallery-item:hover img {
-            transform: scale(1.05);
-        }
-        
-        .gallery-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+
+        .kurikulum-section .section-title h2,
+        .kurikulum-section .section-title p {
             color: white;
-            padding: 20px;
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
         }
-        
-        .gallery-item:hover .gallery-overlay {
-            transform: translateY(0);
+
+            /* KARTU: Ukuran diperkecil agar pas dalam 3 kolom */
+    .kurikulum-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+        padding: 25px; /* Padding diperkecil */
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07); 
+    }
+
+    .kurikulum-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    /* IKON UTAMA: Ukuran diperkecil */
+    .kurikulum-icon {
+        font-size: 2rem; /* Ukuran ikon diperkecil */
+        width: 70px; /* Lebar diperkecil */
+        height: 70px; /* Tinggi diperkecil */
+        margin: 0 auto 20px auto;
+        background: var(--primary-color);
+        color: #ffffff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* JUDUL KARTU: Ukuran font diperkecil */
+    .kurikulum-card h4 {
+        color: var(--text-dark);
+        font-weight: 700;
+        margin-bottom: 15px;
+        font-size: 1.1rem; /* Ukuran font diperkecil */
+    }
+
+            /* LIST MATERI: Warna teks diubah menjadi abu-abu */
+            .kurikulum-card ul {
+                list-style: none;
+                padding: 0;
+                text-align: left;
+                color: #555; /* Warna teks list diubah menjadi ABU-ABU TUA */
+                font-weight: 500;
+            }
+
+            .kurikulum-card li {
+                margin-bottom: 12px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+        /* IKON CHECKLIST: Warna diubah menjadi biru */
+        .kurikulum-card li i {
+            color: var(--primary-color); /* Warna ikon checklist diubah menjadi BIRU */
+            font-size: 1.2rem;
+        }
+
+        /* TOMBOL CTA: Tidak ada perubahan, sudah bagus */
+        .btn-cta-kurikulum {
+            background: white;
+            color: var(--primary-color);
+            font-weight: 600;
+            padding: 12px 30px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cta-kurikulum:hover {
+            background: var(--bg-light);
+            color: var(--primary-dark);
+            transform: scale(1.05);
         }
         
         /* Prestasi Section */
@@ -568,34 +733,35 @@
                 grid-template-columns: 1fr;
             }
         }
+
+                /* Styling untuk brand di navbar */
+        .navbar-brand-custom {
+            /* Mengambil warna biru dari gambar Anda */
+            color: #3A82EE !important; 
+            
+            /* Membuat font menjadi tebal */
+            font-weight: bold; 
+            
+            /* Sedikit memperbesar ukuran font agar lebih terbaca */
+            font-size: 1.1rem; 
+            
+            /* Menghilangkan garis bawah pada link */
+            text-decoration: none; 
+            
+            /* Menambahkan transisi halus untuk efek hover */
+            transition: color 0.3s ease-in-out; 
+        }
+
+        /* Efek saat kursor mouse diarahkan ke brand */
+        .navbar-brand-custom:hover {
+            /* Membuat warna sedikit lebih gelap saat disentuh mouse */
+            color: #2F69C6 !important; 
+        }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg fixed-top">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="#">
-                <img src="assets/img/favicon.png" alt="Logo" height="30" class="me-2">
-                LKP PRADATA KOMPUTER
-            </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto me-1">
-                    <li class="nav-item"><a class="nav-link" href="#home">Beranda</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#about">Program</a></li>
-                    <li class="nav-item"><a class="nav-link" href="pendaftaran.php">Pendaftaran</a></li>
-                </ul>
-                <a href="pages/auth/login.php" class="btn btn-login">
-                    <i class="bi bi-box-arrow-in-right me-1"></i>
-                    Masuk
-                </a>
-            </div>
-        </div>
-    </nav>
+    <?php include 'includes/navbar.php'; ?>
+    
 
     <!-- Hero Section -->
     <section class="hero" id="home">
@@ -685,11 +851,136 @@
         </div>
     </section>
 
+    <section class="kurikulum-section" id="kurikulum">
+    <div class="container">
+        <div class="section-title">
+            <h2>Program & Kurikulum Unggulan</h2>
+            <p>Materi pembelajaran dirancang sistematis untuk memastikan Anda siap kerja dan kompeten di bidangnya.</p>
+        </div>
+        
+      <div class="row g-4">
+    <div class="col-lg-4 col-md-6 d-flex align-items-stretch">
+        <div class="kurikulum-card w-100">
+            <div class="kurikulum-icon"><i class="bi bi-file-earmark-word"></i></div>
+            <h4>Microsoft Word</h4>
+            <p class="text-muted small px-2">Fokus pada pembuatan dokumen bisnis yang rapi, efisien, dan profesional.</p>
+            <ul class="list-unstyled mt-3">
+                <li><i class="bi bi-check-circle"></i> Membuat Kop Surat & Template Resmi</li>
+                <li><i class="bi bi-check-circle"></i> Daftar Isi Otomatis & Penomoran Halaman</li>
+                <li><i class="bi bi-check-circle"></i> Mail Merge untuk Efisiensi Surat & Label</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 col-md-6 d-flex align-items-stretch">
+        <div class="kurikulum-card w-100">
+            <div class="kurikulum-icon"><i class="bi bi-file-earmark-excel"></i></div>
+            <h4>Microsoft Excel</h4>
+            <p class="text-muted small px-2">Dari perhitungan dasar hingga mengolah ribuan data untuk laporan interaktif.</p>
+            <ul class="list-unstyled mt-3">
+                <li><i class="bi bi-check-circle"></i> Fungsi Logika (IF, VLOOKUP, HLOOKUP)</li>
+                <li><i class="bi bi-check-circle"></i> PivotTable untuk Meringkas Data Kompleks</li>
+                <li><i class="bi bi-check-circle"></i> Membuat Dashboard & Grafik Dinamis</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 d-flex align-items-stretch">
+        <div class="kurikulum-card w-100">
+            <div class="kurikulum-icon"><i class="bi bi-display"></i></div>
+            <h4>Microsoft PowerPoint</h4>
+            <p class="text-muted small px-2">Merancang slide presentasi yang tidak hanya indah, tapi juga jelas dan persuasif.</p>
+            <ul class="list-unstyled mt-3">
+                <li><i class="bi bi-check-circle"></i> Menggunakan Slide Master untuk Konsistensi</li>
+                <li><i class="bi bi-check-circle"></i> Menambahkan Video, Audio & Animasi</li>
+                <li><i class="bi bi-check-circle"></i> Hyperlink & Tombol Aksi Interaktif</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 d-flex align-items-stretch">
+        <div class="kurikulum-card w-100">
+            <div class="kurikulum-icon"><i class="bi bi-mic-fill"></i></div>
+            <h4>Public Speaking</h4>
+            <p class="text-muted small px-2">Membangun kepercayaan diri untuk berbicara di depan umum, baik online maupun offline.</p>
+            <ul class="list-unstyled mt-3">
+                <li><i class="bi bi-check-circle"></i> Struktur Presentasi (Opening, Body, Closing)</li>
+                <li><i class="bi bi-check-circle"></i> Teknik Vokal, Intonasi & Bahasa Tubuh</li>
+                <li><i class="bi bi-check-circle"></i> Menjawab Sesi Tanya Jawab (Q&A)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 d-flex align-items-stretch">
+        <div class="kurikulum-card w-100">
+            <div class="kurikulum-icon"><i class="bi bi-lightbulb-fill"></i></div>
+            <h4>Inkubator Bisnis Digital</h4>
+            <p class="text-muted small px-2">Bimbingan intensif dari tahap ide hingga peluncuran bisnis pertama Anda di dunia digital.</p>
+            <ul class="list-unstyled mt-3">
+                <li><i class="bi bi-check-circle"></i> Riset Pasar & Validasi Model Bisnis</li>
+                <li><i class="bi bi-check-circle"></i> Dasar Iklan di Media Sosial (FB & IG Ads)</li>
+                <li><i class="bi bi-check-circle"></i> Membangun Landing Page Sederhana</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 d-flex align-items-stretch">
+        <div class="kurikulum-card w-100">
+            <div class="kurikulum-icon"><i class="bi bi-easel2-fill"></i></div>
+            <h4>Training for Trainer (TOT)</h4>
+            <p class="text-muted small px-2">Program pelatihan untuk Anda yang ingin menjadi pengajar profesional dan kompeten.</p>
+            <ul class="list-unstyled mt-3">
+                <li><i class="bi bi-check-circle"></i> Menyusun Silabus & Rencana Ajar</li>
+                <li><i class="bi bi-check-circle"></i> Teknik Ice Breaking & Manajemen Kelas</li>
+                <li><i class="bi bi-check-circle"></i> Metode Evaluasi & Penilaian Peserta</li>
+            </ul>
+        </div>
+    </div>
+</div>        
+</div>
+    </div>
+</section>
+
+<section class="benefits-section" id="benefits">
+    <div class="container">
+        <div class="section-title">
+            <h2>Mengapa Memilih LKP Pradata?</h2>
+            <p>Kami tidak hanya mengajar, kami mempersiapkan Anda untuk sukses di dunia kerja.</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6 d-flex align-items-stretch">
+                <div class="benefit-card">
+                    <div class="benefit-icon"><i class="bi bi-patch-check-fill"></i></div>
+                    <h4>Sertifikat Pelatihan Resmi</h4>
+                    <p>Dapatkan sertifikat resmi yang diakui industri dan langsung oleh Bupati Tabalong, meningkatkan nilai jual Anda di mata perusahaan dan menjadi bukti konkret atas keahlian yang Anda miliki.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 d-flex align-items-stretch">
+                <div class="benefit-card">
+                    <div class="benefit-icon"><i class="bi bi-briefcase-fill"></i></div>
+                    <h4>Kurikulum Siap Kerja</h4>
+                    <p>Materi yang kami ajarkan disusun berdasarkan kebutuhan dunia kerja terkini, memastikan setiap lulusan memiliki keterampilan praktis yang relevan dan siap pakai.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 d-flex align-items-stretch">
+                <div class="benefit-card">
+                    <div class="benefit-icon"><i class="bi bi-people-fill"></i></div>
+                    <h4>Instruktur Bersertifikat</h4>
+                    <p>Belajar langsung dari para ahli yang berpengalaman di bidangnya untuk mengajar secara profesional.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
     <!-- Requirements Section -->
     <section class="requirements" id="program">
         <div class="container">
             <div class="section-title">
-                <h2>Persyaratan Program</h2>
+                <h2>Persyaratan Pendaftaran</h2>
                 <p>Syarat dan ketentuan untuk mengikuti program pelatihan di LKP Pradata Komputer</p>
             </div>
             
@@ -728,65 +1019,64 @@
         </div>
     </section>
 
-    <!-- Gallery Section -->
     <section class="gallery" id="gallery">
-        <div class="container">
-            <div class="section-title">
-                <h2>Dokumentasi Kegiatan</h2>
-                <p>Lihat suasana pembelajaran dan kegiatan di LKP Pradata Komputer</p>
-            </div>
-            
-            <div class="gallery-grid">
-                <div class="gallery-item">
-                    <img src="assets/img/RUANG KELAS.JPG" alt="Ruang Kelas Modern">
-                    <div class="gallery-overlay">
-                        <h5>Ruang Kelas Nyaman</h5>
-                        <p>Fasilitas pembelajaran dengan teknologi terkini</p>
-                    </div>
-                </div>
-                
-                <div class="gallery-item">
-                    <img src="assets/img/INSTRUKTUR MENGAJAR.JPG" alt="Instruktur Mengajar">
-                    <div class="gallery-overlay">
-                        <h5>Instruktur Berpengalaman</h5>
-                        <p>Pembelajaran dengan bimbingan ahli di bidangnya</p>
-                    </div>
-                </div>
-                
-                <div class="gallery-item">
-                    <img src="assets/img/background.jpg" alt="Siswa di Kelas">
-                    <div class="gallery-overlay">
-                        <h5>Lingkungan Positif</h5>
-                        <p>Interaksi aktif antara siswa dan instruktur</p>
-                    </div>
-                </div>
-                
-                <div class="gallery-item">
-                    <img src="assets/img/KELAS SOFTSKILL.JPG" alt="Kelas Soft Skill">
-                    <div class="gallery-overlay">
-                        <h5>Pelatihan Soft Skill</h5>
-                        <p>Pengembangan kemampuan komunikasi dan leadership</p>
-                    </div>
-                </div>
-                
-                <div class="gallery-item">
-                    <img src="assets/img/PEMBAGIAN SERTIFIKAT.jpg" alt="Pembagian Sertifikat">
-                    <div class="gallery-overlay">
-                        <h5>Pembagian Sertifikat</h5>
-                        <p>Moment kebanggaan lulusan LKP Pradata</p>
-                    </div>
-                </div>
-                
-                <div class="gallery-item">
-                    <img src="assets/img/KEGIATAN.jpg" alt="Para Siswa">
-                    <div class="gallery-overlay">
-                        <h5>Kegiatan LKP</h5>
-                        <p>Generasi muda siap menghadapi tantangan digital</p>
-                    </div>
-                </div>
-            </div>
+    <div class="container">
+        <div class="section-title">
+            <h2>Suasana Belajar & Momen Terbaik</h2>
+            <p>Intip lingkungan belajar yang modern, interaktif, dan mendukung kesuksesan Anda.</p>
         </div>
-    </section>
+        
+        <div class="gallery-grid">
+    <div class="gallery-item">
+        <img src="assets/img/RUANG KELAS.JPG" alt="Ruang Kelas Modern LKP Pradata">
+        <div class="gallery-content">
+            <h5>Fasilitas Belajar Modern</h5>
+            <p>Ruang kelas ber-AC dengan perangkat terkini untuk pengalaman belajar yang optimal.</p>
+        </div>
+    </div>
+    
+    <div class="gallery-item">
+        <img src="assets/img/INSTRUKTUR MENGAJAR.JPG" alt="Instruktur Profesional Mengajar">
+        <div class="gallery-content">
+            <h5>Bimbingan Instruktur Ahli</h5>
+            <p>Pendekatan personal dari pengajar berpengalaman yang siap menjawab setiap pertanyaan Anda.</p>
+        </div>
+    </div>
+    
+    <div class="gallery-item">
+        <img src="assets/img/background.jpg" alt="Suasana Kelas yang Interaktif">
+        <div class="gallery-content">
+            <h5>Pembelajaran Aktif & Interaktif</h5>
+            <p>Diskusi dan praktik langsung untuk memastikan Anda benar-benar paham, bukan sekadar hafal.</p>
+        </div>
+    </div>
+    
+    <div class="gallery-item">
+        <img src="assets/img/KELAS SOFTSKILL.JPG" alt="Kelas Pelatihan Soft Skill">
+        <div class="gallery-content">
+            <h5>Lebih dari Sekadar Teknis</h5>
+            <p>Kami juga mengasah soft skill seperti komunikasi dan kerja tim untuk karier yang cemerlang.</p>
+        </div>
+    </div>
+    
+    <div class="gallery-item">
+        <img src="assets/img/PEMBAGIAN SERTIFIKAT.jpg" alt="Lulusan Menerima Sertifikat Kompetensi">
+        <div class="gallery-content">
+            <h5>Lulusan Bersertifikat Kompetensi</h5>
+            <p>Momen kebanggaan saat menerima bukti keahlian yang diakui oleh dunia industri.</p>
+        </div>
+    </div>
+    
+    <div class="gallery-item">
+        <img src="assets/img/ALUMNI.jpg" alt="Alumni LKP Pradata yang Sukses">
+        <div class="gallery-content">
+            <h5>Jaringan Alumni yang Solid</h5>
+            <p>Bergabung dengan komunitas para profesional yang siap membangun masa depan bersama.</p>
+        </div>
+    </div>
+        </div>
+    </div>
+</section>
 
     <!-- Prestasi Section -->
     <section class="prestasi" id="prestasi">
@@ -909,13 +1199,14 @@
                         </div>
                     </div>
                 </div>
-    </div>
+             </div>
             
             <div class="footer-bottom">
                 <p>&copy; 2025 LKP Pradata Komputer Tabalong</p>
             </div>
         </div>
     </footer>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>

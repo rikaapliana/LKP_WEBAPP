@@ -383,6 +383,20 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
         <!-- Statistik Cards - Row 2: Manajemen & Sistem -->
         <div class="row g-3 g-md-4 mb-4">
 
+         <div class="col-6 col-lg-3">
+            <a href="laporan_manajemen.php" target="_blank" class="text-decoration-none">
+                <div class="card stats-card stats-card-clickable h-100">
+                    <div class="card-body text-center p-3">
+                        <div class="stats-icon bg-primary text-white mb-2">
+                            <i class="bi bi-pie-chart-fill"></i>
+                        </div>
+                        <p class="mb-1">Executive Summary</p>
+                        <small class="text-primary">Ringkasan Data & Analitik</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
         <div class="col-6 col-lg-3">
           <a href="pendaftar/grafik.php" class="text-decoration-none">
             <div class="card stats-card stats-card-clickable">
@@ -414,19 +428,7 @@ $hariIni = str_replace($bulanInggris, $bulanIndonesia, $hariIni);
             </a>
           </div>
 
-         <div class="col-6 col-lg-3">
-            <a href="gelombang/" class="text-decoration-none">
-              <div class="card stats-card stats-card-clickable">
-                <div class="card-body text-center p-3">
-                  <div class="stats-icon bg-purple text-white mb-2">
-                    <i class="bi bi-layers-fill"></i>
-                  </div>
-                  <p class="text-muted mb-0 small">Gelombang Aktif</p>
-                  <small class="text-success"><i class="bi bi-play-circle"></i> <?= $gelombangAktif ?> Gelombang aktif</small>
-                </div>
-              </div>
-            </a>
-          </div>
+       
           
           <div class="col-6 col-lg-3">
             <a href="../../pendaftaran.php" class="text-decoration-none">

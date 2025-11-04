@@ -6,14 +6,6 @@ requireAdminAuth();
 include '../../../includes/db.php';
 include '../../../config/email_config.php';
 
-// Tambahan untuk email notification
-require_once '../../../vendor/phpmailer/PHPMailer.php';
-require_once '../../../vendor/phpmailer/SMTP.php';
-require_once '../../../vendor/phpmailer/Exception.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
-use PHPMailer\PHPMailer\Exception;
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     $_SESSION['error'] = 'Metode request tidak valid';
@@ -145,18 +137,56 @@ try {
     // Commit transaksi
     mysqli_commit($conn);
     
-    // 9. Kirim email credentials
-    $emailSent = sendWelcomeEmail($pendaftar, $username, $password, $kelas);
+  // 9. Siapkan dan Kirim Notifikasi (Email & WhatsApp)
+// =======================================================
+
+// Pastikan file functions.php sudah dipanggil di bagian atas file Anda
+// require_once '../../../includes/functions.php';
+
+// Ambil data yang diperlukan untuk notifikasi
+$penerima_email = $pendaftar['email'];
+$penerima_nama = $pendaftar['nama_pendaftar'];
+$nomor_hp = $pendaftar['no_hp'];
+
+// A. Siapkan pesan untuk Email (HTML)
+$subjek_email = "Selamat Datang di LKP Pradata Komputer! Akun Anda Telah Dibuat";
+$isi_email = "
+    <h3>Halo, {$penerima_nama}!</h3>
+    <p>Selamat! Anda telah resmi diterima dan ditransfer menjadi siswa aktif di <strong>LKP Pradata Komputer</strong> untuk kelas <strong>{$kelas['nama_kelas']}</strong>.</p>
+    <p>Akun portal siswa Anda telah kami buat. Silakan gunakan detail di bawah ini untuk login dan mengakses materi, jadwal, serta informasi penting lainnya.</p>
+    <div style='background-color:#f2f2f2; border-left: 5px solid #007bff; padding: 15px; margin: 20px 0;'>
+        <p><strong>Username:</strong> {$username}</p>
+        <p><strong>Password Sementara:</strong> {$password}</p>
+    </div>
+    <p><strong>PENTING:</strong> Untuk keamanan, kami sangat menyarankan Anda untuk segera mengganti password setelah berhasil login untuk pertama kali.</p>
+    <br>
+    <p>Hormat kami,<br><strong>Admin LKP Pradata Komputer</strong></p>
+";
+
+// B. Siapkan pesan untuk WhatsApp (Teks Biasa)
+$pesan_wa = "Selamat, {$penerima_nama}!\n\nPendaftaran Anda di LKP Pradata Komputer telah DITERIMA. Akun portal siswa Anda telah dibuat.\n\nUsername: {$username}\nPassword: {$password}\n\nMohon segera ganti password setelah login. Terima kasih.";
+
+// C. Kirim semua notifikasi
+$emailSent = false;
+if (!empty($penerima_email)) {
+    $emailSent = kirimEmailNotifikasi($penerima_email, $penerima_nama, $subjek_email, $isi_email);
+}
+if (!empty($nomor_hp)) {
+    kirimWhatsAppNotifikasi($nomor_hp, $pesan_wa);
+}
     
-    // 10. Log aktivitas
-    $logMessage = "Transfer berhasil: {$pendaftar['nama_pendaftar']} (NIK: {$pendaftar['nik']}) -> Kelas: {$kelas['nama_kelas']} | Username: {$username}";
-    logTransferActivity($logMessage, $emailSent, $fileValidation);
-    
-    if ($emailSent) {
-        $_SESSION['success'] = "Transfer berhasil! {$pendaftar['nama_pendaftar']} telah menjadi siswa aktif di kelas {$kelas['nama_kelas']}. Email credentials telah dikirim ke {$pendaftar['email']}.";
-    } else {
-        $_SESSION['success'] = "Transfer berhasil! {$pendaftar['nama_pendaftar']} telah menjadi siswa aktif di kelas {$kelas['nama_kelas']}. PENTING: Email gagal dikirim. Username: {$username}, Password: {$password} - Silakan informasikan secara manual.";
-    }
+// =======================================================
+
+// 10. Log aktivitas dan siapkan pesan sukses untuk admin
+$logMessage = "Transfer berhasil: {$pendaftar['nama_pendaftar']} (NIK: {$pendaftar['nik']}) -> Kelas: {$kelas['nama_kelas']} | Username: {$username}";
+logTransferActivity($logMessage, $emailSent, $fileValidation);
+
+if ($emailSent) {
+    $_SESSION['success'] = "Transfer berhasil! {$pendaftar['nama_pendaftar']} kini aktif di kelas {$kelas['nama_kelas']}. Notifikasi telah dikirim.";
+} else {
+    // Pesan ini dimodifikasi agar lebih umum karena sekarang ada notifikasi WA
+    $_SESSION['success'] = "Transfer berhasil! {$pendaftar['nama_pendaftar']} kini aktif di kelas {$kelas['nama_kelas']}. PENTING: Jika ada notifikasi yang gagal terkirim, informasikan akun secara manual: Username: {$username}, Password: {$password}";
+}
     
 } catch (Exception $e) {
     // Rollback transaksi jika terjadi error

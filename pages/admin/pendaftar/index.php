@@ -623,7 +623,7 @@ function buildUrlWithFilters($page) {
                       </td>
                       
                       <!-- Status -->
-                      <td class="text-center align-middle" style="text-align: center !important;">
+                      <td class="align-middle">
                         <?php 
                         $status = $pendaftar['status_pendaftaran'];
                         switch($status) {
@@ -639,6 +639,10 @@ function buildUrlWithFilters($page) {
                             echo '<span class="badge bg-success px-2 py-1">
                             <i class="bi bi-check-circle me-1"></i>Diterima</span>';
                             break;
+                          case 'Ditolak': // INI PERBAIKANNYA
+                              echo '<span class="badge bg-danger px-2 py-1">
+                              <i class="bi bi-x-circle-fill me-1"></i>Ditolak</span>';
+                              break;
                           default:
                             echo '<span class="badge badge-secondary">-</span>';
                         }
@@ -646,7 +650,7 @@ function buildUrlWithFilters($page) {
                       </td>
    
                       <!-- Aksi -->
-                      <td class="text-center align-middle">
+                      <td class="align-middle">
                         <div class="btn-group btn-group-sm" role="group">
                           <a href="detail.php?id=<?= $pendaftar['id_pendaftar'] ?>" 
                              class="btn btn-action btn-view btn-sm" 

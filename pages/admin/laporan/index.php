@@ -46,6 +46,11 @@ try {
     $absensiInstrukturResult = mysqli_query($conn, $absensiInstrukturQuery);
     $stats['absensi_instruktur'] = mysqli_fetch_assoc($absensiInstrukturResult)['total'] ?? 0;
     
+    // Statistik Laporan Manajemen
+    $pendaftarQuery = "SELECT COUNT(*) as total FROM pendaftar";
+    $pendaftarResult = mysqli_query($conn, $pendaftarQuery);
+    $stats['pendaftar'] = mysqli_fetch_assoc($pendaftarResult)['total'] ?? 0;
+    
 } catch (Exception $e) {
     $error = "Terjadi kesalahan: " . $e->getMessage();
 }
@@ -85,6 +90,16 @@ try {
       border-color: var(--bs-primary);
     }
     
+    .report-card.featured {
+      border: 2px solid var(--bs-primary);
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    }
+    
+    .report-card.featured:hover {
+      border-color: var(--bs-primary);
+      box-shadow: 0 8px 16px rgba(102, 126, 234, 0.2);
+    }
+    
     .report-icon {
       flex-shrink: 0;
       width: 40px;
@@ -104,13 +119,22 @@ try {
     .icon-instruktur { background-color: #dc3545; }
     .icon-gelombang  { background-color: #198754; }
     .icon-kelas      { background-color: #0dcaf0; }
-    .icon-jadwal     { background-color: #6610f2; } /* Reusing a color */
-    .icon-nilai      { background-color: #d63384; } /* Reusing a color */
-    .icon-pendaftar  { background-color: #0d6efd; } /* Reusing a color */
+    .icon-jadwal     { background-color: #6610f2; }
+    .icon-nilai      { background-color: #d63384; }
+    .icon-pendaftar  { background-color: #0d6efd; }
+    .icon-manajemen  { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
 
     .stat-text {
       color: var(--bs-secondary-color);
       font-size: 0.9rem;
+    }
+    
+    .badge-featured {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-size: 0.7rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
     }
   </style>
 </head>
@@ -167,13 +191,79 @@ try {
           </p>
         </div>
 
+        <!-- Featured Report: Laporan Manajemen -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card report-card featured shadow">
+              <div class="card-body">
+                <div class="d-flex align-items-start">
+                  <div class="report-icon icon-manajemen me-3">
+                    <i class="bi bi-file-earmark-bar-graph-fill"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="d-flex align-items-center mb-2">
+                      <h5 class="card-title mb-0 fw-bold me-2">Laporan Manajemen Lembaga</h5>
+                      <span class="badge-featured">EXECUTIVE SUMMARY</span>
+                    </div>
+                    <p class="text-muted mb-3">
+                      Laporan komprehensif yang mencakup ringkasan eksekutif, data per gelombang, data per kelas, 
+                      data instruktur, kelulusan, dan analisis lengkap untuk pengambilan keputusan manajemen.
+                    </p>
+                    <div class="row g-2 mb-3">
+                      <div class="col-auto">
+                        <small class="text-muted">
+                          <i class="bi bi-people-fill me-1"></i>
+                          <strong><?= number_format($stats['siswa'] ?? 0) ?></strong> Siswa
+                        </small>
+                      </div>
+                      <div class="col-auto">
+                        <small class="text-muted">
+                          <i class="bi bi-person-workspace me-1"></i>
+                          <strong><?= number_format($stats['instruktur'] ?? 0) ?></strong> Instruktur
+                        </small>
+                      </div>
+                      <div class="col-auto">
+                        <small class="text-muted">
+                          <i class="bi bi-door-open me-1"></i>
+                          <strong><?= number_format($stats['kelas'] ?? 0) ?></strong> Kelas
+                        </small>
+                      </div>
+                      <div class="col-auto">
+                        <small class="text-muted">
+                          <i class="bi bi-layers me-1"></i>
+                          <strong><?= number_format($stats['gelombang'] ?? 0) ?></strong> Gelombang
+                        </small>
+                      </div>
+                      <div class="col-auto">
+                        <small class="text-muted">
+                          <i class="bi bi-person-plus me-1"></i>
+                          <strong><?= number_format($stats['pendaftar'] ?? 0) ?></strong> Pendaftar
+                        </small>
+                      </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                      <a href="../laporan_manajemen.php" class="btn btn-primary">
+                        <i class="bi bi-eye me-1"></i> Lihat Laporan
+                      </a>
+                      <a href="../cetak_laporan.php" target="_blank" class="btn btn-outline-primary">
+                        <i class="bi bi-printer me-1"></i> Cetak PDF
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Regular Reports -->
         <div class="row">
           <?php
             $reports = [
               ['title' => 'Laporan Pengguna',   'desc' => 'Data semua akun sistem',   'icon' => 'people',           'class' => 'icon-pengguna',   'stat' => ($stats['pengguna'] ?? 0) . ' akun',           'link' => '../pengguna/cetak_laporan.php'],
               ['title' => 'Laporan Instruktur', 'desc' => 'Data semua pengajar',      'icon' => 'person-workspace', 'class' => 'icon-instruktur', 'stat' => ($stats['instruktur'] ?? 0) . ' instruktur', 'link' => '../instruktur/cetak_laporan.php'],
               ['title' => 'Laporan Kelas',      'desc' => 'Data semua ruang kelas',   'icon' => 'door-open',        'class' => 'icon-kelas',      'stat' => ($stats['kelas'] ?? 0) . ' kelas',          'link' => '../kelas/cetak_laporan.php'],
-              ['title' => 'Laporan Pendaftar',  'desc' => 'Data semua calon siswa',   'icon' => 'person-plus',      'class' => 'icon-pendaftar',  'stat' => 'Semua periode',                      'link' => '../pendaftar/cetak_laporan.php'],
+              ['title' => 'Laporan Pendaftar',  'desc' => 'Data semua calon siswa',   'icon' => 'person-plus',      'class' => 'icon-pendaftar',  'stat' => ($stats['pendaftar'] ?? 0) . ' pendaftar',   'link' => '../pendaftar/cetak_laporan.php'],
               ['title' => 'Laporan Gelombang',  'desc' => 'Data periode pelatihan',   'icon' => 'layers',           'class' => 'icon-gelombang',  'stat' => ($stats['gelombang'] ?? 0) . ' gelombang',    'link' => '../gelombang/cetak_laporan.php'],
               ['title' => 'Laporan Siswa',      'desc' => 'Data semua pelajar aktif', 'icon' => 'mortarboard',      'class' => 'icon-siswa',      'stat' => ($stats['siswa'] ?? 0) . ' siswa',          'link' => '../siswa/cetak_laporan.php'],
               ['title' => 'Laporan Jadwal',     'desc' => 'Jadwal mengajar per kelas','icon' => 'calendar3',        'class' => 'icon-jadwal',     'stat' => 'Semua jadwal',                       'link' => '../jadwal/cetak_laporan.php'],
